@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[".env", ".env.local", "../.env.local"],
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"
@@ -23,11 +23,18 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
 
     # Database
-    # Standard PostgreSQL URL, or SQLite fallback for standalone tests
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
         "postgresql+psycopg://postgres:postgres@localhost:5432/fixops"
     )
+    DATABASE_URL_UNPOOLED: str | None = os.getenv("DATABASE_URL_UNPOOLED")
+
+    # Neon Object Storage (S3-compatible)
+    AWS_ACCESS_KEY_ID: str | None = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY: str | None = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_ENDPOINT_URL_S3: str | None = os.getenv("AWS_ENDPOINT_URL_S3")
+    AWS_REGION: str = os.getenv("AWS_REGION", "us-east-2")
+    NEON_OBJECT_STORAGE_BUCKET: str = "assets"
 
     # CORS
     ALLOWED_ORIGINS: List[str] = [
@@ -42,9 +49,11 @@ class Settings(BaseSettings):
     INITIAL_ADMIN_PASSWORD: str = "AdminFixOps2026!"
     INITIAL_ADMIN_NAME: str = "Lazy Nerds Founder"
 
-    @field_validator("DATABASE_URL")
+    @field_validator("DATABASE_URL", "DATABASE_URL_UNPOOLED", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: str) -> str:
+    def assemble_db_connection(cls, v: str | None) -> str | None:
+        if not v:
+            return v
         # Normalize postgres:// to postgresql+psycopg:// if needed
         if v.startswith("postgres://"):
             return v.replace("postgres://", "postgresql+psycopg://", 1)

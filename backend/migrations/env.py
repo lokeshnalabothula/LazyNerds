@@ -21,7 +21,8 @@ target_metadata = Base.metadata
 
 
 def get_url():
-    return settings.DATABASE_URL
+    # Prefer unpooled direct connection for migrations as per Neon best practice
+    return settings.DATABASE_URL_UNPOOLED or settings.DATABASE_URL
 
 
 def run_migrations_offline() -> None:

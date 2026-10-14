@@ -21,14 +21,20 @@ logger = logging.getLogger("fixops")
 
 
 def init_db_and_seed_admin():
-    """Initializes tables and seeds initial authorized founder if absent."""
+    """Initializes tables and seeds initial authorized founder if absent in development."""
+    # In production, skip automatic table creation and demo admin seeding.
+    # Production schema is managed deterministically via Alembic migrations ('alembic upgrade head').
+    if settings.ENVIRONMENT == "production":
+        logger.info("Production mode: automatic table creation (create_all) and demo admin seeding are disabled. Schema must be managed via Alembic migrations.")
+        return
+
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables initialized successfully.")
     except Exception as e:
         logger.warning(f"Database table creation check: {e}")
 
-    # Seed initial founder if not present
+    # Seed initial founder if not present (development and test environments only)
     try:
         db = SessionLocal()
         admin = get_user_by_email(db, settings.INITIAL_ADMIN_EMAIL)
@@ -120,3 +126,10 @@ def root():
         "status": "online",
         "docs": f"{settings.API_V1_STR}/docs" if settings.ENVIRONMENT != "production" else "restricted",
     }
+
+
+if __name__ == "__main__":
+    import os
+    import uvicorn
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=settings.ENVIRONMENT != "production")

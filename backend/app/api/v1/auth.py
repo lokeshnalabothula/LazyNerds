@@ -61,9 +61,11 @@ def read_current_user(current_user: User = Depends(get_current_user)):
 @router.post("/logout", status_code=status.HTTP_200_OK)
 def logout(response: Response):
     """Logs out user by clearing authentication session cookie."""
+    is_prod = settings.ENVIRONMENT == "production"
     response.delete_cookie(
         key="fixops_access_token",
         httponly=True,
-        samesite="lax"
+        secure=is_prod,
+        samesite="lax",
     )
     return {"message": "Successfully signed out."}

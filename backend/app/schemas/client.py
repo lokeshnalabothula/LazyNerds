@@ -1,8 +1,8 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_serializer, field_validator
 
 
 class ClientStatus(str, Enum):
@@ -66,8 +66,22 @@ class ClientBase(BaseModel):
 class ClientCreate(ClientBase):
     created_at: Optional[datetime] = Field(None, description="Custom creation / onboarding timestamp (UTC)")
 
+    @field_validator("created_at")
+    @classmethod
+    def validate_timezone_aware(cls, v: Optional[datetime]) -> Optional[datetime]:
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            raise ValueError(
+                "created_at must be a timezone-aware ISO-8601 datetime (e.g. ending with 'Z' or a timezone offset). "
+                "Naive datetimes without timezone information are not permitted."
+            )
+        return v.astimezone(timezone.utc)
+
 
 class ClientUpdate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     company_name: Optional[str] = Field(None, min_length=1, max_length=255)
     primary_contact_name: Optional[str] = Field(None, min_length=1, max_length=255)
     primary_contact_email: Optional[EmailStr] = None
@@ -75,7 +89,6 @@ class ClientUpdate(BaseModel):
     phone: Optional[str] = Field(None, max_length=50)
     industry: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = Field(None, max_length=5000)
-    created_at: Optional[datetime] = Field(None, description="Updated onboarding timestamp")
 
     @field_validator("company_name", "primary_contact_name")
     @classmethod
@@ -123,6 +136,17 @@ class ClientOut(ClientBase):
     status: ClientStatus
     created_at: datetime
     updated_at: datetime
+
+    @field_serializer("created_at", "updated_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
+        iso = dt.isoformat()
+        if iso.endswith("+00:00"):
+            return iso[:-6] + "Z"
+        return iso
 
 
 class ClientListResponse(BaseModel):

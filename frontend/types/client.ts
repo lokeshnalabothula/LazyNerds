@@ -33,7 +33,6 @@ export interface ClientUpdateInput {
   phone?: string | null;
   industry?: string | null;
   notes?: string | null;
-  created_at?: string | null;
 }
 
 export interface ClientListResponse {

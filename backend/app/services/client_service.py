@@ -74,10 +74,14 @@ def get_client_by_id(db: Session, client_id: str) -> Optional[Client]:
 
 
 def create_client(db: Session, client_in: ClientCreate) -> Client:
-    """Creates a new client transactionally, respecting custom client onboarding timestamps."""
-    created_ts = client_in.created_at if client_in.created_at is not None else datetime.now(timezone.utc)
-    if created_ts.tzinfo is None:
-        created_ts = created_ts.replace(tzinfo=timezone.utc)
+    """Creates a new client transactionally, respecting timezone-aware client onboarding timestamps."""
+    now_utc = datetime.now(timezone.utc)
+    if client_in.created_at is not None:
+        if client_in.created_at.tzinfo is None:
+            raise ValueError("Naive timestamps without timezone information are not permitted.")
+        created_ts = client_in.created_at.astimezone(timezone.utc)
+    else:
+        created_ts = now_utc
 
     client = Client(
         company_name=client_in.company_name,
@@ -89,7 +93,7 @@ def create_client(db: Session, client_in: ClientCreate) -> Client:
         notes=client_in.notes,
         status=ClientStatus.ACTIVE.value,
         created_at=created_ts,
-        updated_at=datetime.now(timezone.utc),
+        updated_at=now_utc,
     )
     db.add(client)
     db.commit()
@@ -98,34 +102,43 @@ def create_client(db: Session, client_in: ClientCreate) -> Client:
 
 
 def update_client(db: Session, client: Client, client_in: ClientUpdate) -> Client:
-    """Applies a partial update to an existing client record."""
+    """Applies a partial update to an existing client record. created_at is strictly immutable."""
     update_data = client_in.model_dump(exclude_unset=True)
-    
+    # created_at and id are strictly immutable
+    update_data.pop("created_at", None)
+    update_data.pop("id", None)
+
+    has_changes = False
     for field, value in update_data.items():
-        if field == "created_at" and value is not None:
-            if value.tzinfo is None:
-                value = value.replace(tzinfo=timezone.utc)
-        setattr(client, field, value)
-    
-    client.updated_at = datetime.now(timezone.utc)
-    db.commit()
-    db.refresh(client)
+        if hasattr(client, field):
+            current_val = getattr(client, field)
+            if current_val != value:
+                setattr(client, field, value)
+                has_changes = True
+
+    # updated_at is refreshed only after a successful modification
+    if has_changes:
+        client.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(client)
     return client
 
 
 def archive_client(db: Session, client: Client) -> Client:
-    """Archives a client record without deleting historical data."""
-    client.status = ClientStatus.ARCHIVED.value
-    client.updated_at = datetime.now(timezone.utc)
-    db.commit()
-    db.refresh(client)
+    """Archives a client record without deleting historical data. Idempotent status check."""
+    if client.status != ClientStatus.ARCHIVED.value:
+        client.status = ClientStatus.ARCHIVED.value
+        client.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(client)
     return client
 
 
 def restore_client(db: Session, client: Client) -> Client:
-    """Restores an archived client to active status."""
-    client.status = ClientStatus.ACTIVE.value
-    client.updated_at = datetime.now(timezone.utc)
-    db.commit()
-    db.refresh(client)
+    """Restores an archived client to active status. Idempotent status check."""
+    if client.status != ClientStatus.ACTIVE.value:
+        client.status = ClientStatus.ACTIVE.value
+        client.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(client)
     return client

@@ -21,7 +21,7 @@ class Client(Base):
     notes = Column(Text, nullable=True)
     status = Column(String(20), nullable=False, default="active", index=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     __table_args__ = (
         CheckConstraint("status IN ('active', 'archived')", name="check_client_status"),

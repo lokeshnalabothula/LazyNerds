@@ -46,26 +46,106 @@ def test_create_client_with_custom_timestamp(auth_client):
     assert get_res.json()["created_at"].startswith("2025-06-15T14:30:00")
 
 
-def test_update_client_custom_timestamp(auth_client):
-    """Tests that an existing client's onboarding timestamp can be corrected/updated."""
+def test_created_at_is_immutable_after_creation(auth_client):
+    """Tests that created_at cannot be altered after record creation."""
+    initial_time = "2025-06-15T14:30:00Z"
     create_res = auth_client.post(
         "/api/v1/clients",
         json={
-            "company_name": "Timestamp Correction Inc",
+            "company_name": "Immutable Corp",
             "primary_contact_name": "Tina Time",
-            "primary_contact_email": "tina@correction.io",
+            "primary_contact_email": "tina@immutable.io",
+            "created_at": initial_time,
         },
     )
+    assert create_res.status_code == status.HTTP_201_CREATED
     client_id = create_res.json()["id"]
+    original_created_at = create_res.json()["created_at"]
+    assert original_created_at.startswith("2025-06-15T14:30:00")
 
-    new_timestamp = "2024-03-20T09:15:00Z"
+    # Attempt to alter created_at via PATCH
+    attempted_new_time = "2020-01-01T00:00:00Z"
     update_res = auth_client.patch(
         f"/api/v1/clients/{client_id}",
-        json={"created_at": new_timestamp},
+        json={"created_at": attempted_new_time, "phone": "+1-555-0100"},
     )
     assert update_res.status_code == status.HTTP_200_OK
     data = update_res.json()
-    assert data["created_at"].startswith("2024-03-20T09:15:00")
+    assert data["created_at"] == original_created_at, "created_at must remain strictly immutable"
+    assert data["phone"] == "+1-555-0100"
+
+    # Verify retrieval confirms immutability
+    get_res = auth_client.get(f"/api/v1/clients/{client_id}")
+    assert get_res.status_code == status.HTTP_200_OK
+    assert get_res.json()["created_at"] == original_created_at
+
+
+def test_updated_at_only_advances_on_successful_modification(auth_client):
+    """Tests that updated_at only changes when actual modifications occur."""
+    create_res = auth_client.post(
+        "/api/v1/clients",
+        json={
+            "company_name": "Modification Check Ltd",
+            "primary_contact_name": "Marcus Modification",
+            "primary_contact_email": "marcus@modcheck.io",
+        },
+    )
+    client_id = create_res.json()["id"]
+    initial_updated_at = create_res.json()["updated_at"]
+
+    # 1. No-op update with identical data
+    noop_res = auth_client.patch(
+        f"/api/v1/clients/{client_id}",
+        json={"company_name": "Modification Check Ltd"},
+    )
+    assert noop_res.status_code == status.HTTP_200_OK
+    assert noop_res.json()["updated_at"] == initial_updated_at, "No-op update must not advance updated_at"
+
+    # 2. Actual modification with different field
+    mod_res = auth_client.patch(
+        f"/api/v1/clients/{client_id}",
+        json={"company_name": "Modification Check Renamed Corp"},
+    )
+    assert mod_res.status_code == status.HTTP_200_OK
+    assert mod_res.json()["company_name"] == "Modification Check Renamed Corp"
+    assert mod_res.json()["updated_at"] >= initial_updated_at
+
+
+def test_create_rejects_naive_timestamp(auth_client):
+    """Tests that creating a client with a naive datetime (lacking timezone) is rejected."""
+    payload = {
+        "company_name": "Naive Date Corp",
+        "primary_contact_name": "Noah Timezone",
+        "primary_contact_email": "noah@naive.com",
+        "created_at": "2025-06-15T14:30:00",  # No Z or offset
+    }
+    response = auth_client.post("/api/v1/clients", json=payload)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    err_detail = str(response.json())
+    assert "timezone" in err_detail.lower()
+
+
+def test_create_accepts_timezone_offset_and_converts_to_utc(auth_client):
+    """Tests that timezone-aware timestamps with non-UTC offset (e.g. IST +05:30) are cleanly converted to UTC."""
+    # 20:00:00 IST is 14:30:00 UTC
+    ist_timestamp = "2025-06-15T20:00:00+05:30"
+    payload = {
+        "company_name": "IST Onboarding Corp",
+        "primary_contact_name": "Rohan Sharma",
+        "primary_contact_email": "rohan@istonboarding.in",
+        "created_at": ist_timestamp,
+    }
+    response = auth_client.post("/api/v1/clients", json=payload)
+    assert response.status_code == status.HTTP_201_CREATED
+    data = response.json()
+    assert data["created_at"].startswith("2025-06-15T14:30:00")
+    assert data["created_at"].endswith("Z")
+
+    # Read back ensures identical UTC timestamp
+    get_res = auth_client.get(f"/api/v1/clients/{data['id']}")
+    assert get_res.status_code == status.HTTP_200_OK
+    assert get_res.json()["created_at"] == data["created_at"]
+
 
 
 def test_get_client_by_id(auth_client):

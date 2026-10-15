@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Client } from "@/types/client";
-import { toDatetimeLocalValue, fromDatetimeLocalToIso } from "@/lib/utils";
+import { toDatetimeLocalValue, fromDatetimeLocalToIso, formatDateTime } from "@/lib/utils";
 import { AlertCircle, Clock } from "lucide-react";
 
 interface ClientFormProps {
@@ -63,10 +63,19 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     setServerError(null);
     setIsSubmitting(true);
     try {
-      const payload = {
-        ...data,
-        created_at: fromDatetimeLocalToIso(data.created_at),
+      const payload: any = {
+        company_name: data.company_name,
+        primary_contact_name: data.primary_contact_name,
+        primary_contact_email: data.primary_contact_email,
+        website: data.website || null,
+        phone: data.phone || null,
+        industry: data.industry || null,
+        notes: data.notes || null,
       };
+      // created_at is strictly immutable and only supplied on initial creation
+      if (!initialData && data.created_at) {
+        payload.created_at = fromDatetimeLocalToIso(data.created_at);
+      }
       await onSubmit(payload);
     } catch (err: any) {
       setServerError(err.message || "Failed to persist client record. Please try again.");
@@ -143,21 +152,38 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       </div>
 
       {/* Onboarding Timestamp Setting */}
-      <div className="p-3.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-2">
-        <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-brand-500" />
-          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-            Client Addition Timestamp
-          </span>
+      {initialData ? (
+        <div className="p-3.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-1">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-brand-500" />
+            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              Registration Timestamp (IST)
+            </span>
+          </div>
+          <div className="text-xs font-mono text-zinc-700 dark:text-zinc-300 pt-0.5">
+            {formatDateTime(initialData.created_at)}
+          </div>
+          <p className="text-[11px] text-zinc-400">
+            System registration timestamps are strictly immutable after creation.
+          </p>
         </div>
-        <Input
-          label="Date & Time Added (Local Time)"
-          type="datetime-local"
-          hint="Set the exact date and time this client was onboarded. Defaults to current local time."
-          error={errors.created_at?.message}
-          {...register("created_at")}
-        />
-      </div>
+      ) : (
+        <div className="p-3.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-2">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-brand-500" />
+            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              Client Addition Timestamp (IST)
+            </span>
+          </div>
+          <Input
+            label="Date & Time Added (IST)"
+            type="datetime-local"
+            hint="Set the exact date and time this client was onboarded in IST. Defaults to current time."
+            error={errors.created_at?.message}
+            {...register("created_at")}
+          />
+        </div>
+      )}
 
       {/* Notes */}
       <Textarea

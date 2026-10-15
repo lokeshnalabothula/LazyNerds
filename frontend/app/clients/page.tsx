@@ -28,6 +28,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  LayoutList,
+  LayoutGrid,
+  User,
+  Mail,
+  Phone,
+  Globe,
 } from "lucide-react";
 
 function ClientsContent() {
@@ -57,6 +63,28 @@ function ClientsContent() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [clientToArchive, setClientToArchive] = useState<Client | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  // View Layout Mode (Table vs Cards) with hydration-safe preference persistence
+  type ViewMode = "table" | "cards";
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("fixops_client_view_mode") as ViewMode | null;
+      if (saved === "table" || saved === "cards") {
+        setViewMode(saved);
+      } else if (window.matchMedia("(max-width: 767px)").matches) {
+        setViewMode("cards");
+      }
+    } catch (_) {}
+  }, []);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem("fixops_client_view_mode", mode);
+    } catch (_) {}
+  };
 
   // Fetch clients from API
   const fetchClients = useCallback(async () => {
@@ -227,10 +255,46 @@ function ClientsContent() {
               <option value="company_name:desc">Company Name (Z-A)</option>
               <option value="updated_at:desc">Recently Updated</option>
             </select>
+
+            {/* View Mode Toggle (Table / Card) */}
+            <div
+              role="group"
+              aria-label="Directory view mode"
+              className="inline-flex rounded-md border border-zinc-200 dark:border-zinc-800 p-0.5 bg-zinc-100 dark:bg-zinc-900 text-xs"
+            >
+              <button
+                type="button"
+                onClick={() => handleViewModeChange("table")}
+                aria-label="Switch to table view"
+                aria-pressed={viewMode === "table"}
+                className={`px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 ${
+                  viewMode === "table"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                <LayoutList className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleViewModeChange("cards")}
+                aria-label="Switch to card view"
+                aria-pressed={viewMode === "cards"}
+                className={`px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 ${
+                  viewMode === "cards"
+                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Cards</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Directory Content Table */}
+        {/* Directory Content Table / Cards */}
         <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
@@ -271,6 +335,136 @@ function ClientsContent() {
                 </Button>
               )}
             </div>
+          ) : viewMode === "cards" ? (
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clients.map((client) => (
+                <div
+                  key={client.id}
+                  className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 p-4 space-y-3.5 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between group"
+                >
+                  <div className="space-y-2.5">
+                    {/* Header: Company & Status */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          href={`/clients/${client.id}`}
+                          className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1.5 group/link"
+                        >
+                          <span className="truncate">{client.company_name}</span>
+                          <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover/link:opacity-100 transition-opacity text-zinc-400" />
+                        </Link>
+                        {client.industry && (
+                          <span className="text-[11px] text-zinc-400 font-mono block mt-0.5 truncate">
+                            {client.industry}
+                          </span>
+                        )}
+                      </div>
+                      <Badge variant={client.status === "active" ? "active" : "archived"} className="shrink-0">
+                        {client.status === "active" ? "Active" : "Archived"}
+                      </Badge>
+                    </div>
+
+                    {/* Contact Details */}
+                    <div className="space-y-1.5 text-xs pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
+                      <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
+                        <User className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                        <span className="truncate">{client.primary_contact_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+                        <Mail className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                        <a
+                          href={`mailto:${client.primary_contact_email}`}
+                          className="hover:text-brand-500 hover:underline truncate"
+                          title={client.primary_contact_email}
+                        >
+                          {client.primary_contact_email}
+                        </a>
+                      </div>
+                      {client.phone && (
+                        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500">
+                          <Phone className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                          <span className="truncate">{client.phone}</span>
+                        </div>
+                      )}
+                      {client.website && (
+                        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500">
+                          <Globe className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                          <a
+                            href={client.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-brand-500 hover:underline truncate flex items-center gap-1"
+                          >
+                            <span className="truncate">{client.website.replace(/^https?:\/\//, "")}</span>
+                            <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Timestamps in IST */}
+                    <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/60 grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-500">
+                      <div>
+                        <span className="text-[10px] text-zinc-400 block font-sans">Added (IST)</span>
+                        <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.created_at)}>
+                          {formatDate(client.created_at)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-400 block font-sans">Updated (IST)</span>
+                        <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.updated_at)}>
+                          {formatDate(client.updated_at)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Actions */}
+                  <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
+                    <Link href={`/clients/${client.id}`} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-1.5">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span>Open Profile</span>
+                      </Button>
+                    </Link>
+                    <Link href={`/clients/${client.id}/edit`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                        title="Edit Client"
+                        aria-label={`Edit ${client.company_name}`}
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </Link>
+                    {client.status === "active" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setClientToArchive(client)}
+                        className="h-8 px-2.5 text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400"
+                        title="Archive Client"
+                        aria-label={`Archive ${client.company_name}`}
+                      >
+                        <Archive className="h-3.5 w-3.5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRestore(client)}
+                        className="h-8 px-2.5 text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                        title="Restore Client"
+                        aria-label={`Restore ${client.company_name}`}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -280,8 +474,8 @@ function ClientsContent() {
                     <th className="py-3 px-4">Primary Contact</th>
                     <th className="py-3 px-4">Contact Email</th>
                     <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Date Added</th>
-                    <th className="py-3 px-4">Last Updated</th>
+                    <th className="py-3 px-4">Date Added (IST)</th>
+                    <th className="py-3 px-4">Last Updated (IST)</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>

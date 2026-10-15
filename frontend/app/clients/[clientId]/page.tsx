@@ -403,7 +403,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Registration Date</span>
+                    <span className="text-zinc-400 block text-[11px]">Registration Date (IST)</span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-zinc-800 dark:text-zinc-200">
                         {formatDateTime(client.created_at)}
@@ -417,7 +417,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Last Database Update</span>
+                    <span className="text-zinc-400 block text-[11px]">Last Database Update (IST)</span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-zinc-800 dark:text-zinc-200">
                         {formatDateTime(client.updated_at)}

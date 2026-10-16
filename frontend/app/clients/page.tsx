@@ -64,17 +64,15 @@ function ClientsContent() {
   const [clientToArchive, setClientToArchive] = useState<Client | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
-  // View Layout Mode (Table vs Cards) with hydration-safe preference persistence
+  // View Layout Mode (List vs Cards) with hydration-safe preference persistence
   type ViewMode = "table" | "cards";
-  const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [viewMode, setViewMode] = useState<ViewMode>("cards");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("fixops_client_view_mode") as ViewMode | null;
       if (saved === "table" || saved === "cards") {
         setViewMode(saved);
-      } else if (window.matchMedia("(max-width: 767px)").matches) {
-        setViewMode("cards");
       }
     } catch (_) {}
   }, []);
@@ -265,7 +263,7 @@ function ClientsContent() {
               <button
                 type="button"
                 onClick={() => handleViewModeChange("table")}
-                aria-label="Switch to table view"
+                aria-label="Switch to list view"
                 aria-pressed={viewMode === "table"}
                 className={`px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 ${
                   viewMode === "table"
@@ -274,7 +272,7 @@ function ClientsContent() {
                 }`}
               >
                 <LayoutList className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Table</span>
+                <span className="hidden sm:inline">List</span>
               </button>
               <button
                 type="button"

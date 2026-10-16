@@ -14,6 +14,7 @@ from app.core.security import create_access_token
 from app.db.session import Base, get_db
 from app.main import app
 from app.models.client import Client
+from app.models.engagement import Engagement
 from app.models.user import User
 from app.schemas.auth import UserCreate
 from app.services.auth_service import create_user

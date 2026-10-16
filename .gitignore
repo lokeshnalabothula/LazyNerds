@@ -45,6 +45,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 package-lock.json
+*.tsbuildinfo
 
 # Environment & Local Secrets
 .env

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +14,23 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Sanitize any sensitive credentials accidentally passed in query strings via browser fallback
+    if (typeof window !== "undefined" && window.location.search) {
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has("password") || url.searchParams.has("email")) {
+          url.searchParams.delete("password");
+          url.searchParams.delete("email");
+          const cleanSearch = url.searchParams.toString();
+          window.history.replaceState({}, "", url.pathname + (cleanSearch ? `?${cleanSearch}` : ""));
+        }
+      } catch {
+        // Safe no-op on malformed URLs
+      }
+    }
+  }, []);
 
   const {
     register,
@@ -61,7 +78,7 @@ export default function LoginPage() {
 
         {/* Login Card */}
         <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-6 shadow-xl backdrop-blur-sm">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form method="POST" action="#" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {serverError && (
               <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />

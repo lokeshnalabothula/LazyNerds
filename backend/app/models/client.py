@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Text, DateTime, Index, CheckConstraint
+from sqlalchemy.orm import relationship
 from app.db.session import Base
 
 
@@ -22,6 +23,9 @@ class Client(Base):
     status = Column(String(20), nullable=False, default="active", index=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+    # Relationships
+    engagements = relationship("Engagement", back_populates="client")
 
     __table_args__ = (
         CheckConstraint("status IN ('active', 'archived')", name="check_client_status"),

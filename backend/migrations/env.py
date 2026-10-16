@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app.core.config import settings
 from app.db.session import Base
 from app.models.client import Client
+from app.models.engagement import Engagement
 from app.models.user import User
 
 config = context.config
@@ -21,6 +22,10 @@ target_metadata = Base.metadata
 
 
 def get_url():
+    # Prefer explicit config override if provided (e.g., test databases)
+    explicit_url = config.get_main_option("sqlalchemy.url")
+    if explicit_url:
+        return explicit_url
     # Prefer unpooled direct connection for migrations as per Neon best practice
     return settings.DATABASE_URL_UNPOOLED or settings.DATABASE_URL
 

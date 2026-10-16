@@ -65,3 +65,63 @@ export const loginFormSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof loginFormSchema>;
+
+export const engagementFormSchema = z
+  .object({
+    client_id: z
+      .string()
+      .trim()
+      .min(1, "Client selection is required."),
+    name: z
+      .string()
+      .trim()
+      .min(1, "Engagement title is required.")
+      .max(255, "Engagement title must not exceed 255 characters."),
+    assessment_type: z
+      .string()
+      .trim()
+      .min(1, "Assessment type is required."),
+    status: z
+      .string()
+      .min(1, "Status is required."),
+    start_date: z
+      .string()
+      .optional()
+      .nullable(),
+    due_date: z
+      .string()
+      .optional()
+      .nullable(),
+    description: z
+      .string()
+      .max(10000, "Description must not exceed 10,000 characters.")
+      .optional()
+      .nullable(),
+    scope_summary: z
+      .string()
+      .max(10000, "Scope summary must not exceed 10,000 characters.")
+      .optional()
+      .nullable(),
+    authorization_status: z
+      .string()
+      .min(1, "Authorization status is required."),
+    assigned_to: z
+      .string()
+      .max(255, "Assigned assessor must not exceed 255 characters.")
+      .optional()
+      .nullable(),
+  })
+  .refine(
+    (data) => {
+      if (data.start_date && data.due_date) {
+        return data.due_date >= data.start_date;
+      }
+      return true;
+    },
+    {
+      message: "Due date cannot precede start date.",
+      path: ["due_date"],
+    }
+  );
+
+export type EngagementFormData = z.infer<typeof engagementFormSchema>;

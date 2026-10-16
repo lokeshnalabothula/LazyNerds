@@ -1,4 +1,10 @@
 import { Client, ClientCreateInput, ClientListResponse, ClientUpdateInput, TokenResponse, User } from "@/types/client";
+import {
+  Engagement,
+  EngagementCreateInput,
+  EngagementListResponse,
+  EngagementUpdateInput,
+} from "@/types/engagement";
 
 const API_BASE_URL = typeof window !== "undefined"
   ? "/api/v1"
@@ -144,6 +150,63 @@ export const api = {
 
   async restoreClient(id: string): Promise<Client> {
     return request<Client>(`/clients/${encodeURIComponent(id)}/restore`, {
+      method: "POST",
+    });
+  },
+
+  // Engagements
+  async getEngagements(params: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+    status?: string;
+    assessment_type?: string;
+    client_id?: string;
+    authorization_status?: string;
+    sort_by?: string;
+    sort_order?: string;
+  } = {}): Promise<EngagementListResponse> {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", params.page.toString());
+    if (params.page_size) query.set("page_size", params.page_size.toString());
+    if (params.search) query.set("search", params.search);
+    if (params.status) query.set("status", params.status);
+    if (params.assessment_type) query.set("assessment_type", params.assessment_type);
+    if (params.client_id) query.set("client_id", params.client_id);
+    if (params.authorization_status) query.set("authorization_status", params.authorization_status);
+    if (params.sort_by) query.set("sort_by", params.sort_by);
+    if (params.sort_order) query.set("sort_order", params.sort_order);
+
+    const qs = query.toString();
+    return request<EngagementListResponse>(`/engagements${qs ? `?${qs}` : ""}`);
+  },
+
+  async getEngagementById(id: string): Promise<Engagement> {
+    return request<Engagement>(`/engagements/${encodeURIComponent(id)}`);
+  },
+
+  async createEngagement(input: EngagementCreateInput): Promise<Engagement> {
+    return request<Engagement>("/engagements", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async updateEngagement(id: string, input: EngagementUpdateInput): Promise<Engagement> {
+    return request<Engagement>(`/engagements/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async archiveEngagement(id: string): Promise<Engagement> {
+    return request<Engagement>(`/engagements/${encodeURIComponent(id)}/archive`, {
+      method: "POST",
+    });
+  },
+
+  async restoreEngagement(id: string): Promise<Engagement> {
+    return request<Engagement>(`/engagements/${encodeURIComponent(id)}/restore`, {
       method: "POST",
     });
   },

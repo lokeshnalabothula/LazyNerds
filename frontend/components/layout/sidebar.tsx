@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
       name: "Engagements",
       href: "/engagements",
       icon: Layers,
-      status: "planned",
+      status: "active",
     },
     {
       name: "Assets",

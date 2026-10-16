@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArchiveDialog } from "@/components/clients/archive-dialog";
 import { FutureModulePlaceholder } from "@/components/clients/future-module-placeholder";
+import { ClientEngagementsTab } from "@/components/clients/client-engagements-tab";
 import { api } from "@/lib/api";
 import { Client } from "@/types/client";
 import { formatDate, formatDateTime, formatRelativeTime } from "@/lib/utils";
@@ -496,7 +497,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
         )}
 
         {activeTab === "engagements" && (
-          <FutureModulePlaceholder moduleName="engagements" companyName={client.company_name} />
+          <ClientEngagementsTab client={client} />
         )}
 
         {activeTab === "assets" && (

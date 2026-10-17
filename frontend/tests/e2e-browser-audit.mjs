@@ -100,6 +100,7 @@ async function runAudit() {
     // 2. Perform Login
     console.log('\n--- Phase 2: User Sign-In & Redirection ---');
     await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle2' });
+    await page.waitForSelector('input[type="email"]', { timeout: 15000 });
     await page.type('input[type="email"]', email);
     await page.type('input[type="password"]', password);
     await page.click('button[type="submit"]');

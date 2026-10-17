@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
+import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
 import { ClientForm } from "@/components/clients/client-form";
 import { ArchiveDialog } from "@/components/clients/archive-dialog";
 import { api } from "@/lib/api";
@@ -279,10 +280,13 @@ function ClientsContent() {
         {/* Directory Content Table / Cards */}
         <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
           {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
-              <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-              <span className="text-xs font-mono">Loading client directory…</span>
-            </div>
+            viewMode === "cards" ? (
+              <div className="p-4">
+                <CardGridSkeleton count={6} />
+              </div>
+            ) : (
+              <TableSkeleton rows={5} cols={5} />
+            )
           ) : error ? (
             <div className="py-16 text-center space-y-3 px-4">
               <AlertCircle className="h-7 w-7 text-rose-500 mx-auto" />

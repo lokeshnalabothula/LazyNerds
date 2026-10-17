@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
@@ -106,6 +107,16 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
         >
           <Menu className="h-5 w-5" />
         </button>
+
+        <div className="md:hidden flex items-center shrink-0">
+          <Image
+            src="/brand/logo-icon.png"
+            alt="Lazy Nerds"
+            width={24}
+            height={24}
+            className="rounded object-contain"
+          />
+        </div>
 
         {title && (
           <div className="flex items-center gap-2 min-w-0 truncate">

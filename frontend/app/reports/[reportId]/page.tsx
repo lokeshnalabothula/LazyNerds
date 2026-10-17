@@ -45,7 +45,7 @@ export default function ReportDetailPage() {
 
   return (
     <AppShell title="Assessment Report Deliverable">
-      <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
+      <div className="space-y-6 max-w-4xl">
         <div className="flex items-center justify-between">
           <Link
             href="/reports"

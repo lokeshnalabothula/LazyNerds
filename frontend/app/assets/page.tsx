@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { Asset } from "@/types/asset";
 import { AssetFormModal } from "@/components/assets/asset-form-modal";
+import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
 import { useViewMode } from "@/lib/use-view-mode";
 import { formatDateTime } from "@/lib/utils";
 import {
@@ -177,7 +178,7 @@ export default function AssetsPage() {
               <button
                 type="button"
                 onClick={() => setViewMode("cards")}
-                aria-label="Switch to Card View"
+                aria-label="Switch to card view"
                 aria-pressed={viewMode === "cards"}
                 className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "cards"
@@ -191,7 +192,7 @@ export default function AssetsPage() {
               <button
                 type="button"
                 onClick={() => setViewMode("table")}
-                aria-label="Switch to Table View"
+                aria-label="Switch to list view"
                 aria-pressed={viewMode === "table"}
                 className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "table"
@@ -208,10 +209,13 @@ export default function AssetsPage() {
 
         {/* Assets List */}
         {loading && assets.length === 0 ? (
-          <div className="h-64 flex flex-col items-center justify-center gap-3 text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-            <span className="text-xs font-mono">Loading asset targets…</span>
-          </div>
+          viewMode === "cards" ? (
+            <CardGridSkeleton count={6} />
+          ) : (
+            <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
+              <TableSkeleton rows={5} cols={6} />
+            </div>
+          )
         ) : assets.length === 0 ? (
           <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
             <Shield className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />

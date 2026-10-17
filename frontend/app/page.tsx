@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { Loader2 } from "lucide-react";
+import { FixOpsAppLoader } from "@/components/ui/loading";
 
 export default function HomePage() {
   const router = useRouter();
@@ -19,12 +19,5 @@ export default function HomePage() {
     }
   }, [user, loading, router]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-400">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-        <span className="text-xs font-mono text-zinc-400">Preparing your security workspace…</span>
-      </div>
-    </div>
-  );
+  return <FixOpsAppLoader label="INITIALIZING FIXOPS" subtext="Preparing security operations environment…" />;
 }

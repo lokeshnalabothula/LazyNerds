@@ -55,7 +55,7 @@ export default function FindingDetailPage() {
 
   return (
     <AppShell title="Vulnerability Finding Details">
-      <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
+      <div className="space-y-6 max-w-5xl">
         <Link
           href="/findings"
           className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"

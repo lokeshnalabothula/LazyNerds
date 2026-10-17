@@ -9,7 +9,9 @@ import { loginFormSchema, LoginFormData } from "@/lib/validators";
 import { useAuth } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Shield, AlertCircle, KeyRound, Loader2 } from "lucide-react";
+import { FixOpsAppLoader } from "@/components/ui/loading";
+import Image from "next/image";
+import { Shield, AlertCircle, KeyRound } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -69,23 +71,23 @@ export default function LoginPage() {
 
   // Prevent flash of login form while checking existing authenticated session
   if (loading || user) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-          <span className="text-xs text-zinc-400 font-mono">Preparing your security workspace…</span>
-        </div>
-      </div>
-    );
+    return <FixOpsAppLoader label="PREPARING WORKSPACE" subtext="Verifying authentication credentials…" />;
   }
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4 sm:p-6">
       <div className="w-full max-w-sm space-y-6">
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center h-10 w-10 rounded-md bg-zinc-900 border border-zinc-800 text-brand-400 font-mono text-sm font-bold shadow-sm">
-            LN
+        {/* Official Brand Header */}
+        <div className="text-center space-y-3">
+          <div className="relative mx-auto w-16 h-16 rounded-2xl border border-brand-500/30 bg-zinc-900/90 p-1.5 shadow-xl flex items-center justify-center overflow-hidden">
+            <Image
+              src="/brand/logo.png"
+              alt="Lazy Nerds"
+              width={56}
+              height={56}
+              priority
+              className="object-contain rounded-xl"
+            />
           </div>
           <div className="space-y-0.5">
             <h1 className="text-base font-semibold tracking-tight text-zinc-100 font-mono">

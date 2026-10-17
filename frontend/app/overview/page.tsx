@@ -117,9 +117,23 @@ export default function OverviewPage() {
         )}
 
         {loading && !metrics ? (
-          <div className="h-64 flex flex-col items-center justify-center gap-3 text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-            <span className="text-xs font-mono">Loading security metrics…</span>
+          <div className="space-y-6 animate-pulse">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100/60 dark:bg-zinc-900/40 h-24 flex flex-col justify-between"
+                >
+                  <div className="h-3 w-16 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                  <div className="h-7 w-10 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                  <div className="h-2.5 w-20 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-900/30 h-72 rounded-lg" />
+              <div className="p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-900/30 h-72 rounded-lg" />
+            </div>
           </div>
         ) : metrics ? (
           <>

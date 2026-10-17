@@ -79,8 +79,8 @@ export default function SettingsPage() {
       setPasswordError("Please enter your current password.");
       return;
     }
-    if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters in length.");
+    if (newPassword.length < 10) {
+      setPasswordError("New password must be at least 10 characters in length.");
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -223,7 +223,7 @@ export default function SettingsPage() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 autoComplete="new-password"
-                placeholder="Minimum 8 characters"
+                placeholder="Minimum 10 characters"
                 className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-[36px] focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>

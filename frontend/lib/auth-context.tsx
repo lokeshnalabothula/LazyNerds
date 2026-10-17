@@ -66,10 +66,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       await api.logout();
-      setUser(null);
-      router.push("/login");
+    } catch {
+      // Safe fallback if network error occurs during sign out
     } finally {
+      setUser(null);
+      setStoredToken(null);
       setLoading(false);
+      router.push("/login");
     }
   };
 

@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
 import { api } from "@/lib/api";
 import { useViewMode } from "@/lib/use-view-mode";
 import {
@@ -205,7 +206,7 @@ function EngagementsContent() {
                 onClick={() => setViewMode("cards")}
                 aria-pressed={viewMode === "cards"}
                 title="Switch to Card View"
-                aria-label="Switch to Card View"
+                aria-label="Switch to card view"
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "cards"
                     ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
@@ -219,8 +220,8 @@ function EngagementsContent() {
                 type="button"
                 onClick={() => setViewMode("table")}
                 aria-pressed={viewMode === "table"}
-                title="Switch to List / Table View"
-                aria-label="Switch to List / Table View"
+                title="Switch to List View"
+                aria-label="Switch to list view"
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "table"
                     ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
@@ -309,10 +310,13 @@ function EngagementsContent() {
 
         {/* Content Body */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-            <span className="text-xs font-mono">Loading security engagements...</span>
-          </div>
+          viewMode === "cards" ? (
+            <CardGridSkeleton count={6} />
+          ) : (
+            <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
+              <TableSkeleton rows={5} cols={6} />
+            </div>
+          )
         ) : engagements.length === 0 ? (
           <div className="py-16 px-4 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg space-y-3">
             <Layers className="h-8 w-8 mx-auto text-zinc-400 opacity-60" />

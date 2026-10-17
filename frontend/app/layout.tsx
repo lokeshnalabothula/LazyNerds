@@ -3,13 +3,24 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
-  title: "Lazy Nerds FixOps — Client Manager",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lazynerds.vercel.app"),
+  title: "Lazy Nerds FixOps — Automated Cybersecurity & Remediation Platform",
   description:
-    "Client management workspace and cybersecurity engagement foundation for Lazy Nerds.",
+    "Cybersecurity automation platform: client management, continuous engagement operations, verified vulnerability remediation, and automated security reporting.",
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/brand/logo-icon.png", sizes: "128x128", type: "image/png" },
+      { url: "/brand/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/logo.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/brand/logo-icon.png",
+    apple: "/brand/logo.png",
+  },
+  openGraph: {
+    title: "Lazy Nerds FixOps — Automated Cybersecurity & Remediation Platform",
+    description:
+      "Automated vulnerability remediation, continuous security testing, and client operations.",
+    images: [{ url: "/brand/logo.png", width: 512, height: 512, alt: "Lazy Nerds FixOps" }],
   },
 };
 

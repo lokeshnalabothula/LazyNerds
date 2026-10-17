@@ -16,7 +16,10 @@ def test_alembic_migrations_upgrade_and_downgrade():
         os.environ["DATABASE_URL"] = sqlite_url
         os.environ["DATABASE_URL_UNPOOLED"] = sqlite_url
 
-        alembic_cfg = Config("alembic.ini")
+        backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        alembic_ini_path = os.path.join(backend_dir, "alembic.ini")
+        alembic_cfg = Config(alembic_ini_path)
+        alembic_cfg.set_main_option("script_location", os.path.join(backend_dir, "migrations"))
         alembic_cfg.set_main_option("sqlalchemy.url", sqlite_url)
 
         # 1. Upgrade to head

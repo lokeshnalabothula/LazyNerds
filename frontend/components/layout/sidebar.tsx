@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
   Users,
@@ -70,8 +71,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
       {/* Brand Header */}
       <div className="h-14 border-b border-zinc-200 dark:border-zinc-800 px-4 flex items-center justify-between">
         <Link href="/overview" onClick={onNavigate} className="flex items-center gap-2.5 group">
-          <div className="h-7 w-7 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-900 font-mono text-xs font-bold shadow-xs transition-transform group-hover:scale-105">
-            LN
+          <div className="h-8 w-8 rounded-lg border border-brand-500/30 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105">
+            <Image
+              src="/brand/logo-icon.png"
+              alt="Lazy Nerds"
+              width={32}
+              height={32}
+              priority
+              className="object-contain"
+            />
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono">

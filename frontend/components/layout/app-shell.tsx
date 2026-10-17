@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter, usePathname } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { FixOpsAppLoader } from "@/components/ui/loading";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -25,14 +25,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
   }, [user, loading, router, pathname]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">Preparing your security workspace…</span>
-        </div>
-      </div>
-    );
+    return <FixOpsAppLoader label="AUTHENTICATING SESSION" subtext="Connecting to FixOps secure operational bus…" />;
   }
 
   if (!user) {

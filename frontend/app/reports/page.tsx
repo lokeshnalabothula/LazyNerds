@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { Report } from "@/types/report";
 import { ReportFormModal } from "@/components/reports/report-form-modal";
+import { CardGridSkeleton } from "@/components/ui/loading";
 import { formatDateTime } from "@/lib/utils";
 import {
   PieChart,
@@ -67,10 +68,7 @@ export default function ReportsPage() {
 
         {/* Reports List */}
         {loading && reports.length === 0 ? (
-          <div className="h-64 flex flex-col items-center justify-center gap-3 text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-            <span className="text-xs font-mono">Loading report deliverables…</span>
-          </div>
+          <CardGridSkeleton count={6} />
         ) : reports.length === 0 ? (
           <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
             <PieChart className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />
@@ -87,11 +85,11 @@ export default function ReportsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {reports.map((report) => (
               <div
                 key={report.id}
-                className="p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs flex flex-col justify-between space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+                className="p-4 sm:p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs flex flex-col justify-between space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors min-w-0"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
@@ -105,12 +103,12 @@ export default function ReportsPage() {
 
                   <Link
                     href={`/reports/${report.id}`}
-                    className="block font-bold text-sm text-zinc-900 dark:text-zinc-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors font-mono"
+                    className="block font-bold text-sm text-zinc-900 dark:text-zinc-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors font-mono truncate"
                   >
                     {report.title}
                   </Link>
 
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                     <span>Engagement: </span>
                     <span className="font-semibold text-zinc-700 dark:text-zinc-300">
                       {report.engagement_name || "Linked Engagement"}
@@ -118,7 +116,7 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
+                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="text-[10px] text-zinc-400">
                     By {report.generated_by || "System"}
                   </div>

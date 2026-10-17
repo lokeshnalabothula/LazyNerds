@@ -81,6 +81,14 @@ async function runAudit() {
     
     // Visit protected route unauthenticated
     await page.goto(`${BASE_URL}/clients`, { waitUntil: 'networkidle2' });
+    try {
+      await page.waitForFunction(
+        () => window.location.pathname === '/login' && window.location.search.includes('redirect='),
+        { timeout: 15000 }
+      );
+    } catch {
+      // Fallthrough to check currentUrl
+    }
     const currentUrl = page.url();
     if (currentUrl.includes('/login?redirect=%2Fclients') || currentUrl.includes('/login?redirect=/clients')) {
       console.log('  ✓ Unauthenticated access to /clients safely redirected to /login with preserved redirect');

@@ -26,6 +26,7 @@ class Client(Base):
 
     # Relationships
     engagements = relationship("Engagement", back_populates="client")
+    assets = relationship("Asset", back_populates="client")
 
     __table_args__ = (
         CheckConstraint("status IN ('active', 'archived')", name="check_client_status"),

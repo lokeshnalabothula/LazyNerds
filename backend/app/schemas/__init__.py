@@ -13,6 +13,59 @@ from app.schemas.auth import (
     LoginRequest,
     TokenResponse,
 )
+from app.schemas.engagement import (
+    EngagementBase,
+    EngagementCreate,
+    EngagementUpdate,
+    EngagementOut,
+    EngagementStatus,
+    EngagementListResponse,
+)
+from app.schemas.asset import (
+    AssetBase,
+    AssetCreate,
+    AssetUpdate,
+    AssetOut,
+    AssetListResponse,
+)
+from app.schemas.finding import (
+    FindingBase,
+    FindingCreate,
+    FindingUpdate,
+    FindingOut,
+    FindingListResponse,
+    AssessmentCreate,
+    AssessmentOut,
+    AssessmentListResponse,
+    VerificationCreate,
+    VerificationOut,
+    ScanImportRequest,
+)
+from app.schemas.automation import (
+    AutomationRuleCreate,
+    AutomationRuleUpdate,
+    AutomationRuleOut,
+    AutomationExecutionOut,
+    AutomationRuleListResponse,
+    AutomationExecutionListResponse,
+    WorkflowDispatchInput,
+    WorkflowApprovalInput,
+)
+from app.schemas.report import (
+    ReportCreate,
+    ReportOut,
+    ReportListResponse,
+)
+from app.schemas.notification import (
+    NotificationCreate,
+    NotificationOut,
+    NotificationListResponse,
+)
+from app.schemas.audit_log import (
+    AuditLogOut,
+    AuditLogListResponse,
+)
+from app.schemas.overview import OverviewMetrics
 
 __all__ = [
     "ClientBase",
@@ -26,4 +79,43 @@ __all__ = [
     "UserOut",
     "LoginRequest",
     "TokenResponse",
+    "EngagementBase",
+    "EngagementCreate",
+    "EngagementUpdate",
+    "EngagementOut",
+    "EngagementStatus",
+    "EngagementListResponse",
+    "AssetBase",
+    "AssetCreate",
+    "AssetUpdate",
+    "AssetOut",
+    "AssetListResponse",
+    "FindingBase",
+    "FindingCreate",
+    "FindingUpdate",
+    "FindingOut",
+    "FindingListResponse",
+    "AssessmentCreate",
+    "AssessmentOut",
+    "AssessmentListResponse",
+    "VerificationCreate",
+    "VerificationOut",
+    "ScanImportRequest",
+    "AutomationRuleCreate",
+    "AutomationRuleUpdate",
+    "AutomationRuleOut",
+    "AutomationExecutionOut",
+    "AutomationRuleListResponse",
+    "AutomationExecutionListResponse",
+    "WorkflowDispatchInput",
+    "WorkflowApprovalInput",
+    "ReportCreate",
+    "ReportOut",
+    "ReportListResponse",
+    "NotificationCreate",
+    "NotificationOut",
+    "NotificationListResponse",
+    "AuditLogOut",
+    "AuditLogListResponse",
+    "OverviewMetrics",
 ]

@@ -57,3 +57,15 @@ def get_current_user(
         )
 
     return user
+
+
+def require_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Enforces admin/founder role permissions for sensitive platform operations."""
+    if current_user.role not in ("admin", "founder"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: administrative privileges required for this action.",
+        )
+    return current_user

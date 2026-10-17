@@ -7,8 +7,10 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArchiveDialog } from "@/components/clients/archive-dialog";
-import { FutureModulePlaceholder } from "@/components/clients/future-module-placeholder";
 import { ClientEngagementsTab } from "@/components/clients/client-engagements-tab";
+import { ClientAssetsTab } from "@/components/clients/client-assets-tab";
+import { ClientFindingsTab } from "@/components/clients/client-findings-tab";
+import { ClientReportsTab } from "@/components/clients/client-reports-tab";
 import { api } from "@/lib/api";
 import { Client } from "@/types/client";
 import { formatDate, formatDateTime, formatRelativeTime } from "@/lib/utils";
@@ -501,15 +503,15 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
         )}
 
         {activeTab === "assets" && (
-          <FutureModulePlaceholder moduleName="assets" companyName={client.company_name} />
+          <ClientAssetsTab client={client} />
         )}
 
         {activeTab === "findings" && (
-          <FutureModulePlaceholder moduleName="findings" companyName={client.company_name} />
+          <ClientFindingsTab client={client} />
         )}
 
         {activeTab === "reports" && (
-          <FutureModulePlaceholder moduleName="reports" companyName={client.company_name} />
+          <ClientReportsTab client={client} />
         )}
       </div>
 

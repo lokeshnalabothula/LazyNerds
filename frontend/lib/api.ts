@@ -5,6 +5,43 @@ import {
   EngagementListResponse,
   EngagementUpdateInput,
 } from "@/types/engagement";
+import {
+  Asset,
+  AssetCreateInput,
+  AssetListResponse,
+  AssetUpdateInput,
+} from "@/types/asset";
+import {
+  Finding,
+  FindingCreateInput,
+  FindingListResponse,
+  FindingUpdateInput,
+  Verification,
+  VerificationCreateInput,
+  Assessment,
+  AssessmentListResponse,
+  ScanImportInput,
+} from "@/types/finding";
+import {
+  AutomationRule,
+  AutomationRuleCreateInput,
+  AutomationRuleListResponse,
+  AutomationExecution,
+  AutomationExecutionListResponse,
+} from "@/types/automation";
+import {
+  Report,
+  ReportCreateInput,
+  ReportListResponse,
+} from "@/types/report";
+import {
+  Notification,
+  NotificationListResponse,
+} from "@/types/notification";
+import {
+  OverviewMetrics,
+  AuditLog,
+} from "@/types/overview";
 
 const API_BASE_URL = typeof window !== "undefined"
   ? "/api/v1"
@@ -209,6 +246,212 @@ export const api = {
     return request<Engagement>(`/engagements/${encodeURIComponent(id)}/restore`, {
       method: "POST",
     });
+  },
+
+  // Assets (Module C)
+  async getAssets(params: {
+    page?: number;
+    page_size?: number;
+    client_id?: string;
+    engagement_id?: string;
+    asset_type?: string;
+    in_scope?: boolean;
+    criticality?: string;
+    search?: string;
+  } = {}): Promise<AssetListResponse> {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", params.page.toString());
+    if (params.page_size) query.set("page_size", params.page_size.toString());
+    if (params.client_id) query.set("client_id", params.client_id);
+    if (params.engagement_id) query.set("engagement_id", params.engagement_id);
+    if (params.asset_type) query.set("asset_type", params.asset_type);
+    if (params.in_scope !== undefined) query.set("in_scope", params.in_scope.toString());
+    if (params.criticality) query.set("criticality", params.criticality);
+    if (params.search) query.set("search", params.search);
+
+    const qs = query.toString();
+    return request<AssetListResponse>(`/assets${qs ? `?${qs}` : ""}`);
+  },
+
+  async getAssetById(id: string): Promise<Asset> {
+    return request<Asset>(`/assets/${encodeURIComponent(id)}`);
+  },
+
+  async createAsset(input: AssetCreateInput): Promise<Asset> {
+    return request<Asset>("/assets", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async updateAsset(id: string, input: AssetUpdateInput): Promise<Asset> {
+    return request<Asset>(`/assets/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async deleteAsset(id: string): Promise<void> {
+    await request(`/assets/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+
+  // Findings & Assessments (Module D & E)
+  async getFindings(params: {
+    page?: number;
+    page_size?: number;
+    engagement_id?: string;
+    asset_id?: string;
+    severity?: string;
+    status?: string;
+    search?: string;
+  } = {}): Promise<FindingListResponse> {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", params.page.toString());
+    if (params.page_size) query.set("page_size", params.page_size.toString());
+    if (params.engagement_id) query.set("engagement_id", params.engagement_id);
+    if (params.asset_id) query.set("asset_id", params.asset_id);
+    if (params.severity) query.set("severity", params.severity);
+    if (params.status) query.set("status", params.status);
+    if (params.search) query.set("search", params.search);
+
+    const qs = query.toString();
+    return request<FindingListResponse>(`/findings${qs ? `?${qs}` : ""}`);
+  },
+
+  async getFindingById(id: string): Promise<Finding> {
+    return request<Finding>(`/findings/${encodeURIComponent(id)}`);
+  },
+
+  async createFinding(input: FindingCreateInput): Promise<Finding> {
+    return request<Finding>("/findings", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async updateFinding(id: string, input: FindingUpdateInput): Promise<Finding> {
+    return request<Finding>(`/findings/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async addVerification(findingId: string, input: VerificationCreateInput): Promise<Verification> {
+    return request<Verification>(`/findings/${encodeURIComponent(findingId)}/verifications`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async importScan(input: ScanImportInput): Promise<Assessment> {
+    return request<Assessment>("/findings/import-scan", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async getAssessments(engagementId?: string): Promise<AssessmentListResponse> {
+    const qs = engagementId ? `?engagement_id=${encodeURIComponent(engagementId)}` : "";
+    return request<AssessmentListResponse>(`/findings/assessments${qs}`);
+  },
+
+  // Automation Engine (Module F)
+  async getAutomationRules(isActive?: boolean): Promise<AutomationRuleListResponse> {
+    const qs = isActive !== undefined ? `?is_active=${isActive}` : "";
+    return request<AutomationRuleListResponse>(`/automation/rules${qs}`);
+  },
+
+  async createAutomationRule(input: AutomationRuleCreateInput): Promise<AutomationRule> {
+    return request<AutomationRule>("/automation/rules", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async updateAutomationRule(id: string, input: Partial<AutomationRuleCreateInput>): Promise<AutomationRule> {
+    return request<AutomationRule>(`/automation/rules/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async deleteAutomationRule(id: string): Promise<void> {
+    await request(`/automation/rules/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+
+  async getAutomationExecutions(params: { rule_id?: string; status?: string } = {}): Promise<AutomationExecutionListResponse> {
+    const query = new URLSearchParams();
+    if (params.rule_id) query.set("rule_id", params.rule_id);
+    if (params.status) query.set("status", params.status);
+    const qs = query.toString();
+    return request<AutomationExecutionListResponse>(`/automation/executions${qs ? `?${qs}` : ""}`);
+  },
+
+  async dispatchWorkflow(ruleId: string, payload: any = {}): Promise<AutomationExecution> {
+    return request<AutomationExecution>("/automation/dispatch", {
+      method: "POST",
+      body: JSON.stringify({ rule_id: ruleId, payload }),
+    });
+  },
+
+  async approveExecution(executionId: string, action: "approve" | "reject", notes?: string): Promise<AutomationExecution> {
+    return request<AutomationExecution>(`/automation/executions/${encodeURIComponent(executionId)}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ action, notes }),
+    });
+  },
+
+  // Reports (Module G)
+  async getReports(params: { page?: number; page_size?: number; engagement_id?: string; report_type?: string } = {}): Promise<ReportListResponse> {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", params.page.toString());
+    if (params.page_size) query.set("page_size", params.page_size.toString());
+    if (params.engagement_id) query.set("engagement_id", params.engagement_id);
+    if (params.report_type) query.set("report_type", params.report_type);
+    const qs = query.toString();
+    return request<ReportListResponse>(`/reports${qs ? `?${qs}` : ""}`);
+  },
+
+  async getReportById(id: string): Promise<Report> {
+    return request<Report>(`/reports/${encodeURIComponent(id)}`);
+  },
+
+  async createReport(input: ReportCreateInput): Promise<Report> {
+    return request<Report>("/reports", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  // Notifications (Module H)
+  async getNotifications(limit: number = 50): Promise<NotificationListResponse> {
+    return request<NotificationListResponse>(`/notifications?limit=${limit}`);
+  },
+
+  async markNotificationRead(id: string): Promise<Notification> {
+    return request<Notification>(`/notifications/${encodeURIComponent(id)}/read`, {
+      method: "POST",
+    });
+  },
+
+  async markAllNotificationsRead(): Promise<{ marked_read: number }> {
+    return request<{ marked_read: number }>("/notifications/read-all", {
+      method: "POST",
+    });
+  },
+
+  // Overview / Dashboard (Module I)
+  async getOverviewMetrics(): Promise<OverviewMetrics> {
+    return request<OverviewMetrics>("/overview/metrics");
+  },
+
+  // Audit Logs (Module J)
+  async getAuditLogs(page: number = 1): Promise<{ items: AuditLog[]; total: number; total_pages: number }> {
+    return request(`/audit-logs?page=${page}`);
   },
 
   async getHealth(): Promise<{ status: string; database: string }> {

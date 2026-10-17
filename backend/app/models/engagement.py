@@ -40,8 +40,12 @@ class Engagement(Base):
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
-    # Relationship to parent Client
+    # Relationships
     client = relationship("Client", back_populates="engagements")
+    assets = relationship("Asset", back_populates="engagement")
+    assessments = relationship("Assessment", back_populates="engagement", cascade="all, delete-orphan")
+    findings = relationship("Finding", back_populates="engagement", cascade="all, delete-orphan")
+    reports = relationship("Report", back_populates="engagement", cascade="all, delete-orphan")
 
     __table_args__ = (
         CheckConstraint(

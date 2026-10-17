@@ -9,9 +9,20 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.config import settings
 from app.db.session import Base
-from app.models.client import Client
-from app.models.engagement import Engagement
-from app.models.user import User
+from app.models import (
+    Client,
+    Engagement,
+    User,
+    Asset,
+    Assessment,
+    Finding,
+    Verification,
+    AutomationRule,
+    AutomationExecution,
+    Report,
+    Notification,
+    AuditLog,
+)
 
 config = context.config
 

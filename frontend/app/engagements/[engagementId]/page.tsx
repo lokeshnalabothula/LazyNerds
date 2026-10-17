@@ -284,6 +284,54 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
                 </p>
               )}
             </div>
+
+            {/* Associated Security Operations */}
+            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-4">
+              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                <Layers className="h-4 w-4 text-brand-500" />
+                Associated Security Operations
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Link
+                  href={`/assets?clientId=${engagement.client_id}`}
+                  className="p-3 rounded-md border border-zinc-200 dark:border-zinc-800 hover:border-brand-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group block"
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                    <span>Target Assets</span>
+                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-brand-500" />
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    Scoped hosts, web targets, and CIDR ranges.
+                  </p>
+                </Link>
+
+                <Link
+                  href={`/findings?engagementId=${engagement.id}`}
+                  className="p-3 rounded-md border border-zinc-200 dark:border-zinc-800 hover:border-brand-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group block"
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                    <span>Vulnerability Findings</span>
+                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-brand-500" />
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    Security findings and verified fixes for this engagement.
+                  </p>
+                </Link>
+
+                <Link
+                  href={`/reports?engagementId=${engagement.id}`}
+                  className="p-3 rounded-md border border-zinc-200 dark:border-zinc-800 hover:border-brand-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group block"
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                    <span>Executive Reports</span>
+                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-brand-500" />
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    Generated compliance, summary, and technical reports.
+                  </p>
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar Metadata (Right Column) */}

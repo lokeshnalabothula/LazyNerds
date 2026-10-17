@@ -9,7 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Client } from "@/types/client";
-import { toDatetimeLocalValue, fromDatetimeLocalToIso, formatDateTime } from "@/lib/utils";
+import {
+  toDatetimeLocalValue,
+  fromDatetimeLocalToIso,
+  formatDateTime,
+  getTimezonePreference,
+  getTimezoneLabel,
+} from "@/lib/utils";
 import { AlertCircle, Clock } from "lucide-react";
 
 interface ClientFormProps {
@@ -40,6 +46,12 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 }) => {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTzLabel, setActiveTzLabel] = useState<string>("IST");
+
+  React.useEffect(() => {
+    const tz = getTimezonePreference();
+    setActiveTzLabel(getTimezoneLabel(tz, new Date()));
+  }, []);
 
   const {
     register,
@@ -157,10 +169,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-brand-500" />
             <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-              Registration Timestamp (IST)
+              Registration Timestamp ({activeTzLabel})
             </span>
           </div>
-          <div className="text-xs font-mono text-zinc-700 dark:text-zinc-300 pt-0.5">
+          <div className="text-xs font-mono text-zinc-700 dark:text-zinc-300 pt-0.5" suppressHydrationWarning>
             {formatDateTime(initialData.created_at)}
           </div>
           <p className="text-[11px] text-zinc-400">
@@ -172,13 +184,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-brand-500" />
             <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-              Client Addition Timestamp (IST)
+              Client Addition Timestamp ({activeTzLabel})
             </span>
           </div>
           <Input
-            label="Date & Time Added (IST)"
+            label={`Date & Time Added (${activeTzLabel})`}
             type="datetime-local"
-            hint="Set the exact date and time this client was onboarded in IST. Defaults to current time."
+            hint={`Set the exact date and time this client was onboarded in your operational time zone (${activeTzLabel}). Defaults to current time.`}
             error={errors.created_at?.message}
             {...register("created_at")}
           />

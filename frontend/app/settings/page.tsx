@@ -8,7 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { AuditLog } from "@/types/overview";
-import { formatDateTime } from "@/lib/utils";
+import {
+  formatDateTime,
+  SUPPORTED_TIMEZONES,
+  getTimezonePreference,
+  setTimezonePreference,
+  getRawTimezoneSetting,
+  getDetectedBrowserTimezone,
+} from "@/lib/utils";
 import {
   User,
   Shield,
@@ -21,6 +28,7 @@ import {
   Loader2,
   KeyRound,
   Lock,
+  Globe,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -41,6 +49,27 @@ export default function SettingsPage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+
+  // Timezone Preference State
+  const [selectedTzSetting, setSelectedTzSetting] = useState<string>("Asia/Kolkata");
+  const [effectiveTz, setEffectiveTz] = useState<string>("Asia/Kolkata");
+  const [detectedTz, setDetectedTz] = useState<string>("Asia/Kolkata");
+  const [tzSavedMsg, setTzSavedMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedTzSetting(getRawTimezoneSetting());
+    setEffectiveTz(getTimezonePreference());
+    setDetectedTz(getDetectedBrowserTimezone());
+  }, []);
+
+  const handleTimezoneChange = (newSetting: string) => {
+    setSelectedTzSetting(newSetting);
+    setTimezonePreference(newSetting);
+    const eff = getTimezonePreference();
+    setEffectiveTz(eff);
+    setTzSavedMsg(`Operational time zone updated to ${eff}.`);
+    setTimeout(() => setTzSavedMsg(null), 4000);
+  };
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -166,6 +195,63 @@ export default function SettingsPage() {
               <LogOut className="h-3.5 w-3.5" />
               <span>Sign out of Workspace</span>
             </Button>
+          </div>
+        </div>
+
+        {/* Localization & Time Zone Preferences Card */}
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-3">
+            <Globe className="h-4 w-4 text-brand-500" />
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Localization & Operational Time Zone
+              </h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Configure your preferred time zone for displaying assessment dates, audit logs, and security telemetry.
+              </p>
+            </div>
+          </div>
+
+          {tzSavedMsg && (
+            <div className="p-3 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>{tzSavedMsg}</span>
+            </div>
+          )}
+
+          <div className="space-y-4 max-w-md">
+            <div>
+              <label htmlFor="timezone-select" className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Active Time Zone Preference
+              </label>
+              <select
+                id="timezone-select"
+                value={selectedTzSetting}
+                onChange={(e) => handleTimezoneChange(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-[38px] focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
+              >
+                {SUPPORTED_TIMEZONES.map((tz) => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.value === "auto" ? `Automatic (Detected: ${detectedTz})` : `${tz.label} [${tz.offset}]`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-1.5 text-xs">
+              <div className="flex justify-between items-center text-zinc-500">
+                <span>Resolved Active Zone:</span>
+                <span className="font-mono font-semibold text-brand-600 dark:text-brand-400">
+                  {effectiveTz}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-zinc-500">
+                <span>Sample Live Timestamp:</span>
+                <span className="font-mono text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>
+                  {formatDateTime(new Date().toISOString(), effectiveTz)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 

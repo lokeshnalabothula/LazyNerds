@@ -1,5 +1,6 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_serializer
+from app.schemas.common import serialize_utc_datetime
 
 
 class UserBase(BaseModel):
@@ -18,6 +19,10 @@ class UserOut(UserBase):
     id: str
     is_active: bool
     created_at: datetime
+
+    @field_serializer("created_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        return serialize_utc_datetime(dt)
 
 
 class LoginRequest(BaseModel):

@@ -266,7 +266,7 @@ export default function FindingDetailPage() {
                           Audited by {v.verified_by}
                         </div>
                       </div>
-                      <div className="text-[10px] text-zinc-400 font-mono shrink-0">
+                      <div className="text-[10px] text-zinc-400 font-mono shrink-0" suppressHydrationWarning>
                         {formatDateTime(v.verified_at)}
                       </div>
                     </div>

@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
+from app.schemas.common import serialize_utc_datetime
 
 
 NotificationTypeLiteral = Literal[
@@ -31,6 +32,10 @@ class NotificationOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_serializer("created_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        return serialize_utc_datetime(dt)
 
 
 class NotificationListResponse(BaseModel):

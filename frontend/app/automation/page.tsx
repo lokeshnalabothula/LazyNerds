@@ -145,7 +145,7 @@ export default function AutomationPage() {
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100 block truncate">
                       {exec.rule_name || "Workflow Rule"}
                     </span>
-                    <div className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                    <div className="text-[11px] text-zinc-500 font-mono mt-0.5" suppressHydrationWarning>
                       Source: {exec.trigger_source} &bull; Queued: {formatDateTime(exec.executed_at)}
                     </div>
                   </div>
@@ -335,7 +335,7 @@ export default function AutomationPage() {
                         <td className="py-2.5 px-3 text-zinc-600 dark:text-zinc-300 font-mono text-[10px] truncate max-w-xs">
                           {exec.output_result || exec.error_message || "—"}
                         </td>
-                        <td className="py-2.5 px-3 text-right text-zinc-400 font-mono text-[10px] shrink-0">
+                        <td className="py-2.5 px-3 text-right text-zinc-400 font-mono text-[10px] shrink-0" suppressHydrationWarning>
                           {formatDateTime(exec.executed_at)}
                         </td>
                       </tr>

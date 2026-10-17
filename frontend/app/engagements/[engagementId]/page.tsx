@@ -369,14 +369,14 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
               </h4>
               <div className="space-y-2 text-xs">
                 <div>
-                  <span className="text-[11px] text-zinc-400 block font-medium">Created (IST)</span>
-                  <span className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[11px] text-zinc-400 block font-medium">Created</span>
+                  <span className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300" suppressHydrationWarning>
                     {formatDateTime(engagement.created_at)}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-                  <span className="text-[11px] text-zinc-400 block font-medium">Last Modified (IST)</span>
-                  <span className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[11px] text-zinc-400 block font-medium">Last Modified</span>
+                  <span className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300" suppressHydrationWarning>
                     {formatDateTime(engagement.updated_at)}
                   </span>
                 </div>

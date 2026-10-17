@@ -96,7 +96,7 @@ export default function ReportsPage() {
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 font-semibold">
                       {report.report_type.replace("_", " ")}
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
+                    <span className="text-[10px] text-zinc-400 font-mono" suppressHydrationWarning>
                       {formatDateTime(report.created_at)}
                     </span>
                   </div>

@@ -115,7 +115,7 @@ export default function ReportDetailPage() {
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-zinc-400" />
                   <span>Generated: </span>
-                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                  <span className="font-mono text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>
                     {formatDateTime(report.created_at)}
                   </span>
                 </div>

@@ -406,13 +406,13 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Registration Date (IST)</span>
+                    <span className="text-zinc-400 block text-[11px]">Registration Date</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                      <span className="font-mono text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>
                         {formatDateTime(client.created_at)}
                       </span>
                       {formatRelativeTime(client.created_at) && (
-                        <span className="text-[10px] text-zinc-400 font-sans">
+                        <span className="text-[10px] text-zinc-400 font-sans" suppressHydrationWarning>
                           ({formatRelativeTime(client.created_at)})
                         </span>
                       )}
@@ -420,13 +420,13 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Last Database Update (IST)</span>
+                    <span className="text-zinc-400 block text-[11px]">Last Database Update</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                      <span className="font-mono text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>
                         {formatDateTime(client.updated_at)}
                       </span>
                       {formatRelativeTime(client.updated_at) && (
-                        <span className="text-[10px] text-zinc-400 font-sans">
+                        <span className="text-[10px] text-zinc-400 font-sans" suppressHydrationWarning>
                           ({formatRelativeTime(client.updated_at)})
                         </span>
                       )}

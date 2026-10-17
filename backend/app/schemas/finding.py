@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from typing import Optional, List, Literal, Any, Dict
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer
+from app.schemas.common import serialize_utc_datetime
 
 
 SeverityType = Literal["critical", "high", "medium", "low", "info"]
@@ -78,6 +79,10 @@ class VerificationOut(BaseModel):
 
     model_config = {"from_attributes": True}
 
+    @field_serializer("verified_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        return serialize_utc_datetime(dt)
+
 
 class FindingOut(BaseModel):
     id: str
@@ -104,6 +109,10 @@ class FindingOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_serializer("created_at", "updated_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        return serialize_utc_datetime(dt)
 
 
 class FindingListResponse(BaseModel):
@@ -139,6 +148,10 @@ class AssessmentOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_serializer("started_at", "completed_at", "created_at", "updated_at", when_used="json")
+    def serialize_dt(self, dt: Optional[datetime]) -> Optional[str]:
+        return serialize_utc_datetime(dt)
 
 
 class AssessmentListResponse(BaseModel):

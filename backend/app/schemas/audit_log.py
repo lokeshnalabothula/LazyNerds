@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
+from app.schemas.common import serialize_utc_datetime
 
 
 class AuditLogOut(BaseModel):
@@ -14,6 +15,10 @@ class AuditLogOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_serializer("created_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        return serialize_utc_datetime(dt)
 
 
 class AuditLogListResponse(BaseModel):

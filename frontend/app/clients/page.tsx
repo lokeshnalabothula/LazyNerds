@@ -388,17 +388,17 @@ function ClientsContent() {
                       )}
                     </div>
 
-                    {/* Timestamps in IST */}
+                    {/* Timestamps */}
                     <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/60 grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-500">
                       <div>
-                        <span className="text-[10px] text-zinc-400 block font-sans">Added (IST)</span>
-                        <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.created_at)}>
+                        <span className="text-[10px] text-zinc-400 block font-sans">Date Added</span>
+                        <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.created_at)} suppressHydrationWarning>
                           {formatDate(client.created_at)}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-zinc-400 block font-sans">Updated (IST)</span>
-                        <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.updated_at)}>
+                        <span className="text-[10px] text-zinc-400 block font-sans">Last Updated</span>
+                        <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.updated_at)} suppressHydrationWarning>
                           {formatDate(client.updated_at)}
                         </span>
                       </div>
@@ -460,8 +460,8 @@ function ClientsContent() {
                     <th className="py-3 px-4">Primary Contact</th>
                     <th className="py-3 px-4">Contact Email</th>
                     <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Date Added (IST)</th>
-                    <th className="py-3 px-4">Last Updated (IST)</th>
+                    <th className="py-3 px-4">Date Added</th>
+                    <th className="py-3 px-4">Last Updated</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -506,9 +506,9 @@ function ClientsContent() {
 
                       {/* Date Added */}
                       <td className="py-3 px-4 text-zinc-500 font-mono text-[11px]" title={formatDateTime(client.created_at)}>
-                        <div className="text-zinc-850 dark:text-zinc-200">{formatDate(client.created_at)}</div>
+                        <div className="text-zinc-850 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.created_at)}</div>
                         {formatRelativeTime(client.created_at) && (
-                          <div className="text-[10px] text-zinc-400 font-sans tracking-tight">
+                          <div className="text-[10px] text-zinc-400 font-sans tracking-tight" suppressHydrationWarning>
                             {formatRelativeTime(client.created_at)}
                           </div>
                         )}
@@ -516,9 +516,9 @@ function ClientsContent() {
 
                       {/* Last Updated */}
                       <td className="py-3 px-4 text-zinc-500 font-mono text-[11px]" title={formatDateTime(client.updated_at)}>
-                        <div className="text-zinc-850 dark:text-zinc-200">{formatDate(client.updated_at)}</div>
+                        <div className="text-zinc-850 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.updated_at)}</div>
                         {formatRelativeTime(client.updated_at) && (
-                          <div className="text-[10px] text-zinc-400 font-sans tracking-tight">
+                          <div className="text-[10px] text-zinc-400 font-sans tracking-tight" suppressHydrationWarning>
                             {formatRelativeTime(client.updated_at)}
                           </div>
                         )}

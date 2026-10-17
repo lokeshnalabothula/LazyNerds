@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Literal, Any, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
+from app.schemas.common import serialize_utc_datetime
 
 
 ReportTypeLiteral = Literal[
@@ -34,6 +35,10 @@ class ReportOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_serializer("created_at", "updated_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        return serialize_utc_datetime(dt)
 
 
 class ReportListResponse(BaseModel):

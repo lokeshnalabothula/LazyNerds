@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
+from app.schemas.common import serialize_utc_datetime
 
 router = APIRouter()
 
@@ -24,5 +25,5 @@ def health_check(db: Session = Depends(get_db)):
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "database": "connected" if db_healthy else "disconnected",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": serialize_utc_datetime(datetime.now(timezone.utc)),
     }

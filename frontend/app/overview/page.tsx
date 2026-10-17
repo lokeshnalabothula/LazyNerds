@@ -360,7 +360,7 @@ export default function OverviewPage() {
                             </p>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right text-[10px] text-zinc-400 font-mono shrink-0 pl-5 sm:pl-0">
+                        <div className="text-left sm:text-right text-[10px] text-zinc-400 font-mono shrink-0 pl-5 sm:pl-0" suppressHydrationWarning>
                           {formatDateTime(log.created_at)}
                         </div>
                       </div>

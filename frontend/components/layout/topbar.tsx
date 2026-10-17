@@ -97,26 +97,26 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
   };
 
   return (
-    <header className="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm px-4 flex items-center justify-between sticky top-0 z-30">
-      <div className="flex items-center gap-3">
+    <header className="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm px-3 sm:px-4 flex items-center justify-between sticky top-0 z-30">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={onToggleMobileNav}
-          className="md:hidden p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="md:hidden p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           aria-label="Toggle navigation menu"
         >
           <Menu className="h-5 w-5" />
         </button>
 
         {title && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="flex items-center gap-2 min-w-0 truncate">
+            <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
               {title}
             </span>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Notifications Bell */}
         {user && (
           <div className="relative" ref={notifRef}>
@@ -125,12 +125,12 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
                 setIsNotifOpen(!isNotifOpen);
                 if (!isNotifOpen) fetchNotifications();
               }}
-              className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 relative transition-colors"
-              aria-label="Notifications"
+              className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 relative transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              aria-label="Security notifications"
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-2 w-2">
+                <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-600"></span>
                 </span>
@@ -139,15 +139,15 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
 
             {/* Notification Dropdown */}
             {isNotifOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95">
+              <div className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-auto sm:mt-2 w-[calc(100vw-1rem)] sm:w-96 max-w-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95">
                 <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                      Notifications
+                      Security Notifications
                     </span>
                     {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.2 bg-brand-500/10 text-brand-600 dark:text-brand-400 text-[10px] font-mono rounded">
-                        {unreadCount} new
+                      <span className="px-1.5 py-0.5 bg-brand-500/10 text-brand-600 dark:text-brand-400 text-[10px] font-mono rounded font-medium">
+                        {unreadCount} unread
                       </span>
                     )}
                   </div>
@@ -155,14 +155,14 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
                     <button
                       onClick={handleMarkAllRead}
                       disabled={loadingNotifs}
-                      className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1"
+                      className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1 py-1 px-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     >
                       {loadingNotifs ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
                       ) : (
                         <CheckCheck className="h-3 w-3" />
                       )}
-                      Mark read
+                      <span>Mark all read</span>
                     </button>
                   )}
                 </div>
@@ -170,30 +170,30 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
                 <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/50">
                   {notifications.length === 0 ? (
                     <div className="px-4 py-8 text-center text-xs text-zinc-400">
-                      No notifications yet
+                      No security notifications at this time.
                     </div>
                   ) : (
                     notifications.map((n) => (
                       <div
                         key={n.id}
                         className={`p-3 text-xs transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${
-                          !n.is_read ? "bg-brand-50/20 dark:bg-brand-950/10" : ""
+                          !n.is_read ? "bg-brand-50/20 dark:bg-brand-950/20" : ""
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-[11px]">
                             {n.title}
                           </span>
                           {!n.is_read && (
                             <button
                               onClick={() => handleMarkRead(n.id)}
-                              className="text-[10px] text-brand-600 dark:text-brand-400 hover:underline shrink-0"
+                              className="text-[10px] text-brand-600 dark:text-brand-400 hover:underline shrink-0 font-medium"
                             >
                               Mark read
                             </button>
                           )}
                         </div>
-                        <p className="text-zinc-600 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                        <p className="text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed text-[11px]">
                           {n.message}
                         </p>
                         {n.link && (
@@ -203,9 +203,9 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
                               handleMarkRead(n.id);
                               setIsNotifOpen(false);
                             }}
-                            className="inline-flex items-center gap-1 text-[11px] text-brand-600 dark:text-brand-400 hover:underline mt-1.5"
+                            className="inline-flex items-center gap-1 text-[11px] text-brand-600 dark:text-brand-400 hover:underline mt-1.5 font-medium"
                           >
-                            <span>Open view</span>
+                            <span>Open Record</span>
                             <ExternalLink className="h-3 w-3" />
                           </Link>
                         )}
@@ -222,7 +222,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
         <button
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-          className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         >
           {theme === "dark" ? (
             <Sun className="h-4 w-4" />
@@ -233,9 +233,9 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
 
         {/* User Identity */}
         {user ? (
-          <div className="flex items-center gap-3 pl-2 border-l border-zinc-200 dark:border-zinc-800">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+          <div className="flex items-center gap-2 sm:gap-3 pl-1.5 sm:pl-2 border-l border-zinc-200 dark:border-zinc-800">
+            <div className="hidden sm:flex flex-col text-right max-w-[140px] truncate">
+              <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
                 {user.full_name || user.email}
               </span>
               <span className="text-[10px] text-zinc-400 font-mono capitalize">
@@ -246,7 +246,8 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 gap-1.5"
+              className="text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 gap-1.5 min-h-[36px]"
+              aria-label="Sign out of workspace"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Sign out</span>
@@ -255,7 +256,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
         ) : (
           <div className="flex items-center gap-1.5 text-xs text-zinc-400">
             <Shield className="h-3.5 w-3.5 text-brand-500" />
-            <span>Secure Mode</span>
+            <span className="hidden sm:inline">Secure Mode</span>
           </div>
         )}
       </div>

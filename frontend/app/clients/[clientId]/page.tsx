@@ -63,7 +63,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
       if (err.status === 404) {
         setError("This client could not be found.");
       } else {
-        setError(err.message || "Failed to load client record from server.");
+        setError(err.message || "Failed to load client workspace.");
       }
     } finally {
       setIsLoading(false);
@@ -95,7 +95,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
       <AppShell title="Client Profile">
         <div className="py-24 flex flex-col items-center justify-center gap-3 text-zinc-400">
           <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-          <span className="text-xs font-mono">Fetching client workspace from PostgreSQL...</span>
+          <span className="text-xs font-mono">Loading client workspace…</span>
         </div>
       </AppShell>
     );
@@ -233,10 +233,10 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
         </div>
 
         {/* Workspace Navigation Tabs */}
-        <div className="border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-6 text-xs font-medium select-none overflow-x-auto">
+        <div className="border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-4 sm:gap-6 text-xs font-medium select-none overflow-x-auto pb-px">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "overview"
                 ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
                 : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -248,7 +248,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
           <button
             onClick={() => setActiveTab("contacts")}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "contacts"
                 ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
                 : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -260,7 +260,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
           <button
             onClick={() => setActiveTab("engagements")}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "engagements"
                 ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
                 : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -272,7 +272,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
           <button
             onClick={() => setActiveTab("assets")}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "assets"
                 ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
                 : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -284,7 +284,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
           <button
             onClick={() => setActiveTab("findings")}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "findings"
                 ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
                 : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -296,7 +296,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
           <button
             onClick={() => setActiveTab("reports")}
-            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "reports"
                 ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
                 : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"

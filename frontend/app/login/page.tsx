@@ -2,18 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginFormSchema, LoginFormData } from "@/lib/validators";
 import { useAuth } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Shield, AlertCircle, KeyRound } from "lucide-react";
+import { Shield, AlertCircle, KeyRound, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const router = useRouter();
+  const { login, user, loading } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // If already authenticated, redirect immediately to Overview landing page
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/overview");
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     // Sanitize any sensitive credentials accidentally passed in query strings via browser fallback
@@ -51,15 +60,27 @@ export default function LoginPage() {
       await login(data.email, data.password);
     } catch (err: any) {
       setServerError(
-        err.message || "Invalid credentials or unauthorized account. Please check your credentials."
+        err.message || "Invalid credentials or unauthorized account. Please verify your email and password."
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Prevent flash of login form while checking existing authenticated session
+  if (loading || user) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+          <span className="text-xs text-zinc-400 font-mono">Preparing your security workspace…</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4">
+    <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4 sm:p-6">
       <div className="w-full max-w-sm space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
@@ -71,13 +92,13 @@ export default function LoginPage() {
               LAZY NERDS FIXOPS
             </h1>
             <p className="text-xs text-zinc-400">
-              Authorized cybersecurity client management workspace
+              Cybersecurity operations & vulnerability management workspace
             </p>
           </div>
         </div>
 
         {/* Login Card */}
-        <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-6 shadow-xl backdrop-blur-sm">
+        <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-5 sm:p-6 shadow-xl backdrop-blur-sm">
           <form method="POST" action="#" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {serverError && (
               <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
@@ -108,11 +129,11 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full mt-2"
+              className="w-full mt-2 h-10 text-xs font-semibold"
               isLoading={isSubmitting}
             >
-              <KeyRound className="h-4 w-4" />
-              <span>Authenticate Session</span>
+              <KeyRound className="h-4 w-4 mr-1.5" />
+              <span>Sign In to Workspace</span>
             </Button>
           </form>
 

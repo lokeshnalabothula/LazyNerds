@@ -21,7 +21,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-400">
-      <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+        <span className="text-xs font-mono text-zinc-400">Preparing your security workspace…</span>
+      </div>
     </div>
   );
 }

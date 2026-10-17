@@ -14,11 +14,11 @@ export default function TermsPage() {
         {/* Navigation */}
         <div>
           <Link
-            href="/clients"
+            href="/overview"
             className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-100 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Return to Workspace</span>
+            <span>Return to Workspace Overview</span>
           </Link>
         </div>
 
@@ -37,8 +37,8 @@ export default function TermsPage() {
         </div>
 
         {/* Legal Notice */}
-        <div className="p-4 rounded-md border border-amber-500/20 bg-amber-500/10 text-xs text-amber-300 leading-relaxed font-mono">
-          <strong>CORPORATE LEGAL NOTICE:</strong> Placeholders indicated in brackets ([COMPANY LEGAL ENTITY], [APPLICABLE JURISDICTION]) designate mandatory corporate terms to be finalized by company counsel before external commercial execution.
+        <div className="p-4 rounded-md border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-400 leading-relaxed font-mono">
+          <strong className="text-zinc-200">AUTHORIZED OPERATIONS NOTICE:</strong> This service agreement governs operational use of Lazy Nerds FixOps for cybersecurity assessment, vulnerability tracking, and client relationship management.
         </div>
 
         {/* Content */}
@@ -46,7 +46,7 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-zinc-100">1. Acceptance of Terms</h2>
             <p>
-              By accessing or utilizing the FixOps Client Manager application (&quot;Service&quot;), operated by [COMPANY LEGAL ENTITY: Lazy Nerds, LLC / Private Limited] (&quot;Lazy Nerds&quot;), you acknowledge and agree to be bound by these Terms and Conditions. Access is granted solely to authorized representatives of Lazy Nerds and designated client stakeholders.
+              By accessing or utilizing the FixOps platform (&quot;Service&quot;), operated by Lazy Nerds (&quot;Lazy Nerds&quot;), you acknowledge and agree to be bound by these Terms and Conditions. Access is granted solely to authorized representatives of Lazy Nerds and designated client stakeholders.
             </p>
           </section>
 
@@ -63,7 +63,7 @@ export default function TermsPage() {
               <span>3. Explicit Testing Authorization Boundary</span>
             </h2>
             <p className="text-zinc-300">
-              <strong>CRITICAL CYBERSECURITY COVENANT:</strong> The inclusion or storage of an organization name, domain, URL, or IP address within the FixOps Client Manager does <strong>NOT</strong> constitute legal consent, authorization, or authorization of engagement to perform penetration testing, vulnerability scanning, security probing, or intrusive security assessments.
+              <strong>CRITICAL CYBERSECURITY COVENANT:</strong> The inclusion or storage of an organization name, domain, URL, or IP address within the FixOps platform does <strong>NOT</strong> constitute legal consent, authorization, or authorization of engagement to perform penetration testing, vulnerability scanning, security probing, or intrusive security assessments.
             </p>
             <p className="text-zinc-400 mt-1">
               Active security testing requires a separate, mutually executed Master Services Agreement (MSA), a formal Statement of Work (SOW), and a signed Rules of Engagement (ROE) document with verified infrastructure ownership attestation.
@@ -106,16 +106,16 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-zinc-100">8. Governing Law and Jurisdiction</h2>
             <p>
-              These Terms shall be governed by and construed in accordance with the laws of [APPLICABLE JURISDICTION: State/Country], without regard to its conflict of law principles.
+              These Terms shall be governed by and construed in accordance with applicable cybersecurity regulations and standard commercial laws, without regard to conflict of law principles.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-zinc-100">9. Contact Information</h2>
             <div className="p-3 rounded bg-zinc-900 border border-zinc-800 font-mono text-[11px] text-zinc-300">
-              <div>Legal Counsel: [LEGAL COUNSEL CONTACT]</div>
+              <div>Legal Department: Lazy Nerds Compliance & Counsel</div>
               <div>Inquiries: legal@lazynerds.com</div>
-              <div>Entity: Lazy Nerds FixOps Division</div>
+              <div>Entity: Lazy Nerds Cybersecurity Operations</div>
             </div>
           </section>
         </div>
@@ -128,8 +128,8 @@ export default function TermsPage() {
               Privacy Policy
             </Link>
             <span>•</span>
-            <Link href="/clients" className="hover:text-zinc-300 hover:underline">
-              Workspace
+            <Link href="/overview" className="hover:text-zinc-300 hover:underline">
+              Workspace Overview
             </Link>
           </div>
         </div>

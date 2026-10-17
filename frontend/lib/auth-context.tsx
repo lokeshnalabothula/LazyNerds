@@ -41,7 +41,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await api.login(email, password);
       setUser(result.user);
-      router.push("/clients");
+
+      // Redirect to overview landing page by default, or to safe preserved redirect path
+      let targetPath = "/overview";
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectParam = urlParams.get("redirect");
+        if (
+          redirectParam &&
+          redirectParam.startsWith("/") &&
+          !redirectParam.startsWith("//") &&
+          redirectParam !== "/login"
+        ) {
+          targetPath = redirectParam;
+        }
+      }
+      router.push(targetPath);
     } finally {
       setLoading(false);
     }

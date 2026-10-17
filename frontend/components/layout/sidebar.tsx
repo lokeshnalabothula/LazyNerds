@@ -27,49 +27,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
       name: "Overview",
       href: "/overview",
       icon: LayoutDashboard,
-      status: "active",
     },
     {
       name: "Clients",
       href: "/clients",
       icon: Users,
-      status: "active",
     },
     {
       name: "Engagements",
       href: "/engagements",
       icon: Layers,
-      status: "active",
     },
     {
       name: "Assets",
       href: "/assets",
       icon: Shield,
-      status: "active",
     },
     {
       name: "Findings",
       href: "/findings",
       icon: FileCheck2,
-      status: "active",
     },
     {
       name: "Automation",
       href: "/automation",
       icon: Zap,
-      status: "active",
     },
     {
       name: "Reports",
       href: "/reports",
       icon: PieChart,
-      status: "active",
     },
     {
       name: "Settings",
       href: "/settings",
       icon: Settings,
-      status: "active",
     },
   ];
 
@@ -77,8 +69,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
     <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950 flex flex-col h-full select-none">
       {/* Brand Header */}
       <div className="h-14 border-b border-zinc-200 dark:border-zinc-800 px-4 flex items-center justify-between">
-        <Link href="/overview" className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-900 font-mono text-xs font-bold">
+        <Link href="/overview" onClick={onNavigate} className="flex items-center gap-2.5 group">
+          <div className="h-7 w-7 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-900 font-mono text-xs font-bold shadow-xs transition-transform group-hover:scale-105">
             LN
           </div>
           <div className="flex flex-col">
@@ -94,35 +86,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <div className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+        <div className="px-2.5 pb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
           Core Workspace
         </div>
 
         {navigationItems.map((item) => {
           const isActive =
-            pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+            pathname === item.href ||
+            (item.href !== "/" && item.href !== "/overview" && pathname.startsWith(item.href)) ||
+            (item.href === "/overview" && (pathname === "/overview" || pathname === "/"));
 
           return (
             <Link
               key={item.name}
               href={item.href}
               onClick={onNavigate}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+                "flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium min-h-[38px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
                 isActive
-                  ? "bg-zinc-200/70 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 shadow-xs"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  ? "bg-zinc-200/80 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 font-semibold shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900/60"
               )}
             >
               <item.icon
                 className={cn(
-                  "h-4 w-4",
+                  "h-4 w-4 shrink-0 transition-colors",
                   isActive
                     ? "text-brand-600 dark:text-brand-400"
                     : "text-zinc-400 dark:text-zinc-500"
                 )}
               />
-              <span>{item.name}</span>
+              <span className="truncate">{item.name}</span>
             </Link>
           );
         })}
@@ -135,6 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
           <div className="flex items-center gap-2">
             <Link
               href="/privacy"
+              onClick={onNavigate}
               className="hover:text-zinc-900 dark:hover:text-zinc-200 hover:underline"
             >
               Privacy
@@ -142,6 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
             <span>•</span>
             <Link
               href="/terms"
+              onClick={onNavigate}
               className="hover:text-zinc-900 dark:hover:text-zinc-200 hover:underline"
             >
               Terms

@@ -140,9 +140,9 @@ export default function AutomationPage() {
 
             <div className="divide-y divide-amber-500/20">
               {pendingApprovals.map((exec) => (
-                <div key={exec.id} className="py-2.5 flex items-center justify-between gap-4 text-xs">
-                  <div>
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                <div key={exec.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0">
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100 block truncate">
                       {exec.rule_name || "Workflow Rule"}
                     </span>
                     <div className="text-[11px] text-zinc-500 font-mono mt-0.5">
@@ -154,17 +154,17 @@ export default function AutomationPage() {
                     <button
                       onClick={() => handleApproval(exec.id, "approve")}
                       disabled={actionLoadingId === exec.id}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-xs min-h-[34px]"
                     >
-                      {actionLoadingId === exec.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                      {actionLoadingId === exec.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                       <span>Approve</span>
                     </button>
                     <button
                       onClick={() => handleApproval(exec.id, "reject")}
                       disabled={actionLoadingId === exec.id}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-medium"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-medium min-h-[34px]"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-3.5 w-3.5" />
                       <span>Reject</span>
                     </button>
                   </div>
@@ -181,15 +181,15 @@ export default function AutomationPage() {
           </h2>
 
           {loading && rules.length === 0 ? (
-            <div className="h-32 flex items-center justify-center text-zinc-400">
-              <Loader2 className="h-5 w-5 animate-spin mr-2 text-brand-500" />
-              <span className="text-xs font-mono">Loading workflow rules...</span>
+            <div className="h-32 flex flex-col items-center justify-center gap-2 text-zinc-400">
+              <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+              <span className="text-xs font-mono">Loading automation policies…</span>
             </div>
           ) : rules.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg">
-              <Zap className="h-6 w-6 text-zinc-400 mx-auto mb-2" />
-              <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">No automation rules configured</p>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
+            <div className="p-8 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
+              <Zap className="h-6 w-6 text-zinc-400 mx-auto mb-2 opacity-60" />
+              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">No automation rules configured</p>
+              <p className="text-[11px] text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
                 Create event-driven workflows to automate remediation assignment, notifications, and reporting.
               </p>
             </div>

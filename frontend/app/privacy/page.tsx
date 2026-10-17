@@ -104,7 +104,7 @@ export default function PrivacyPolicyPage() {
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-zinc-100">6. Hosting and Subprocessors</h2>
             <p>
-              Data is persisted in dedicated PostgreSQL relational databases hosted in restricted cloud environments [HOSTING PROVIDER PLACEHOLDER: AWS / DigitalOcean / Supabase / Self-hosted Linux VPC in [HOSTING REGION]]. Subprocessors are restricted to infrastructure providers under strict confidentiality agreements.
+              Data is persisted in dedicated relational databases hosted in restricted cloud environments (Neon Serverless PostgreSQL). Subprocessors are restricted to enterprise cloud infrastructure providers under strict confidentiality and security agreements.
             </p>
           </section>
 
@@ -121,9 +121,9 @@ export default function PrivacyPolicyPage() {
               For inquiries regarding personal contact information, record corrections, or erasure under applicable data protection laws, contact:
             </p>
             <div className="p-3 rounded bg-zinc-900 border border-zinc-800 font-mono text-[11px] text-zinc-300">
-              <div>Privacy Officer: [LEGAL PRIVACY OFFICER NAME]</div>
+              <div>Privacy Operations: Data Protection & Security Team</div>
               <div>Email: privacy@lazynerds.com</div>
-              <div>Entity: Lazy Nerds, [REGISTERED JURISDICTION ADDRESS]</div>
+              <div>Entity: Lazy Nerds Cybersecurity Operations</div>
             </div>
           </section>
         </div>
@@ -136,8 +136,8 @@ export default function PrivacyPolicyPage() {
               Terms of Service
             </Link>
             <span>•</span>
-            <Link href="/clients" className="hover:text-zinc-300 hover:underline">
-              Workspace
+            <Link href="/overview" className="hover:text-zinc-300 hover:underline">
+              Workspace Overview
             </Link>
           </div>
         </div>

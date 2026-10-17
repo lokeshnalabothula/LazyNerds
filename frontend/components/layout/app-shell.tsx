@@ -29,7 +29,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-          <span className="text-xs text-zinc-500 font-mono">Authenticating FixOps session...</span>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">Preparing your security workspace…</span>
         </div>
       </div>
     );
@@ -50,10 +50,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-black/60"
+            className="fixed inset-0 bg-black/60 transition-opacity"
             onClick={() => setMobileNavOpen(false)}
+            aria-label="Close navigation overlay"
           />
-          <div className="relative w-64 max-w-[80vw] h-full z-10 bg-zinc-50 dark:bg-zinc-950">
+          <div className="relative w-64 max-w-[85vw] h-full z-10 bg-zinc-50 dark:bg-zinc-950 shadow-2xl">
             <Sidebar onNavigate={() => setMobileNavOpen(false)} />
           </div>
         </div>
@@ -65,7 +66,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
           title={title}
           onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)}
         />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-5 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

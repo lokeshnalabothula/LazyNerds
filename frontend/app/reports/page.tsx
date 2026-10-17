@@ -58,7 +58,7 @@ export default function ReportsPage() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium transition-colors shadow-xs min-h-[36px]"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Generate Report</span>
@@ -67,20 +67,20 @@ export default function ReportsPage() {
 
         {/* Reports List */}
         {loading && reports.length === 0 ? (
-          <div className="h-64 flex items-center justify-center text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500 mr-2" />
-            <span className="text-xs font-mono">Loading report deliverables...</span>
+          <div className="h-64 flex flex-col items-center justify-center gap-3 text-zinc-400">
+            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+            <span className="text-xs font-mono">Loading report deliverables…</span>
           </div>
         ) : reports.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg">
-            <PieChart className="h-8 w-8 text-zinc-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">No assessment reports generated</p>
-            <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
+          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
+            <PieChart className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No assessment reports generated</p>
+            <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
               Generate executive and technical assessment reports summarizing real findings, scoping boundaries, and remediation progress.
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium"
+              className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium min-h-[36px]"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Generate First Report</span>

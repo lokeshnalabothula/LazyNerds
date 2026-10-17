@@ -75,7 +75,7 @@ export const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
         </div>
 
         <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-          Archiving excludes this organization from active directory queries. All historical data, primary contact records, and future scope links will remain intact in PostgreSQL. You can restore this client at any time from the Archived filter.
+          Archiving excludes this organization from active directory queries. All historical data, primary contact records, and linked scope will remain safely preserved. You can restore this client at any time from the Archived filter.
         </p>
 
         {error && (

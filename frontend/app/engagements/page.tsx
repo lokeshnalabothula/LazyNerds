@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
+import { useViewMode } from "@/lib/use-view-mode";
 import {
   Engagement,
   ASSESSMENT_TYPE_OPTIONS,
@@ -64,25 +65,8 @@ function EngagementsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // View Layout Mode (Cards vs Table) with localStorage persistence
-  type ViewMode = "table" | "cards";
-  const [viewMode, setViewMode] = useState<ViewMode>("cards");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("fixops_engagement_view_mode") as ViewMode | null;
-      if (saved === "table" || saved === "cards") {
-        setViewMode(saved);
-      }
-    } catch (_) {}
-  }, []);
-
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
-    try {
-      localStorage.setItem("fixops_engagement_view_mode", mode);
-    } catch (_) {}
-  };
+  // View Layout Mode (Cards vs Table) with device-aware screen defaults and saved user preference
+  const { viewMode, setViewMode } = useViewMode("fixops_engagement_view_mode", 1024);
 
   const fetchEngagements = useCallback(async () => {
     setIsLoading(true);
@@ -218,12 +202,13 @@ function EngagementsContent() {
             >
               <button
                 type="button"
-                onClick={() => handleViewModeChange("cards")}
+                onClick={() => setViewMode("cards")}
                 aria-pressed={viewMode === "cards"}
                 title="Switch to Card View"
-                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                aria-label="Switch to Card View"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "cards"
-                    ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
+                    ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                 }`}
               >
@@ -232,12 +217,13 @@ function EngagementsContent() {
               </button>
               <button
                 type="button"
-                onClick={() => handleViewModeChange("table")}
+                onClick={() => setViewMode("table")}
                 aria-pressed={viewMode === "table"}
                 title="Switch to List / Table View"
-                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                aria-label="Switch to List / Table View"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs"
+                    ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
                     : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                 }`}
               >

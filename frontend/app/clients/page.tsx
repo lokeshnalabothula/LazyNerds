@@ -11,6 +11,7 @@ import { Modal } from "@/components/ui/modal";
 import { ClientForm } from "@/components/clients/client-form";
 import { ArchiveDialog } from "@/components/clients/archive-dialog";
 import { api } from "@/lib/api";
+import { useViewMode } from "@/lib/use-view-mode";
 import { Client, ClientCreateInput } from "@/types/client";
 import { formatDate, formatDateTime, formatRelativeTime } from "@/lib/utils";
 import {
@@ -64,25 +65,8 @@ function ClientsContent() {
   const [clientToArchive, setClientToArchive] = useState<Client | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
-  // View Layout Mode (List vs Cards) with hydration-safe preference persistence
-  type ViewMode = "table" | "cards";
-  const [viewMode, setViewMode] = useState<ViewMode>("cards");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("fixops_client_view_mode") as ViewMode | null;
-      if (saved === "table" || saved === "cards") {
-        setViewMode(saved);
-      }
-    } catch (_) {}
-  }, []);
-
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
-    try {
-      localStorage.setItem("fixops_client_view_mode", mode);
-    } catch (_) {}
-  };
+  // View Layout Mode (List vs Cards) with device-aware screen defaults and saved user preference
+  const { viewMode, setViewMode } = useViewMode("fixops_client_view_mode", 1024);
 
   // Fetch clients from API
   const fetchClients = useCallback(async () => {
@@ -258,14 +242,14 @@ function ClientsContent() {
             <div
               role="group"
               aria-label="Directory view mode"
-              className="inline-flex rounded-md border border-zinc-200 dark:border-zinc-800 p-0.5 bg-zinc-100 dark:bg-zinc-900 text-xs"
+              className="inline-flex rounded-md border border-zinc-200 dark:border-zinc-800 p-0.5 bg-zinc-100 dark:bg-zinc-900 text-xs shrink-0"
             >
               <button
                 type="button"
-                onClick={() => handleViewModeChange("table")}
+                onClick={() => setViewMode("table")}
                 aria-label="Switch to list view"
                 aria-pressed={viewMode === "table"}
-                className={`px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 ${
+                className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "table"
                     ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -276,10 +260,10 @@ function ClientsContent() {
               </button>
               <button
                 type="button"
-                onClick={() => handleViewModeChange("cards")}
+                onClick={() => setViewMode("cards")}
                 aria-label="Switch to card view"
                 aria-pressed={viewMode === "cards"}
-                className={`px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 ${
+                className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
                   viewMode === "cards"
                     ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -297,7 +281,7 @@ function ClientsContent() {
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
               <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-              <span className="text-xs font-mono">Querying PostgreSQL client records...</span>
+              <span className="text-xs font-mono">Loading client directory…</span>
             </div>
           ) : error ? (
             <div className="py-16 text-center space-y-3 px-4">

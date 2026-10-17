@@ -21,6 +21,8 @@ import {
   Loader2,
   Check,
   X,
+  ShieldAlert,
+  Inbox,
 } from "lucide-react";
 
 export default function OverviewPage() {
@@ -36,7 +38,7 @@ export default function OverviewPage() {
       const data = await api.getOverviewMetrics();
       setMetrics(data);
     } catch (err: any) {
-      setError(err.message || "Failed to load dashboard metrics.");
+      setError(err.message || "Failed to load dashboard metrics. Please verify connectivity.");
     } finally {
       setLoading(false);
     }
@@ -52,161 +54,220 @@ export default function OverviewPage() {
       await api.approveExecution(executionId, action);
       await fetchMetrics();
     } catch (err: any) {
-      alert(`Action failed: ${err.message}`);
+      alert(`Approval operation failed: ${err.message}`);
     } finally {
       setApprovingId(null);
     }
   };
 
+  const isInitialPlatform =
+    metrics &&
+    metrics.clients_total === 0 &&
+    metrics.engagements_total === 0 &&
+    metrics.assets_total === 0 &&
+    metrics.findings_total === 0;
+
   return (
     <AppShell title="Platform Overview">
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6 max-w-7xl mx-auto">
         {/* Header with Quick Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
-              FixOps Security Orchestration
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+              FixOps Security Operations
             </h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
               Live telemetry and automated cybersecurity workflows calculated from verified database records.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={fetchMetrics}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[36px]"
+              aria-label="Refresh platform telemetry"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh</span>
             </button>
             <Link
               href="/engagements/new"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium transition-colors shadow-xs min-h-[36px]"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>New Engagement</span>
+              <span>Create Engagement</span>
             </Link>
           </div>
         </div>
 
         {error && (
-          <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
-            {error}
+          <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2 min-w-0">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+            <button
+              onClick={fetchMetrics}
+              className="text-xs font-semibold underline shrink-0 hover:text-rose-700 dark:hover:text-rose-300"
+            >
+              Retry
+            </button>
           </div>
         )}
 
         {loading && !metrics ? (
-          <div className="h-64 flex items-center justify-center text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500 mr-2" />
-            <span className="text-xs font-mono">Loading platform telemetry...</span>
+          <div className="h-64 flex flex-col items-center justify-center gap-3 text-zinc-400">
+            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+            <span className="text-xs font-mono">Loading security metrics…</span>
           </div>
         ) : metrics ? (
           <>
             {/* Primary Metrics Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <Link
                 href="/clients"
-                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-zinc-500 mb-2">
-                  <span className="text-[11px] font-medium uppercase tracking-wider">Clients</span>
-                  <Users className="h-4 w-4 text-brand-500" />
+                <div>
+                  <div className="flex items-center justify-between text-zinc-500 mb-2">
+                    <span className="text-[11px] font-medium uppercase tracking-wider">Clients</span>
+                    <Users className="h-4 w-4 text-brand-500" />
+                  </div>
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    {metrics.clients_total}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
-                  {metrics.clients_total}
-                </div>
-                <div className="text-[10px] text-zinc-400 mt-1">
+                <div className="text-[10px] text-zinc-400 mt-2 truncate">
                   {metrics.clients_active} active accounts
                 </div>
               </Link>
 
               <Link
                 href="/engagements"
-                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-zinc-500 mb-2">
-                  <span className="text-[11px] font-medium uppercase tracking-wider">Engagements</span>
-                  <Layers className="h-4 w-4 text-indigo-500" />
+                <div>
+                  <div className="flex items-center justify-between text-zinc-500 mb-2">
+                    <span className="text-[11px] font-medium uppercase tracking-wider">Engagements</span>
+                    <Layers className="h-4 w-4 text-indigo-500" />
+                  </div>
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    {metrics.engagements_total}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
-                  {metrics.engagements_total}
-                </div>
-                <div className="text-[10px] text-zinc-400 mt-1">
+                <div className="text-[10px] text-zinc-400 mt-2 truncate">
                   {metrics.engagements_active} ongoing
                 </div>
               </Link>
 
               <Link
                 href="/assets"
-                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-zinc-500 mb-2">
-                  <span className="text-[11px] font-medium uppercase tracking-wider">Assets</span>
-                  <Shield className="h-4 w-4 text-emerald-500" />
+                <div>
+                  <div className="flex items-center justify-between text-zinc-500 mb-2">
+                    <span className="text-[11px] font-medium uppercase tracking-wider">Assets</span>
+                    <Shield className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    {metrics.assets_total}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
-                  {metrics.assets_total}
-                </div>
-                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-2 truncate">
                   {metrics.assets_in_scope} in-scope
                 </div>
               </Link>
 
               <Link
                 href="/findings?status=open"
-                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-zinc-500 mb-2">
-                  <span className="text-[11px] font-medium uppercase tracking-wider">Open Findings</span>
-                  <FileCheck2 className="h-4 w-4 text-amber-500" />
+                <div>
+                  <div className="flex items-center justify-between text-zinc-500 mb-2">
+                    <span className="text-[11px] font-medium uppercase tracking-wider">Open Findings</span>
+                    <FileCheck2 className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    {metrics.findings_open}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
-                  {metrics.findings_open}
-                </div>
-                <div className="text-[10px] text-zinc-400 mt-1">
+                <div className="text-[10px] text-zinc-400 mt-2 truncate">
                   {metrics.findings_total} total recorded
                 </div>
               </Link>
 
               <Link
                 href="/findings?status=verified_fixed"
-                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-zinc-500 mb-2">
-                  <span className="text-[11px] font-medium uppercase tracking-wider">Remediated</span>
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <div>
+                  <div className="flex items-center justify-between text-zinc-500 mb-2">
+                    <span className="text-[11px] font-medium uppercase tracking-wider">Remediated</span>
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                    {metrics.findings_verified_fixed}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                  {metrics.findings_verified_fixed}
-                </div>
-                <div className="text-[10px] text-zinc-400 mt-1">
+                <div className="text-[10px] text-zinc-400 mt-2 truncate">
                   {metrics.findings_in_remediation} in progress
                 </div>
               </Link>
 
               <Link
                 href="/automation"
-                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
+                className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-zinc-500 mb-2">
-                  <span className="text-[11px] font-medium uppercase tracking-wider">Automations</span>
-                  <Zap className="h-4 w-4 text-amber-500" />
+                <div>
+                  <div className="flex items-center justify-between text-zinc-500 mb-2">
+                    <span className="text-[11px] font-medium uppercase tracking-wider">Automations</span>
+                    <Zap className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    {metrics.automation_executions_total}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
-                  {metrics.automation_executions_total}
-                </div>
-                <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">
+                <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-2 truncate">
                   {metrics.pending_approvals_total} pending approvals
                 </div>
               </Link>
             </div>
 
-            {/* Severity Distribution & Automation Action Center */}
+            {/* Empty Platform Guidance (when workspace has no items yet) */}
+            {isInitialPlatform && (
+              <div className="p-6 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 text-center space-y-3">
+                <Inbox className="h-8 w-8 text-zinc-400 mx-auto" />
+                <div className="space-y-1">
+                  <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Welcome to Your Security Operations Workspace
+                  </h2>
+                  <p className="text-xs text-zinc-500 max-w-md mx-auto leading-relaxed">
+                    Get started by registering a client organization, defining authorized scope boundaries, and launching your first security assessment.
+                  </p>
+                </div>
+                <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                  <Link
+                    href="/clients"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Register First Client</span>
+                  </Link>
+                  <Link
+                    href="/engagements/new"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    <span>Create Engagement</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Severity Distribution & Activity Center */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Finding Severity Distribution */}
-              <div className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 lg:col-span-1">
+              <div className="p-4 sm:p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 lg:col-span-1 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                     Finding Severity Breakdown
@@ -251,8 +312,8 @@ export default function OverviewPage() {
                 </div>
               </div>
 
-              {/* Pending Approvals & Activity Feed */}
-              <div className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 lg:col-span-2">
+              {/* Audit Trail & Recent Activity */}
+              <div className="p-4 sm:p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 lg:col-span-2 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                     Audit Trail & Recent Activity
@@ -269,23 +330,23 @@ export default function OverviewPage() {
                 <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                   {metrics.recent_activity.length === 0 ? (
                     <div className="py-8 text-center text-xs text-zinc-400">
-                      No activity recorded yet.
+                      No security operations recorded yet. Activity will appear here as assessments and scans are dispatched.
                     </div>
                   ) : (
                     metrics.recent_activity.slice(0, 6).map((log) => (
-                      <div key={log.id} className="py-2.5 flex items-start justify-between gap-3 text-xs">
-                        <div className="flex items-start gap-2">
+                      <div key={log.id} className="py-2.5 flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-3 text-xs">
+                        <div className="flex items-start gap-2 min-w-0">
                           <Clock className="h-3.5 w-3.5 text-zinc-400 shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-semibold text-zinc-900 dark:text-zinc-100 font-mono text-[11px]">
+                          <div className="min-w-0">
+                            <span className="font-semibold text-zinc-900 dark:text-zinc-100 font-mono text-[11px] block truncate">
                               {log.action}
                             </span>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-[11px] mt-0.5">
+                            <p className="text-zinc-500 dark:text-zinc-400 text-[11px] mt-0.5 break-words">
                               {log.details || `Operation on ${log.resource_type}`}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right text-[10px] text-zinc-400 font-mono shrink-0">
+                        <div className="text-left sm:text-right text-[10px] text-zinc-400 font-mono shrink-0 pl-5 sm:pl-0">
                           {formatDateTime(log.created_at)}
                         </div>
                       </div>

@@ -118,7 +118,7 @@ cp .env.example .env
      ```
 4. Create the initial authorized staff account:
    ```bash
-   python -m app.cli create-user --email founder@lazynerds.com --password "AdminFixOps2026!" --name "Lazy Nerds Founder"
+   python -m app.cli create-user --email founder@lazynerds.com --password "<your_secure_password>" --name "Lazy Nerds Founder"
    ```
 5. *(Optional)* Seed demonstration client data:
    ```bash
@@ -145,9 +145,9 @@ cp .env.example .env
    ```
    *The frontend workspace will be live at `http://localhost:3000`.*
 
-3. Navigate to `http://localhost:3000/login` and log in with:
+3. Navigate to `http://localhost:3000/login` and log in with your configured administrator email and password:
    - **Email:** `founder@lazynerds.com`
-   - **Password:** `AdminFixOps2026!`
+   - **Password:** `<your_configured_password>`
 
 ---
 

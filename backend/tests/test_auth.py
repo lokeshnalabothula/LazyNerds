@@ -56,3 +56,41 @@ def test_logout(client):
     response = client.post("/api/v1/auth/logout")
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["message"] == "Successfully signed out."
+
+
+def test_change_password_success(auth_client, test_user):
+    """Tests changing password with correct current password."""
+    response = auth_client.post(
+        "/api/v1/auth/change-password",
+        json={
+            "current_password": "TestPassword2026!",
+            "new_password": "NewSecurePassword2026!#"
+        }
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert "Password updated successfully" in response.json()["message"]
+
+
+def test_change_password_invalid_current(auth_client, test_user):
+    """Tests 400 rejection when current password does not match."""
+    response = auth_client.post(
+        "/api/v1/auth/change-password",
+        json={
+            "current_password": "IncorrectCurrentPassword!",
+            "new_password": "NewSecurePassword2026!#"
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Current password verification failed" in response.json()["detail"]
+
+
+def test_change_password_too_short(auth_client, test_user):
+    """Tests 422 rejection when new password is too short."""
+    response = auth_client.post(
+        "/api/v1/auth/change-password",
+        json={
+            "current_password": "TestPassword2026!",
+            "new_password": "short"
+        }
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY or response.status_code == 422

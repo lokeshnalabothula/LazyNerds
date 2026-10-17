@@ -43,3 +43,18 @@ def create_user(db: Session, user_in: UserCreate) -> User:
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def change_user_password(db: Session, user: User, current_password: str, new_password: str) -> User:
+    """Verifies current password and updates to new bcrypt hashed password."""
+    if not verify_password(current_password, user.hashed_password):
+        raise ValueError("Current password verification failed.")
+
+    if len(new_password) < 10:
+        raise ValueError("New password must be at least 10 characters long.")
+
+    user.hashed_password = hash_password(new_password)
+    user.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)
+    return user

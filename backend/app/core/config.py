@@ -51,7 +51,7 @@ class Settings(BaseSettings):
 
     # Initial Admin Seed (used ONLY in non-production environments when DB is empty)
     INITIAL_ADMIN_EMAIL: str = "founder@lazynerds.com"
-    INITIAL_ADMIN_PASSWORD: str = "AdminFixOps2026!"
+    INITIAL_ADMIN_PASSWORD: str = os.getenv("INITIAL_ADMIN_PASSWORD", "dev-temporary-seed-only")
     INITIAL_ADMIN_NAME: str = "Lazy Nerds Founder"
 
     @field_validator("DATABASE_URL", "DATABASE_URL_UNPOOLED", mode="before")

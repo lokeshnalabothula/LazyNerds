@@ -70,3 +70,5 @@ Icon
 *.swo
 *~
 .neon
+*.local.txt
+.credentials*

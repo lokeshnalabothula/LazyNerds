@@ -140,6 +140,13 @@ export const api = {
     return request<User>("/auth/me");
   },
 
+  async changePassword(current_password: string, new_password: string): Promise<{ message: string }> {
+    return request<{ message: string }>("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ current_password, new_password }),
+    });
+  },
+
   // Clients
   async getClients(params: {
     page?: number;

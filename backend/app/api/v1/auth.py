@@ -6,7 +6,8 @@ from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.auth import LoginRequest, TokenResponse, UserOut
+from app.schemas.auth import ChangePasswordRequest, LoginRequest, TokenResponse, UserOut
+from app.services import auth_service, audit_service
 from app.services.auth_service import authenticate_user
 
 router = APIRouter()
@@ -69,3 +70,33 @@ def logout(response: Response):
         samesite="lax",
     )
     return {"message": "Successfully signed out."}
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+def change_password(
+    data: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Securely updates the authenticated user's password."""
+    try:
+        auth_service.change_user_password(
+            db=db,
+            user=current_user,
+            current_password=data.current_password,
+            new_password=data.new_password,
+        )
+        audit_service.log_audit(
+            db=db,
+            user_email=current_user.email,
+            action="CHANGE_PASSWORD",
+            resource_type="user",
+            resource_id=current_user.id,
+            details=f"User '{current_user.email}' updated their account password.",
+        )
+        return {"message": "Password updated successfully."}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )

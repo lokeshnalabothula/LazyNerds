@@ -9,12 +9,14 @@ export const metadata: Metadata = {
     "Cybersecurity automation platform: client management, continuous engagement operations, verified vulnerability remediation, and automated security reporting.",
   icons: {
     icon: [
-      { url: "/brand/logo-icon.png", sizes: "128x128", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/brand/logo-icon.png", sizes: "256x256", type: "image/png" },
       { url: "/brand/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/brand/logo.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/brand/logo-icon.png",
-    apple: "/brand/logo.png",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: "Lazy Nerds FixOps — Automated Cybersecurity & Remediation Platform",

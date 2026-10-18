@@ -31,14 +31,14 @@ export const FixOpsAppLoader: React.FC<AppLoaderProps> = ({
         {/* Official Brand Mascot with Electric-Lime Cyber Ring */}
         <div className="relative group">
           <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-brand-500/20 via-brand-400/30 to-brand-500/20 blur-md opacity-75 animate-pulse" />
-          <div className="relative h-20 w-20 rounded-2xl border border-brand-500/40 bg-zinc-900/90 p-2 shadow-2xl flex items-center justify-center overflow-hidden">
+          <div className="relative h-24 w-24 rounded-2xl border border-brand-500/40 bg-zinc-900 shadow-2xl flex items-center justify-center overflow-hidden">
             <Image
               src="/brand/logo.png"
               alt="Lazy Nerds FixOps"
-              width={72}
-              height={72}
+              width={96}
+              height={96}
               priority
-              className="object-contain rounded-xl"
+              className="object-cover w-full h-full"
             />
           </div>
         </div>
@@ -74,13 +74,13 @@ export const FixOpsInlineLoader: React.FC<{ label?: string }> = ({
       aria-live="polite"
       className="py-12 flex flex-col items-center justify-center gap-3 text-zinc-400"
     >
-      <div className="relative h-10 w-10 rounded-lg border border-zinc-800 bg-zinc-900/80 p-1 flex items-center justify-center shadow-xs">
+      <div className="relative h-10 w-10 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden">
         <Image
           src="/brand/logo-icon.png"
           alt="FixOps"
-          width={32}
-          height={32}
-          className="object-contain rounded"
+          width={40}
+          height={40}
+          className="object-cover w-full h-full"
         />
         <div className="absolute -inset-0.5 rounded-lg border border-brand-500/40 animate-ping opacity-25" />
       </div>

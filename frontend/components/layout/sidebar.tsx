@@ -94,14 +94,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
       {/* Brand Header */}
       <div className="h-14 border-b border-zinc-200 dark:border-zinc-800 px-4 flex items-center justify-between">
         <Link href="/overview" onClick={onNavigate} className="flex items-center gap-2.5 group">
-          <div className="h-8 w-8 rounded-lg border border-brand-500/30 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105">
+          <div className="h-9 w-9 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105 shrink-0">
             <Image
               src="/brand/logo-icon.png"
               alt="Lazy Nerds"
-              width={32}
-              height={32}
+              width={36}
+              height={36}
               priority
-              className="object-contain"
+              className="object-cover w-full h-full"
             />
           </div>
           <div className="flex flex-col">

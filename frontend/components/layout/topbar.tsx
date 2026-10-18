@@ -130,13 +130,15 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
         </button>
 
         <div className="md:hidden flex items-center shrink-0">
-          <Image
-            src="/brand/logo-icon.png"
-            alt="Lazy Nerds"
-            width={24}
-            height={24}
-            className="rounded object-contain"
-          />
+          <div className="h-8 w-8 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden">
+            <Image
+              src="/brand/logo-icon.png"
+              alt="Lazy Nerds"
+              width={32}
+              height={32}
+              className="object-cover w-full h-full"
+            />
+          </div>
         </div>
 
         {title && (

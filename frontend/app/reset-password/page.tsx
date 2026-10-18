@@ -121,14 +121,14 @@ function ResetPasswordContent() {
       <div className="w-full max-w-sm space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-3">
-          <div className="relative mx-auto w-16 h-16 rounded-2xl border border-brand-500/30 bg-zinc-900/90 p-1.5 shadow-xl flex items-center justify-center overflow-hidden">
+          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200">
             <Image
               src="/brand/logo.png"
               alt="Lazy Nerds"
-              width={56}
-              height={56}
+              width={96}
+              height={96}
               priority
-              className="object-contain rounded-xl"
+              className="object-cover w-full h-full"
             />
           </div>
           <div className="space-y-0.5">

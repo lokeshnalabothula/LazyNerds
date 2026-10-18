@@ -130,7 +130,7 @@ export const Topbar: React.FC<TopbarProps> = ({
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={onToggleMobileNav}
-          className="md:hidden p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="md:hidden p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
           aria-label="Toggle navigation menu"
         >
           <Menu className="h-5 w-5" />
@@ -140,7 +140,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         {onToggleSidebar && (
           <button
             onClick={onToggleSidebar}
-            className="hidden md:flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[36px] min-w-[36px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0"
+            className="hidden md:flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[36px] min-w-[36px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] shrink-0"
             title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -153,9 +153,9 @@ export const Topbar: React.FC<TopbarProps> = ({
         )}
 
         <div className="md:hidden flex items-center shrink-0">
-          <div className="h-8 w-8 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden">
+          <div className="h-8 w-8 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs overflow-hidden">
             <Image
-              src="/brand/logo-icon.png"
+              src="/brand/profile.png"
               alt="Lazy Nerds"
               width={32}
               height={32}
@@ -182,28 +182,28 @@ export const Topbar: React.FC<TopbarProps> = ({
                 setIsNotifOpen(!isNotifOpen);
                 if (!isNotifOpen) fetchNotifications();
               }}
-              className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 relative transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 relative transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
               aria-label="Security notifications"
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
                 <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-600"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFD84D] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F5C518]"></span>
                 </span>
               )}
             </button>
 
             {/* Notification Dropdown */}
             {isNotifOpen && (
-              <div className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-auto sm:mt-2 w-[calc(100vw-1rem)] sm:w-96 max-w-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95">
+              <div className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-auto sm:mt-2 w-[calc(100vw-1rem)] sm:w-96 max-w-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#1B1E24] shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95">
                 <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                       Security Notifications
                     </span>
                     {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.5 bg-brand-500/10 text-brand-600 dark:text-brand-400 text-[10px] font-mono rounded font-medium">
+                      <span className="px-1.5 py-0.5 bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] text-[10px] font-mono rounded font-medium">
                         {unreadCount} unread
                       </span>
                     )}
@@ -280,7 +280,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           onClick={toggleFullscreen}
           aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           title={isFullscreen ? "Exit fullscreen mode" : "Enter fullscreen mode (F11)"}
-          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
         >
           {isFullscreen ? (
             <Minimize2 className="h-4 w-4" />
@@ -293,7 +293,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         <button
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
         >
           {theme === "dark" ? (
             <Sun className="h-4 w-4" />
@@ -312,10 +312,10 @@ export const Topbar: React.FC<TopbarProps> = ({
               <span
                 className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded w-fit self-end font-semibold tracking-wider ${
                   user.role === "founder"
-                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                    ? "bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30"
                     : user.role === "client"
-                    ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                    : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    ? "bg-zinc-800 text-zinc-300 border border-zinc-700"
+                    : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                 }`}
               >
                 {user.role}

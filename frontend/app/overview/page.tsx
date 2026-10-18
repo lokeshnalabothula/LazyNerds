@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -70,28 +71,40 @@ export default function OverviewPage() {
   return (
     <AppShell title="Platform Overview">
       <div className="space-y-6 max-w-7xl mx-auto pb-16">
-        {/* Top Operations Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4">
-          <div className="space-y-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="flex h-2 w-2 relative shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <h1 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
-                {isClient
-                  ? "ORGANIZATION SECURITY POSTURE"
-                  : "CYBERSECURITY OPERATIONS CENTER"}
-              </h1>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 shrink-0">
-                {user?.role || "Active"} Mode
-              </span>
+        {/* Top Operations Header with Brand Emblem */}
+        <div className="rounded-xl border border-[#F5C518]/25 bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-[#F5C518]/30 bg-[#1B1E24] flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+              <Image
+                src="/brand/profile.png"
+                alt="Lazy Nerds"
+                width={56}
+                height={56}
+                priority
+                className="object-cover w-full h-full"
+              />
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              {isClient
-                ? "Real-time vulnerability tracking, automated remediation status, and verified compliance audit logs for your assets."
-                : "Continuous telemetry, tenant isolation, and automated remediation pipeline calculated from live database records."}
-            </p>
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="flex h-2 w-2 relative shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFD84D] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F5C518]"></span>
+                </span>
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+                  {isClient
+                    ? "ORGANIZATION SECURITY POSTURE"
+                    : "CYBERSECURITY OPERATIONS CENTER"}
+                </h1>
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 shrink-0 font-bold">
+                  {user?.role || "Active"} Mode
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
+                {isClient
+                  ? "Real-time vulnerability tracking, automated remediation status, and verified compliance audit logs for your assets."
+                  : "Continuous telemetry, tenant isolation, and automated remediation pipeline calculated from live database records."}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -100,14 +113,14 @@ export default function OverviewPage() {
               size="sm"
               onClick={fetchMetrics}
               disabled={loading}
-              className="text-xs h-9 gap-1.5"
+              className="text-xs h-9 gap-1.5 border-[#E2E3E0] dark:border-[#262A32] hover:border-[#F5C518]/50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh Telemetry</span>
             </Button>
             {!isClient && (
               <Link href="/engagements/new">
-                <Button size="sm" className="text-xs h-9 gap-1.5 shadow-xs">
+                <Button size="sm" className="text-xs h-9 gap-1.5 shadow-xs font-semibold">
                   <Plus className="h-3.5 w-3.5" />
                   <span>New Engagement</span>
                 </Button>
@@ -190,14 +203,14 @@ export default function OverviewPage() {
 
             {/* Automation Approvals Banner */}
             {hasPendingApprovals && !isClient && (
-              <div className="p-3.5 rounded-xl border border-blue-500/30 bg-blue-950/20 text-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-3.5 rounded-xl border border-[#F5C518]/30 bg-[#F5C518]/10 text-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <Zap className="h-4 w-4 text-blue-400 shrink-0" />
+                  <Zap className="h-4 w-4 text-[#F5C518] shrink-0" />
                   <p className="text-xs text-zinc-300 min-w-0 truncate">
-                    <strong className="text-blue-300">{metrics.pending_approvals_total} automated execution{metrics.pending_approvals_total > 1 ? "s" : ""}</strong> awaiting human-in-the-loop approval.
+                    <strong className="text-[#FFD84D]">{metrics.pending_approvals_total} automated execution{metrics.pending_approvals_total > 1 ? "s" : ""}</strong> awaiting human-in-the-loop approval.
                   </p>
                 </div>
-                <Link href="/automation" className="shrink-0 text-xs text-blue-400 hover:text-blue-300 underline font-medium">
+                <Link href="/automation" className="shrink-0 text-xs text-[#F5C518] hover:text-[#FFD84D] underline font-semibold">
                   Review Approvals &rarr;
                 </Link>
               </div>
@@ -437,7 +450,7 @@ export default function OverviewPage() {
 
                 <Link
                   href="/reports"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-blue-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
                     <FileText className="h-4 w-4 text-blue-500" />

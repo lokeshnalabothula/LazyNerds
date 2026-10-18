@@ -76,14 +76,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               t.type === "warning" &&
                 "bg-zinc-900/95 border-amber-500/30 text-zinc-100 dark:bg-zinc-950/95",
               t.type === "info" &&
-                "bg-zinc-900/95 border-blue-500/30 text-zinc-100 dark:bg-zinc-950/95"
+                "bg-zinc-900/95 border-[#F5C518]/40 text-zinc-100 dark:bg-[#1B1E24]/95"
             )}
           >
             <div className="shrink-0 mt-0.5">
               {t.type === "success" && <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
               {t.type === "error" && <AlertCircle className="h-4 w-4 text-rose-400" />}
               {t.type === "warning" && <AlertTriangle className="h-4 w-4 text-amber-400" />}
-              {t.type === "info" && <Info className="h-4 w-4 text-blue-400" />}
+              {t.type === "info" && <Info className="h-4 w-4 text-[#F5C518]" />}
             </div>
 
             <div className="flex-1 min-w-0 space-y-0.5">

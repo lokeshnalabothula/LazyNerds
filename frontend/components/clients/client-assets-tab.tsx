@@ -70,7 +70,7 @@ export const ClientAssetsTab: React.FC<ClientAssetsTabProps> = ({ client }) => {
             setAssetToEdit(null);
             setIsModalOpen(true);
           }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors shadow-xs"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>Add Asset</span>
@@ -79,7 +79,7 @@ export const ClientAssetsTab: React.FC<ClientAssetsTabProps> = ({ client }) => {
 
       {loading ? (
         <div className="py-12 flex justify-center text-zinc-400">
-          <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+          <Loader2 className="h-5 w-5 animate-spin text-[#F5C518]" />
         </div>
       ) : assets.length === 0 ? (
         <div className="p-8 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-500 text-xs">

@@ -28,10 +28,10 @@ export const FixOpsAppLoader: React.FC<AppLoaderProps> = ({
       } bg-zinc-950 flex flex-col items-center justify-center p-6 z-50 select-none text-center`}
     >
       <div className="flex flex-col items-center max-w-sm mx-auto space-y-6">
-        {/* Official Brand Mascot with Electric-Lime Cyber Ring */}
+        {/* Official Brand Mascot with Golden Yellow Cyber Ring */}
         <div className="relative group">
-          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-brand-500/20 via-brand-400/30 to-brand-500/20 blur-md opacity-75 animate-pulse" />
-          <div className="relative h-24 w-24 rounded-2xl border border-brand-500/40 bg-zinc-900 shadow-2xl flex items-center justify-center overflow-hidden">
+          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#F5C518]/20 via-[#FFD84D]/30 to-[#F5C518]/20 blur-md opacity-75 animate-pulse" />
+          <div className="relative h-24 w-24 rounded-2xl border border-[#F5C518]/40 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden">
             <Image
               src="/brand/logo.png"
               alt="Lazy Nerds FixOps"
@@ -53,9 +53,9 @@ export const FixOpsAppLoader: React.FC<AppLoaderProps> = ({
           </p>
         </div>
 
-        {/* Technical Electric-Lime Scan Progress Track */}
-        <div className="w-44 h-1 rounded-full bg-zinc-900 overflow-hidden relative border border-zinc-800">
-          <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-transparent via-brand-400 to-transparent w-20 animate-[slide_1.5s_infinite_linear]" />
+        {/* Technical Amber/Yellow Scan Progress Track */}
+        <div className="w-44 h-1 rounded-full bg-[#111318] overflow-hidden relative border border-zinc-800">
+          <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-transparent via-[#F5C518] to-transparent w-20 animate-[slide_1.5s_infinite_linear]" />
         </div>
       </div>
     </div>

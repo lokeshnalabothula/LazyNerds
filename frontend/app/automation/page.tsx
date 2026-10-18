@@ -131,7 +131,7 @@ export default function AutomationPage() {
               setRuleToEdit(null);
               setIsFormOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>New Workflow Rule</span>
@@ -237,7 +237,7 @@ export default function AutomationPage() {
                     <button
                       onClick={() => handleToggleActive(rule)}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
-                        rule.is_active ? "bg-brand-600" : "bg-zinc-300 dark:bg-zinc-700"
+                        rule.is_active ? "bg-[#F5C518]" : "bg-zinc-300 dark:bg-zinc-700"
                       }`}
                       role="switch"
                       aria-checked={rule.is_active}

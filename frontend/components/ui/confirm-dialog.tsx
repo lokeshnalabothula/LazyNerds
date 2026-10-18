@@ -44,7 +44,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               </div>
             )}
             {variant === "primary" && (
-              <div className="h-8 w-8 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-[#F5C518]/15 border border-[#F5C518]/30 text-[#DDAA07] dark:text-[#FFD84D] flex items-center justify-center">
                 <Info className="h-4 w-4" />
               </div>
             )}

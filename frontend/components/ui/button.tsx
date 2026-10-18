@@ -22,11 +22,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:pointer-events-none disabled:opacity-50 select-none text-sm";
+      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] disabled:pointer-events-none disabled:opacity-50 select-none text-sm";
 
     const variantStyles = {
       primary:
-        "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm",
+        "bg-[#F5C518] text-[#111318] hover:bg-[#FFD84D] active:bg-[#DDAA07] font-semibold shadow-xs",
       secondary:
         "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700",
       outline:

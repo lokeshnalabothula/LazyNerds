@@ -124,9 +124,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className="flex items-center gap-2.5 group overflow-hidden"
           title="Lazy Nerds FixOps — Security Operations"
         >
-          <div className="h-9 w-9 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105 shrink-0">
+          <div className="h-9 w-9 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105 shrink-0">
             <Image
-              src="/brand/logo-icon.png"
+              src="/brand/profile.png"
               alt="Lazy Nerds"
               width={36}
               height={36}
@@ -136,10 +136,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           {!isCollapsed && (
             <div className="flex flex-col min-w-0 transition-opacity duration-200">
-              <span className="text-xs font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono truncate">
+              <span className="text-xs font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono truncate flex items-center gap-1.5">
                 LAZY NERDS
+                <span className="h-1.5 w-1.5 rounded-full bg-[#F5C518]" />
               </span>
-              <span className="text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-semibold truncate">
+              <span className="text-[10px] uppercase tracking-wider text-[#B88700] dark:text-[#FFD84D] font-semibold truncate font-mono">
                 FixOps Platform
               </span>
             </div>
@@ -188,12 +189,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
               aria-current={isActive ? "page" : undefined}
               title={isCollapsed ? `${item.name}: ${item.description}` : undefined}
               className={cn(
-                "group relative flex items-center rounded-md text-xs font-medium min-h-[38px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                "group relative flex items-center rounded-md text-xs font-medium min-h-[38px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]",
                 isCollapsed
                   ? "justify-center px-2 py-2"
                   : "gap-2.5 px-3 py-2",
                 isActive
-                  ? "bg-blue-500/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 font-semibold shadow-xs border-l-2 border-blue-600 dark:border-blue-500"
+                  ? "bg-[#F5C518]/10 dark:bg-[#F5C518]/15 text-zinc-900 dark:text-[#FFD84D] font-semibold shadow-xs border-l-2 border-[#F5C518]"
                   : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900/60"
               )}
             >
@@ -201,7 +202,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={cn(
                   "h-4 w-4 shrink-0 transition-colors",
                   isActive
-                    ? "text-blue-600 dark:text-blue-400"
+                    ? "text-[#B88700] dark:text-[#F5C518]"
                     : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
                 )}
               />
@@ -210,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <>
                   <span className="truncate flex-1">{item.name}</span>
                   {"badge" in item && item.badge && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase font-semibold shrink-0">
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 uppercase font-semibold shrink-0">
                       {item.badge}
                     </span>
                   )}

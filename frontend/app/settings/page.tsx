@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -142,6 +143,44 @@ export default function SettingsPage() {
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
             Authenticated operator profile, credential management, audit logging, and platform diagnostics.
           </p>
+        </div>
+
+        {/* Brand & Platform Identity Card */}
+        <div className="rounded-xl border border-[#F5C518]/25 bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="h-12 w-12 rounded-xl border border-[#F5C518]/30 bg-[#1B1E24] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+              <Image
+                src="/brand/profile.png"
+                alt="Lazy Nerds Mascot Emblem"
+                width={48}
+                height={48}
+                priority
+                className="object-cover w-full h-full"
+              />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+                  LAZY NERDS FIXOPS
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
+                  PRODUCTION
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Autonomous Cybersecurity Operations & Vulnerability Remediation Platform
+              </p>
+            </div>
+          </div>
+          <div className="relative h-9 w-40 shrink-0 hidden sm:flex items-center justify-end">
+            <Image
+              src="/brand/title-sm.png"
+              alt="Lazy Nerds Wordmark"
+              width={160}
+              height={36}
+              className="object-contain w-auto h-full opacity-90 hover:opacity-100 transition-opacity"
+            />
+          </div>
         </div>
 
         {/* User Account Card */}

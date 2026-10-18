@@ -52,20 +52,25 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-sm space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-3">
-          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200">
+          <div className="relative mx-auto w-24 h-24 rounded-2xl border border-zinc-800 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200 ring-2 ring-[#F5C518]/30">
             <Image
-              src="/brand/logo.png"
-              alt="Lazy Nerds"
+              src="/brand/profile.png"
+              alt="Lazy Nerds FixOps Mascot"
               width={96}
               height={96}
               priority
               className="object-cover w-full h-full"
             />
           </div>
-          <div className="space-y-0.5">
-            <h1 className="text-base font-semibold tracking-tight text-zinc-100 font-mono">
-              LAZY NERDS FIXOPS
-            </h1>
+          <div className="space-y-1">
+            <div className="flex items-center justify-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-zinc-100 font-mono">
+                LAZY NERDS
+              </h1>
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#F5C518]/15 text-[#F5C518] border border-[#F5C518]/30 tracking-widest">
+                FIXOPS
+              </span>
+            </div>
             <p className="text-xs text-zinc-400">
               Account Recovery & Security Verification
             </p>

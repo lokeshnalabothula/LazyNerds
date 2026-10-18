@@ -361,7 +361,7 @@ function RegistrationsContent() {
                           setSelectedReg(reg);
                           setReviewAction("request_info");
                         }}
-                        className="h-8 text-xs text-blue-400 hover:text-blue-300"
+                        className="h-8 text-xs text-amber-400 hover:text-amber-300"
                       >
                         <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
                         <span>Request Info</span>
@@ -532,7 +532,7 @@ function RegistrationsContent() {
                     placeholder="Detail the target domains, legal authorization, or verification steps needed..."
                     value={reviewReason}
                     onChange={(e) => setReviewReason(e.target.value)}
-                    className="w-full rounded bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-blue-500"
+                    className="w-full rounded bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
                   />
                 </div>
               )}
@@ -559,7 +559,7 @@ function RegistrationsContent() {
                       ? "bg-emerald-600 hover:bg-emerald-500 text-white"
                       : reviewAction === "reject"
                       ? "bg-rose-600 hover:bg-rose-500 text-white"
-                      : "bg-blue-600 hover:bg-blue-500 text-white"
+                      : "bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318]"
                   }`}
                 >
                   Confirm {reviewAction === "approve" ? "Approval" : reviewAction === "reject" ? "Rejection" : "Request"}

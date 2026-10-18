@@ -58,7 +58,7 @@ export const ClientReportsTab: React.FC<ClientReportsTabProps> = ({ client }) =>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium transition-colors shadow-xs"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>Generate Report</span>

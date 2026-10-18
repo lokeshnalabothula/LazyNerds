@@ -331,6 +331,18 @@ def send_password_reset_email(
 
     provider = get_active_email_provider()
 
+    # In production, mock dispatch must not silently pretend live delivery occurred
+    if settings.ENVIRONMENT == "production" and provider not in ("resend", "smtp"):
+        err_msg = "Email delivery service is unconfigured in production. RESEND_API_KEY or SMTP credentials are required."
+        logger.error(f"[EMAIL SERVICE CONFIG ERROR] {err_msg}")
+        return {
+            "success": False,
+            "provider": "unconfigured",
+            "message_id": None,
+            "error": err_msg,
+            "simulated": False,
+        }
+
     try:
         if provider == "resend":
             return _send_via_resend(to_email, subject, html_content, text_content)

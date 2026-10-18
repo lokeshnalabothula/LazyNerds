@@ -193,6 +193,12 @@ def forgot_password(
         details=f"Password recovery requested for {data.email}. Outcome: {email_status}",
     )
 
+    if settings.ENVIRONMENT == "production" and reset_info and not dispatch_result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Password recovery service is temporarily unavailable because email delivery is not yet configured on this environment. Please contact the administrator.",
+        )
+
     return {
         "message": "If an account matches that email address, password recovery instructions have been dispatched."
     }

@@ -145,3 +145,18 @@ def test_email_service_templates_and_dispatch():
     assert result["success"] is True
     assert result["provider"] in ("mock", "resend", "smtp")
 
+
+def test_production_unconfigured_email_fails_safely(client, test_user, monkeypatch):
+    """Verifies that in production mode, an unconfigured email provider returns HTTP 503 instead of deceptive 200."""
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(settings, "RESEND_API_KEY", None)
+    monkeypatch.setattr(settings, "SMTP_HOST", None)
+    monkeypatch.setattr(settings, "EMAIL_PROVIDER", "auto")
+
+    res = client.post("/api/v1/auth/forgot-password", json={"email": test_user.email})
+    assert res.status_code == 503
+    assert "temporarily unavailable" in res.json()["detail"].lower()
+
+

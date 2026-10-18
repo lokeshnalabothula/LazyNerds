@@ -7,6 +7,8 @@ from app.models.automation import AutomationRule, AutomationExecution
 from app.models.report import Report
 from app.models.notification import Notification
 from app.models.audit_log import AuditLog
+from app.models.password_reset import PasswordResetToken
+from app.models.registration import ClientRegistration
 
 __all__ = [
     "Client",
@@ -21,4 +23,6 @@ __all__ = [
     "Report",
     "Notification",
     "AuditLog",
+    "PasswordResetToken",
+    "ClientRegistration",
 ]

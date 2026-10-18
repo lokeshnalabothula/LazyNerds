@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { Notification } from "@/types/notification";
-import { LogOut, Sun, Moon, Menu, Shield, Bell, CheckCheck, ExternalLink, Loader2 } from "lucide-react";
+import { LogOut, Sun, Moon, Menu, Shield, Bell, CheckCheck, ExternalLink, Loader2, Maximize2, Minimize2 } from "lucide-react";
 
 interface TopbarProps {
   onToggleMobileNav?: () => void;
@@ -21,7 +21,28 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isNotifOpen, setIsNotifOpen] = useState<boolean>(false);
   const [loadingNotifs, setLoadingNotifs] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Browser security policy fallback
+    }
+  };
 
   useEffect(() => {
     const savedTheme = (localStorage.getItem("fixops_theme") as "light" | "dark") || "dark";
@@ -229,6 +250,20 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
           </div>
         )}
 
+        {/* Fullscreen Toggle */}
+        <button
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          title={isFullscreen ? "Exit fullscreen mode" : "Enter fullscreen mode (F11)"}
+          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+        >
+          {isFullscreen ? (
+            <Minimize2 className="h-4 w-4" />
+          ) : (
+            <Maximize2 className="h-4 w-4" />
+          )}
+        </button>
+
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
@@ -249,7 +284,15 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
               <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
                 {user.full_name || user.email}
               </span>
-              <span className="text-[10px] text-zinc-400 font-mono capitalize">
+              <span
+                className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded w-fit self-end font-semibold tracking-wider ${
+                  user.role === "founder"
+                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                    : user.role === "client"
+                    ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                    : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                }`}
+              >
                 {user.role}
               </span>
             </div>

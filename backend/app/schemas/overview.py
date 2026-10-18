@@ -14,8 +14,14 @@ class OverviewMetrics(BaseModel):
     findings_open: int
     findings_in_remediation: int
     findings_verified_fixed: int
+    critical_findings_open: int = 0
+    high_findings_open: int = 0
     severity_distribution: Dict[str, int]
     automation_rules_active: int
     automation_executions_total: int
     pending_approvals_total: int
+    recent_failures_total: int = 0
+    pending_registrations_total: int = 0
+    active_assessments_total: int = 0
+    user_role: str = "founder"
     recent_activity: List[AuditLogOut]

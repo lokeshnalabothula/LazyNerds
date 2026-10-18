@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 import {
   Users,
   Shield,
@@ -14,6 +15,7 @@ import {
   Settings,
   LayoutDashboard,
   Zap,
+  UserPlus,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -22,6 +24,9 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isFounder = user?.role === "founder";
+  const isClient = user?.role === "client";
 
   const navigationItems = [
     {
@@ -29,11 +34,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
       href: "/overview",
       icon: LayoutDashboard,
     },
-    {
-      name: "Clients",
-      href: "/clients",
-      icon: Users,
-    },
+    ...(!isClient
+      ? [
+          {
+            name: "Clients",
+            href: "/clients",
+            icon: Users,
+          },
+        ]
+      : []),
+    ...(isFounder
+      ? [
+          {
+            name: "Registrations",
+            href: "/registrations",
+            icon: UserPlus,
+            badge: "Review",
+          },
+        ]
+      : []),
     {
       name: "Engagements",
       href: "/engagements",
@@ -49,11 +68,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
       href: "/findings",
       icon: FileCheck2,
     },
-    {
-      name: "Automation",
-      href: "/automation",
-      icon: Zap,
-    },
+    ...(!isClient
+      ? [
+          {
+            name: "Automation",
+            href: "/automation",
+            icon: Zap,
+          },
+        ]
+      : []),
     {
       name: "Reports",
       href: "/reports",
@@ -125,7 +148,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
                     : "text-zinc-400 dark:text-zinc-500"
                 )}
               />
-              <span className="truncate">{item.name}</span>
+              <span className="truncate flex-1">{item.name}</span>
+              {"badge" in item && item.badge && (
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase font-semibold">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -12,6 +12,9 @@ def hash_password(password: str) -> str:
     return hashed.decode("utf-8")
 
 
+get_password_hash = hash_password
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies a plaintext password against a bcrypt hash."""
     try:
@@ -21,6 +24,22 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         )
     except Exception:
         return False
+
+
+def validate_password_strength(password: str) -> tuple[bool, str]:
+    """
+    Validates password strength according to Lazy Nerds FixOps security policy:
+    Minimum 10 characters, at least one uppercase, one lowercase, and one number.
+    """
+    if len(password) < 10:
+        return False, "Password must be at least 10 characters long."
+    if not any(c.isupper() for c in password):
+        return False, "Password must contain at least one uppercase letter."
+    if not any(c.islower() for c in password):
+        return False, "Password must contain at least one lowercase letter."
+    if not any(c.isdigit() for c in password):
+        return False, "Password must contain at least one number."
+    return True, ""
 
 
 def create_access_token(

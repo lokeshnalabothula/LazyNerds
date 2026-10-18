@@ -1,6 +1,6 @@
 import math
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 from sqlalchemy import or_, desc, asc
 from sqlalchemy.orm import Session
 from app.models.client import Client
@@ -21,11 +21,15 @@ def list_clients(
     search: Optional[str] = None,
     status: Optional[str] = "active",
     sort_by: str = "created_at",
-    sort_order: str = "desc"
+    sort_order: str = "desc",
+    user: Optional[Any] = None,
 ) -> Tuple[List[Client], int, int]:
     """
     Retrieves a paginated list of clients with search, filtering, and strict sorting.
-    Returns (items, total_count, total_pages).
+    Enforces role-based data isolation:
+    - Clients can only view their own organization.
+    - Employees view assigned clients (or all approved clients if unassigned).
+    - Founders view all company clients.
     """
     if page < 1:
         page = 1
@@ -33,6 +37,19 @@ def list_clients(
         page_size = 10
 
     query = db.query(Client)
+
+    # Role-based scoping
+    if user and getattr(user, "role", None) == "client":
+        client_id = getattr(user, "client_id", None)
+        if client_id:
+            query = query.filter(Client.id == client_id)
+        else:
+            query = query.filter(Client.id == "none")
+    elif user and getattr(user, "role", None) == "employee":
+        user_id = getattr(user, "id", None)
+        assigned_count = db.query(Client).filter(Client.assigned_employee_id == user_id).count()
+        if assigned_count > 0:
+            query = query.filter(Client.assigned_employee_id == user_id)
 
     # Status filtering
     if status and status.lower() != "all":
@@ -142,3 +159,38 @@ def restore_client(db: Session, client: Client) -> Client:
         db.commit()
         db.refresh(client)
     return client
+
+
+def bulk_archive_clients(db: Session, client_ids: List[str]) -> List[Client]:
+    """Archives multiple clients transactionally by UUID without deleting data."""
+    now_utc = datetime.now(timezone.utc)
+    clients = db.query(Client).filter(Client.id.in_(client_ids)).all()
+    archived = []
+    for client in clients:
+        if client.status != ClientStatus.ARCHIVED.value:
+            client.status = ClientStatus.ARCHIVED.value
+            client.updated_at = now_utc
+            archived.append(client)
+    if archived:
+        db.commit()
+        for client in archived:
+            db.refresh(client)
+    return clients
+
+
+def bulk_restore_clients(db: Session, client_ids: List[str]) -> List[Client]:
+    """Restores multiple archived clients to active status transactionally."""
+    now_utc = datetime.now(timezone.utc)
+    clients = db.query(Client).filter(Client.id.in_(client_ids)).all()
+    restored = []
+    for client in clients:
+        if client.status != ClientStatus.ACTIVE.value:
+            client.status = ClientStatus.ACTIVE.value
+            client.updated_at = now_utc
+            restored.append(client)
+    if restored:
+        db.commit()
+        for client in restored:
+            db.refresh(client)
+    return clients
+

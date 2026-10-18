@@ -119,15 +119,34 @@ export default function LoginPage() {
               {...register("email")}
             />
 
-            <Input
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              required
-              placeholder="••••••••••••"
-              error={errors.password?.message}
-              {...register("password")}
-            />
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-zinc-300">
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-[11px] text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <input
+                type="password"
+                autoComplete="current-password"
+                required
+                placeholder="••••••••••••"
+                className={`w-full rounded bg-zinc-950 border px-3 py-2 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 transition-colors ${
+                  errors.password?.message
+                    ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500"
+                    : "border-zinc-800 focus:border-brand-500 focus:ring-brand-500"
+                }`}
+                {...register("password")}
+              />
+              {errors.password?.message && (
+                <p className="mt-1 text-[11px] text-rose-400">{errors.password.message}</p>
+              )}
+            </div>
 
             <Button
               type="submit"
@@ -139,9 +158,31 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-4 pt-4 border-t border-zinc-800/80 text-[11px] text-zinc-500 text-center flex items-center justify-center gap-1.5 font-mono">
+          {/* Client Self-Registration Option */}
+          <div className="mt-5 pt-4 border-t border-zinc-800/80 space-y-2 text-center">
+            <p className="text-[11px] text-zinc-400">
+              New client organization looking for security operations?
+            </p>
+            <div className="flex items-center justify-center gap-3 text-xs">
+              <Link
+                href="/register"
+                className="font-medium text-brand-400 hover:text-brand-300 transition-colors underline-offset-4 hover:underline"
+              >
+                Apply for Onboarding
+              </Link>
+              <span className="text-zinc-600">•</span>
+              <Link
+                href="/register/status"
+                className="text-zinc-400 hover:text-zinc-200 transition-colors underline-offset-4 hover:underline"
+              >
+                Check Application Status
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-zinc-800/50 text-[11px] text-zinc-500 text-center flex items-center justify-center gap-1.5 font-mono">
             <Shield className="h-3 w-3 text-brand-500" />
-            <span>Restricted to authorized Lazy Nerds personnel</span>
+            <span>Role-Based Access: Founder • Employee • Client</span>
           </div>
         </div>
 

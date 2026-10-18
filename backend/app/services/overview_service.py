@@ -1,43 +1,82 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
 from app.models.client import Client
 from app.models.engagement import Engagement
 from app.models.asset import Asset
-from app.models.finding import Finding
+from app.models.finding import Finding, Assessment
 from app.models.automation import AutomationRule, AutomationExecution
 from app.models.audit_log import AuditLog
+from app.models.registration import ClientRegistration
+from app.models.user import User
 from app.schemas.overview import OverviewMetrics
 from app.schemas.audit_log import AuditLogOut
 
 
-def get_overview_metrics(db: Session) -> OverviewMetrics:
+def get_overview_metrics(db: Session, user: Optional[User] = None) -> OverviewMetrics:
+    user_role = getattr(user, "role", "founder") if user else "founder"
+    client_id = getattr(user, "client_id", None) if user else None
+    user_id = getattr(user, "id", None) if user else None
+
+    # Base queries scoped by role
+    client_q = db.query(Client)
+    engagement_q = db.query(Engagement)
+    asset_q = db.query(Asset)
+    finding_q = db.query(Finding)
+    audit_q = db.query(AuditLog)
+
+    if user_role == "client":
+        if client_id:
+            client_q = client_q.filter(Client.id == client_id)
+            engagement_q = engagement_q.filter(Engagement.client_id == client_id)
+            asset_q = asset_q.filter(Asset.client_id == client_id)
+            finding_q = finding_q.join(Asset).filter(Asset.client_id == client_id)
+            audit_q = audit_q.filter(AuditLog.user_email == user.email)
+        else:
+            client_q = client_q.filter(Client.id == "none")
+            engagement_q = engagement_q.filter(Engagement.id == "none")
+            asset_q = asset_q.filter(Asset.id == "none")
+            finding_q = finding_q.filter(Finding.id == "none")
+            audit_q = audit_q.filter(AuditLog.user_email == "none")
+    elif user_role == "employee":
+        # Scoped to assigned clients if any
+        assigned_count = db.query(Client).filter(Client.assigned_employee_id == user_id).count()
+        if assigned_count > 0:
+            assigned_ids = [c.id for c in db.query(Client.id).filter(Client.assigned_employee_id == user_id).all()]
+            client_q = client_q.filter(Client.id.in_(assigned_ids))
+            engagement_q = engagement_q.filter(Engagement.client_id.in_(assigned_ids))
+            asset_q = asset_q.filter(Asset.client_id.in_(assigned_ids))
+            finding_q = finding_q.join(Asset).filter(Asset.client_id.in_(assigned_ids))
+        # Employees cannot view founder-level registration review audit logs
+        audit_q = audit_q.filter(~AuditLog.action.like("%REGISTRATION%"))
+
     # 1. Clients
-    clients_total = db.query(Client).count()
-    clients_active = db.query(Client).filter(Client.status == "active").count()
+    clients_total = client_q.count()
+    clients_active = client_q.filter(Client.status == "active").count()
 
     # 2. Engagements
-    engagements_total = db.query(Engagement).count()
+    engagements_total = engagement_q.count()
     engagements_active = (
-        db.query(Engagement)
-        .filter(Engagement.status.in_(["planned", "in_progress"]))
+        engagement_q.filter(Engagement.status.in_(["planned", "in_progress"]))
         .count()
     )
 
     # 3. Assets
-    assets_total = db.query(Asset).count()
-    assets_in_scope = db.query(Asset).filter(Asset.in_scope.is_(True)).count()
+    assets_total = asset_q.count()
+    assets_in_scope = asset_q.filter(Asset.in_scope.is_(True)).count()
 
     # 4. Findings
-    findings_total = db.query(Finding).count()
-    findings_open = db.query(Finding).filter(Finding.status == "open").count()
-    findings_in_remediation = db.query(Finding).filter(Finding.status == "in_remediation").count()
-    findings_verified_fixed = db.query(Finding).filter(Finding.status == "verified_fixed").count()
+    findings_total = finding_q.count()
+    findings_open = finding_q.filter(Finding.status == "open").count()
+    findings_in_remediation = finding_q.filter(Finding.status == "in_remediation").count()
+    findings_verified_fixed = finding_q.filter(Finding.status == "verified_fixed").count()
+    critical_findings_open = finding_q.filter(Finding.status == "open", Finding.severity == "critical").count()
+    high_findings_open = finding_q.filter(Finding.status == "open", Finding.severity == "high").count()
 
     # Severity distribution
     severity_rows = (
-        db.query(Finding.severity, func.count(Finding.id))
+        finding_q.with_entities(Finding.severity, func.count(Finding.id))
         .group_by(Finding.severity)
         .all()
     )
@@ -46,21 +85,43 @@ def get_overview_metrics(db: Session) -> OverviewMetrics:
         if sev in severity_distribution:
             severity_distribution[sev] = count
 
-    # 5. Automation
+    # 5. Automation & Operational Alerts
     automation_rules_active = (
         db.query(AutomationRule).filter(AutomationRule.is_active.is_(True)).count()
+        if user_role in ("founder", "admin", "employee")
+        else 0
     )
-    automation_executions_total = db.query(AutomationExecution).count()
+    automation_executions_total = (
+        db.query(AutomationExecution).count()
+        if user_role in ("founder", "admin", "employee")
+        else 0
+    )
     pending_approvals_total = (
         db.query(AutomationExecution)
         .filter(AutomationExecution.status == "pending_approval")
         .count()
+        if user_role in ("founder", "admin")
+        else 0
+    )
+    recent_failures_total = (
+        db.query(AutomationExecution).filter(AutomationExecution.status == "failed").count()
+        if user_role in ("founder", "admin", "employee")
+        else 0
     )
 
-    # 6. Recent Audit Activities
+    # 6. Registrations (Founder-only; strictly 0 for employees and clients)
+    pending_registrations_total = (
+        db.query(ClientRegistration).filter(ClientRegistration.status == "pending").count()
+        if user_role in ("founder", "admin")
+        else 0
+    )
+
+    # 7. Assessments
+    active_assessments_total = db.query(Assessment).filter(Assessment.status == "in_progress").count()
+
+    # 8. Recent Audit Activities
     recent_logs = (
-        db.query(AuditLog)
-        .order_by(desc(AuditLog.created_at))
+        audit_q.order_by(desc(AuditLog.created_at))
         .limit(10)
         .all()
     )
@@ -77,9 +138,16 @@ def get_overview_metrics(db: Session) -> OverviewMetrics:
         findings_open=findings_open,
         findings_in_remediation=findings_in_remediation,
         findings_verified_fixed=findings_verified_fixed,
+        critical_findings_open=critical_findings_open,
+        high_findings_open=high_findings_open,
         severity_distribution=severity_distribution,
         automation_rules_active=automation_rules_active,
         automation_executions_total=automation_executions_total,
         pending_approvals_total=pending_approvals_total,
+        recent_failures_total=recent_failures_total,
+        pending_registrations_total=pending_registrations_total,
+        active_assessments_total=active_assessments_total,
+        user_role=user_role,
         recent_activity=recent_activity,
     )
+

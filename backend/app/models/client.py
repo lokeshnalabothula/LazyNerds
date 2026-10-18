@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Text, DateTime, Index, CheckConstraint
+from sqlalchemy import Column, String, Text, DateTime, Index, CheckConstraint, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.session import Base
 
@@ -21,12 +21,15 @@ class Client(Base):
     industry = Column(String(100), nullable=True)
     notes = Column(Text, nullable=True)
     status = Column(String(20), nullable=False, default="active", index=True)
+    assigned_employee_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL", use_alter=True), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     # Relationships
     engagements = relationship("Engagement", back_populates="client")
     assets = relationship("Asset", back_populates="client")
+    users = relationship("User", foreign_keys="User.client_id", back_populates="client")
+    assigned_employee = relationship("User", foreign_keys=[assigned_employee_id], backref="assigned_clients")
 
     __table_args__ = (
         CheckConstraint("status IN ('active', 'archived')", name="check_client_status"),

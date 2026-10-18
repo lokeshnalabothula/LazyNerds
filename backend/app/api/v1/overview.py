@@ -15,4 +15,4 @@ def get_metrics(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return overview_service.get_overview_metrics(db)
+    return overview_service.get_overview_metrics(db, user=current_user)

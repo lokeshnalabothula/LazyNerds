@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from app.db.session import Base
 
 
@@ -17,8 +18,12 @@ class User(Base):
     full_name = Column(String(255), nullable=False)
     role = Column(String(50), default="founder", nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    client_id = Column(String(36), ForeignKey("clients.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
+    client = relationship("Client", foreign_keys=[client_id], back_populates="users")
+
     def __repr__(self) -> str:
         return f"<User(id='{self.id}', email='{self.email}', role='{self.role}')>"
+

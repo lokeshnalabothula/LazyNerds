@@ -1,4 +1,20 @@
-import { Client, ClientCreateInput, ClientListResponse, ClientUpdateInput, TokenResponse, User } from "@/types/client";
+import {
+  Client,
+  ClientCreateInput,
+  ClientListResponse,
+  ClientUpdateInput,
+  TokenResponse,
+  User,
+  BulkArchiveResponse,
+  BulkRestoreResponse,
+} from "@/types/client";
+import {
+  ClientRegisterInput,
+  RegistrationOut,
+  RegistrationListResponse,
+  RegistrationReviewInput,
+  RegistrationStatusCheckResponse,
+} from "@/types/registration";
 import {
   Engagement,
   EngagementCreateInput,
@@ -147,6 +163,32 @@ export const api = {
     });
   },
 
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    return request<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async verifyResetToken(token: string): Promise<{ valid: boolean; email_masked?: string; message?: string }> {
+    return request<{ valid: boolean; email_masked?: string; message?: string }>("/auth/verify-reset-token", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  },
+
+  async resetPassword(token: string, new_password: string): Promise<{ message: string }> {
+    return request<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, new_password }),
+    });
+  },
+
+  async getUsers(role?: string): Promise<User[]> {
+    const qs = role ? `?role=${encodeURIComponent(role)}` : "";
+    return request<User[]>(`/auth/users${qs}`);
+  },
+
   // Clients
   async getClients(params: {
     page?: number;
@@ -195,6 +237,55 @@ export const api = {
   async restoreClient(id: string): Promise<Client> {
     return request<Client>(`/clients/${encodeURIComponent(id)}/restore`, {
       method: "POST",
+    });
+  },
+
+  async bulkArchiveClients(client_ids: string[]): Promise<BulkArchiveResponse> {
+    return request<BulkArchiveResponse>("/clients/bulk-archive", {
+      method: "POST",
+      body: JSON.stringify({ client_ids }),
+    });
+  },
+
+  async bulkRestoreClients(client_ids: string[]): Promise<BulkRestoreResponse> {
+    return request<BulkRestoreResponse>("/clients/bulk-restore", {
+      method: "POST",
+      body: JSON.stringify({ client_ids }),
+    });
+  },
+
+  async assignClient(clientId: string, employeeId: string | null): Promise<Client> {
+    return request<Client>(`/clients/${encodeURIComponent(clientId)}/assign`, {
+      method: "PATCH",
+      body: JSON.stringify({ employee_id: employeeId }),
+    });
+  },
+
+  // Client Registrations (Self-Service Onboarding & Founder Review)
+  async registerClient(input: ClientRegisterInput): Promise<{ status: string; registration_id: string; company_name: string; message: string }> {
+    return request<{ status: string; registration_id: string; company_name: string; message: string }>("/registrations/register", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async checkRegistrationStatus(email: string): Promise<RegistrationStatusCheckResponse> {
+    return request<RegistrationStatusCheckResponse>(`/registrations/status?email=${encodeURIComponent(email)}`);
+  },
+
+  async getRegistrations(status?: string): Promise<RegistrationListResponse> {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+    return request<RegistrationListResponse>(`/registrations${qs}`);
+  },
+
+  async getRegistration(id: string): Promise<RegistrationOut> {
+    return request<RegistrationOut>(`/registrations/${encodeURIComponent(id)}`);
+  },
+
+  async reviewRegistration(id: string, input: RegistrationReviewInput): Promise<RegistrationOut> {
+    return request<RegistrationOut>(`/registrations/${encodeURIComponent(id)}/review`, {
+      method: "POST",
+      body: JSON.stringify(input),
     });
   },
 

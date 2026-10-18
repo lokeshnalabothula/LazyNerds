@@ -20,6 +20,8 @@ export interface OverviewMetrics {
   findings_open: number;
   findings_in_remediation: number;
   findings_verified_fixed: number;
+  critical_findings_open: number;
+  high_findings_open: number;
   severity_distribution: {
     critical: number;
     high: number;
@@ -30,5 +32,9 @@ export interface OverviewMetrics {
   automation_rules_active: number;
   automation_executions_total: number;
   pending_approvals_total: number;
+  recent_failures_total: number;
+  pending_registrations_total: number;
+  active_assessments_total: number;
+  user_role: string;
   recent_activity: AuditLog[];
 }

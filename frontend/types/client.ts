@@ -9,6 +9,7 @@ export interface Client {
   phone: string | null;
   industry: string | null;
   notes: string | null;
+  assigned_employee_id?: string | null;
   status: ClientStatus;
   created_at: string;
   updated_at: string;
@@ -22,6 +23,7 @@ export interface ClientCreateInput {
   phone?: string | null;
   industry?: string | null;
   notes?: string | null;
+  assigned_employee_id?: string | null;
   created_at?: string | null;
 }
 
@@ -33,6 +35,7 @@ export interface ClientUpdateInput {
   phone?: string | null;
   industry?: string | null;
   notes?: string | null;
+  assigned_employee_id?: string | null;
 }
 
 export interface ClientListResponse {
@@ -45,11 +48,14 @@ export interface ClientListResponse {
 
 type int = number;
 
+export type UserRole = "founder" | "employee" | "client";
+
 export interface User {
   id: string;
   email: string;
   full_name: string;
-  role: string;
+  role: UserRole | string;
+  client_id?: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -58,6 +64,18 @@ export interface TokenResponse {
   access_token: string;
   token_type: string;
   user: User;
+}
+
+export interface BulkArchiveResponse {
+  archived_count: number;
+  client_ids: string[];
+  message: string;
+}
+
+export interface BulkRestoreResponse {
+  restored_count: number;
+  client_ids: string[];
+  message: string;
 }
 
 export interface ApiError {

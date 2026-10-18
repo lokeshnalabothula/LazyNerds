@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_serializer
 from app.schemas.common import serialize_utc_datetime
 
@@ -7,6 +8,7 @@ class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     role: str = "founder"
+    client_id: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -39,3 +41,23 @@ class TokenResponse(BaseModel):
 class ChangePasswordRequest(BaseModel):
     current_password: str = Field(..., min_length=1)
     new_password: str = Field(..., min_length=10, max_length=128, description="New password (minimum 10 characters)")
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyResetTokenRequest(BaseModel):
+    token: str = Field(..., min_length=16, description="Cryptographic reset token")
+
+
+class VerifyResetTokenResponse(BaseModel):
+    valid: bool
+    email_masked: Optional[str] = None
+    message: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=16, description="Cryptographic reset token")
+    new_password: str = Field(..., min_length=10, max_length=128, description="New password (minimum 10 characters)")
+

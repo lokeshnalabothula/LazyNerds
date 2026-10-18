@@ -59,13 +59,42 @@ def get_current_user(
     return user
 
 
-def require_admin(
+def require_founder(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    """Enforces admin/founder role permissions for sensitive platform operations."""
-    if current_user.role not in ("admin", "founder"):
+    """Enforces Founder role privileges for executive administration, registration reviews, and company settings."""
+    if current_user.role not in ("founder", "admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied: administrative privileges required for this action.",
+            detail="Access denied: Founder privileges required for this operation.",
         )
     return current_user
+
+
+def require_employee_or_founder(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Enforces internal team membership (Employee or Founder) for accessing internal workspace tools."""
+    if current_user.role not in ("founder", "admin", "employee"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Internal FixOps operations privileges required.",
+        )
+    return current_user
+
+
+def require_client(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Enforces client account role for customer portal access."""
+    if current_user.role != "client":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Client portal privileges required.",
+        )
+    return current_user
+
+
+# Alias for backwards compatibility
+require_admin = require_founder
+

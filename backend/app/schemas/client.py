@@ -18,6 +18,7 @@ class ClientBase(BaseModel):
     phone: Optional[str] = Field(None, max_length=50, description="Contact phone number")
     industry: Optional[str] = Field(None, max_length=100, description="Business sector / industry")
     notes: Optional[str] = Field(None, max_length=5000, description="Confidential engagement notes")
+    assigned_employee_id: Optional[str] = Field(None, description="Assigned employee user ID")
 
     @field_validator("company_name", "primary_contact_name")
     @classmethod
@@ -89,6 +90,7 @@ class ClientUpdate(BaseModel):
     phone: Optional[str] = Field(None, max_length=50)
     industry: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = Field(None, max_length=5000)
+    assigned_employee_id: Optional[str] = None
 
     @field_validator("company_name", "primary_contact_name")
     @classmethod
@@ -155,3 +157,23 @@ class ClientListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class BulkArchiveRequest(BaseModel):
+    client_ids: List[str] = Field(..., min_length=1, description="List of client UUIDs to archive")
+
+
+class BulkArchiveResponse(BaseModel):
+    archived_count: int
+    client_ids: List[str]
+    message: str
+
+
+class BulkRestoreRequest(BaseModel):
+    client_ids: List[str] = Field(..., min_length=1, description="List of client UUIDs to restore")
+
+
+class BulkRestoreResponse(BaseModel):
+    restored_count: int
+    client_ids: List[str]
+    message: str

@@ -10,10 +10,12 @@ from app.api.v1.notifications import router as notifications_router
 from app.api.v1.audit_logs import router as audit_logs_router
 from app.api.v1.overview import router as overview_router
 from app.api.v1.health import router as health_router
+from app.api.v1.registrations import router as registrations_router
 
 api_router = APIRouter()
 api_router.include_router(health_router, tags=["Health"])
 api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(registrations_router, prefix="/registrations", tags=["Registrations"])
 api_router.include_router(clients_router, prefix="/clients", tags=["Clients"])
 api_router.include_router(engagements_router, prefix="/engagements", tags=["Engagements"])
 api_router.include_router(assets_router, prefix="/assets", tags=["Assets"])
@@ -23,3 +25,4 @@ api_router.include_router(reports_router, prefix="/reports", tags=["Reports"])
 api_router.include_router(notifications_router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(audit_logs_router, prefix="/audit-logs", tags=["Audit Logs"])
 api_router.include_router(overview_router, prefix="/overview", tags=["Overview"])
+

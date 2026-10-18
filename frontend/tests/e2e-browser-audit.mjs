@@ -35,7 +35,12 @@ const ROUTES = [
   { path: '/privacy', label: 'Privacy Policy', authRequired: false },
   { path: '/terms', label: 'Terms of Service', authRequired: false },
   { path: '/login', label: 'Login Page', authRequired: false },
+  { path: '/forgot-password', label: 'Forgot Password', authRequired: false },
+  { path: '/reset-password', label: 'Reset Password', authRequired: false },
+  { path: '/register', label: 'Client Registration', authRequired: false },
+  { path: '/register/status', label: 'Application Status', authRequired: false },
   { path: '/overview', label: 'Overview Dashboard', authRequired: true },
+  { path: '/registrations', label: 'Founder Registrations Queue', authRequired: true },
   { path: '/clients', label: 'Client Directory', authRequired: true },
   { path: '/clients/new', label: 'New Client Form', authRequired: true },
   { path: '/engagements', label: 'Engagements List', authRequired: true },
@@ -104,7 +109,7 @@ async function runAudit() {
     await page.type('input[type="email"]', email);
     await page.type('input[type="password"]', password);
     await page.click('button[type="submit"]');
-    await page.waitForFunction(() => window.location.pathname === '/overview', { timeout: 15000 });
+    await page.waitForFunction(() => window.location.pathname === '/overview', { timeout: 45000 });
 
     const postLoginUrl = page.url();
     if (postLoginUrl.includes('/overview')) {

@@ -93,19 +93,19 @@ class Settings(BaseSettings):
                 try:
                     parsed = json.loads(stripped)
                     if isinstance(parsed, list):
-                        origins = [str(item).strip() for item in parsed if str(item).strip()]
+                        origins = [str(item).strip().strip("'\"") for item in parsed if str(item).strip()]
                         if any(o == "*" for o in origins):
                             raise ValueError("Wildcard '*' is prohibited in ALLOWED_ORIGINS when credentials are enabled.")
                         return origins
                 except json.JSONDecodeError:
                     pass
             # Comma-separated: "https://example.com, https://app.example.com"
-            origins = [item.strip() for item in stripped.split(",") if item.strip()]
+            origins = [item.strip().strip("'\"") for item in stripped.split(",") if item.strip()]
             if any(o == "*" for o in origins):
                 raise ValueError("Wildcard '*' is prohibited in ALLOWED_ORIGINS when credentials are enabled.")
             return origins
         elif isinstance(v, list):
-            origins = [str(item).strip() for item in v if str(item).strip()]
+            origins = [str(item).strip().strip("'\"") for item in v if str(item).strip()]
             if any(o == "*" for o in origins):
                 raise ValueError("Wildcard '*' is prohibited in ALLOWED_ORIGINS when credentials are enabled.")
             return origins

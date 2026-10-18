@@ -71,19 +71,19 @@ export default function OverviewPage() {
     <AppShell title="Platform Overview">
       <div className="space-y-6 max-w-7xl mx-auto pb-16">
         {/* Top Operations Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 relative">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="flex h-2 w-2 relative shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+              <h1 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
                 {isClient
                   ? "ORGANIZATION SECURITY POSTURE"
                   : "CYBERSECURITY OPERATIONS CENTER"}
               </h1>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 shrink-0">
                 {user?.role || "Active"} Mode
               </span>
             </div>
@@ -94,7 +94,7 @@ export default function OverviewPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
@@ -137,12 +137,12 @@ export default function OverviewPage() {
           <div className="space-y-3">
             {/* Critical Findings Alert */}
             {hasCriticalAlerts && (
-              <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-950/20 text-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
-                <div className="flex items-start gap-3">
+              <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-950/20 text-zinc-100 flex flex-col xl:flex-row xl:items-center justify-between gap-3 shadow-lg">
+                <div className="flex items-start gap-3 min-w-0">
                   <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400 shrink-0">
                     <Flame className="h-5 w-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-xs sm:text-sm font-bold text-rose-300 font-mono uppercase tracking-wide">
                       URGENT ATTENTION: UNMITIGATED CRITICAL / HIGH VULNERABILITIES
                     </h3>
@@ -155,7 +155,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
                 <Link href="/findings?status=open" className="shrink-0">
-                  <Button size="sm" className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold h-8 w-full sm:w-auto">
+                  <Button size="sm" className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold h-8 w-full xl:w-auto">
                     <span>Review Critical Vulnerabilities</span>
                     <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                   </Button>
@@ -165,12 +165,12 @@ export default function OverviewPage() {
 
             {/* Founder Client Registration Queue Alert */}
             {hasPendingRegistrations && (
-              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 text-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-                <div className="flex items-start gap-3">
+              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 text-zinc-100 flex flex-col xl:flex-row xl:items-center justify-between gap-3 shadow-md">
+                <div className="flex items-start gap-3 min-w-0">
                   <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
                     <UserCheck className="h-5 w-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-xs sm:text-sm font-bold text-amber-300 font-mono uppercase tracking-wide">
                       CLIENT ONBOARDING QUEUE: FOUNDER REVIEW REQUIRED
                     </h3>
@@ -180,7 +180,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
                 <Link href="/registrations" className="shrink-0">
-                  <Button size="sm" className="bg-amber-600 hover:bg-amber-500 text-zinc-950 text-xs font-semibold h-8 w-full sm:w-auto">
+                  <Button size="sm" className="bg-amber-600 hover:bg-amber-500 text-zinc-950 text-xs font-semibold h-8 w-full xl:w-auto">
                     <span>Review Registrations ({metrics.pending_registrations_total})</span>
                     <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                   </Button>
@@ -191,9 +191,9 @@ export default function OverviewPage() {
             {/* Automation Approvals Banner */}
             {hasPendingApprovals && !isClient && (
               <div className="p-3.5 rounded-xl border border-blue-500/30 bg-blue-950/20 text-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <Zap className="h-4 w-4 text-blue-400 shrink-0" />
-                  <p className="text-xs text-zinc-300">
+                  <p className="text-xs text-zinc-300 min-w-0 truncate">
                     <strong className="text-blue-300">{metrics.pending_approvals_total} automated execution{metrics.pending_approvals_total > 1 ? "s" : ""}</strong> awaiting human-in-the-loop approval.
                   </p>
                 </div>

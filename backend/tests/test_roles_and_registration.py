@@ -178,3 +178,86 @@ def test_bulk_archive_and_restore(client, auth_headers, db_session):
     db_session.refresh(c2)
     assert c1.status == "active"
     assert c2.status == "active"
+
+
+def test_client_role_engagement_isolation(client, db_session):
+    """Verifies that client users can only see their own engagements and cannot mutate them."""
+    from app.models.engagement import Engagement
+
+    # Create two clients
+    c1 = Client(company_name="Client Alpha", primary_contact_name="Alpha Lead", primary_contact_email="lead@alpha.io", status="active")
+    c2 = Client(company_name="Client Beta", primary_contact_name="Beta Lead", primary_contact_email="lead@beta.io", status="active")
+    db_session.add_all([c1, c2])
+    db_session.commit()
+    db_session.refresh(c1)
+    db_session.refresh(c2)
+
+    # Create an engagement for each client
+    eng1 = Engagement(
+        client_id=c1.id,
+        name="Alpha Vulnerability Audit",
+        assessment_type="Web App Pen Test",
+        status="in_progress",
+        authorization_status="confirmed",
+    )
+    eng2 = Engagement(
+        client_id=c2.id,
+        name="Beta Perimeter Scan",
+        assessment_type="Cloud Security Review",
+        status="planned",
+        authorization_status="confirmed",
+    )
+    db_session.add_all([eng1, eng2])
+    db_session.commit()
+    db_session.refresh(eng1)
+    db_session.refresh(eng2)
+
+    # Create a client user bound to Client Alpha
+    user_alpha = create_user(
+        db_session,
+        UserCreate(
+            email="portal@alpha.io",
+            password="SecurePassword2026!",
+            full_name="Alpha Portal User",
+            role="client",
+            client_id=c1.id,
+        ),
+    )
+
+    token = create_access_token(
+        subject=user_alpha.id,
+        extra_claims={"email": user_alpha.email, "role": user_alpha.role, "client_id": user_alpha.client_id},
+    )
+    client.headers.update({"Authorization": f"Bearer {token}"})
+
+    # 1. Listing engagements returns only Alpha's engagement
+    list_res = client.get("/api/v1/engagements")
+    assert list_res.status_code == 200
+    items = list_res.json()["items"]
+    assert len(items) == 1
+    assert items[0]["id"] == eng1.id
+    assert items[0]["client_id"] == c1.id
+
+    # 2. Reading Alpha's own engagement succeeds
+    get_alpha_res = client.get(f"/api/v1/engagements/{eng1.id}")
+    assert get_alpha_res.status_code == 200
+    assert get_alpha_res.json()["id"] == eng1.id
+
+    # 3. Reading Beta's engagement is rejected with 403 Forbidden
+    get_beta_res = client.get(f"/api/v1/engagements/{eng2.id}")
+    assert get_beta_res.status_code == 403
+    assert "Access denied" in get_beta_res.json()["detail"]
+
+    # 4. Attempting to create an engagement is rejected with 403 Forbidden
+    create_res = client.post(
+        "/api/v1/engagements",
+        json={
+            "client_id": c1.id,
+            "name": "Unauthorized Client Engagement",
+            "assessment_type": "Network Pen Test",
+            "status": "draft",
+            "authorization_status": "confirmed",
+        },
+    )
+    assert create_res.status_code == 403
+

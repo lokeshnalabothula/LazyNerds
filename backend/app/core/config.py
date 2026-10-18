@@ -136,7 +136,7 @@ class Settings(BaseSettings):
             if not origins:
                 raise ValueError(
                     "Production startup aborted: ALLOWED_ORIGINS must be explicitly configured with at least one "
-                    "valid production origin (e.g. 'https://lokeshnalabothula.in, https://your-app.vercel.app'). "
+                    "valid production origin (e.g. 'https://lazynerds.vercel.app'). "
                     "Missing or empty ALLOWED_ORIGINS is prohibited in production."
                 )
 

@@ -42,6 +42,7 @@ def create_user(db: Session, user_in: UserCreate) -> User:
         hashed_password=hash_password(user_in.password),
         full_name=user_in.full_name.strip(),
         role=user_in.role,
+        client_id=user_in.client_id,
         is_active=True,
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),

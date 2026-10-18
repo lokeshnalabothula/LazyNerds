@@ -12,6 +12,7 @@ import { ClientAssetsTab } from "@/components/clients/client-assets-tab";
 import { ClientFindingsTab } from "@/components/clients/client-findings-tab";
 import { ClientReportsTab } from "@/components/clients/client-reports-tab";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/toast";
 import { Client } from "@/types/client";
 import { formatDate, formatDateTime, formatRelativeTime } from "@/lib/utils";
 import {
@@ -43,6 +44,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
   const resolvedParams = use(params);
   const clientId = resolvedParams.clientId;
   const router = useRouter();
+  const { toast } = useToast();
 
   const [client, setClient] = useState<Client | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,9 +77,14 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
   }, [clientId]);
 
   const handleArchiveConfirm = async (c: Client) => {
-    const updated = await api.archiveClient(c.id);
-    setClient(updated);
-    setIsArchiveDialogOpen(false);
+    try {
+      const updated = await api.archiveClient(c.id);
+      setClient(updated);
+      setIsArchiveDialogOpen(false);
+      toast.success(`Client organization '${c.company_name}' archived.`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to archive client.");
+    }
   };
 
   const handleRestore = async () => {
@@ -85,8 +92,9 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
     try {
       const updated = await api.restoreClient(client.id);
       setClient(updated);
+      toast.success(`Client organization '${client.company_name}' restored to active status.`);
     } catch (err: any) {
-      alert(err.message || "Could not restore client.");
+      toast.error(err.message || "Could not restore client.");
     }
   };
 

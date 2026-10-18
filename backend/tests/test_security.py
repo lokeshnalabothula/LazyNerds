@@ -45,20 +45,20 @@ def test_production_rejects_short_secret_key():
 def test_production_accepts_strong_secret_key():
     """Tests that production environment succeeds with a sufficiently strong secret key."""
     strong_key = "a" * 48
-    s = Settings(ENVIRONMENT="production", SECRET_KEY=strong_key, ALLOWED_ORIGINS="https://lokeshnalabothula.in")
+    s = Settings(ENVIRONMENT="production", SECRET_KEY=strong_key, ALLOWED_ORIGINS="https://lazynerds.vercel.app")
     assert s.SECRET_KEY == strong_key
 
 
 def test_allowed_origins_parsing_comma_separated():
     """Tests that ALLOWED_ORIGINS parses comma-separated URLs cleanly."""
-    origins = Settings.parse_allowed_origins("https://lokeshnalabothula.in, https://lazynerds.vercel.app")
-    assert origins == ["https://lokeshnalabothula.in", "https://lazynerds.vercel.app"]
+    origins = Settings.parse_allowed_origins("https://lazynerds.vercel.app, https://preview.lazynerds.vercel.app")
+    assert origins == ["https://lazynerds.vercel.app", "https://preview.lazynerds.vercel.app"]
 
 
 def test_allowed_origins_parsing_json_array():
     """Tests that ALLOWED_ORIGINS parses JSON array strings cleanly."""
-    origins = Settings.parse_allowed_origins('["https://lokeshnalabothula.in", "https://api.lokeshnalabothula.in"]')
-    assert origins == ["https://lokeshnalabothula.in", "https://api.lokeshnalabothula.in"]
+    origins = Settings.parse_allowed_origins('["https://lazynerds.vercel.app", "https://lazynerds-backend.onrender.com"]')
+    assert origins == ["https://lazynerds.vercel.app", "https://lazynerds-backend.onrender.com"]
 
 
 def test_allowed_origins_rejects_wildcard():
@@ -91,9 +91,9 @@ def test_production_accepts_valid_production_origins():
     s = Settings(
         ENVIRONMENT="production",
         SECRET_KEY=strong_key,
-        ALLOWED_ORIGINS="https://lokeshnalabothula.in, https://lazynerds.vercel.app"
+        ALLOWED_ORIGINS="https://lazynerds.vercel.app, https://preview.lazynerds.vercel.app"
     )
-    assert s.ALLOWED_ORIGINS == ["https://lokeshnalabothula.in", "https://lazynerds.vercel.app"]
+    assert s.ALLOWED_ORIGINS == ["https://lazynerds.vercel.app", "https://preview.lazynerds.vercel.app"]
 
 
 def test_basesettings_real_env_var_comma_separated(monkeypatch):
@@ -101,9 +101,9 @@ def test_basesettings_real_env_var_comma_separated(monkeypatch):
     strong_key = "k" * 36
     monkeypatch.setenv("ENVIRONMENT", "production")
     monkeypatch.setenv("SECRET_KEY", strong_key)
-    monkeypatch.setenv("ALLOWED_ORIGINS", "https://lokeshnalabothula.in, https://lazynerds.vercel.app")
+    monkeypatch.setenv("ALLOWED_ORIGINS", "https://lazynerds.vercel.app, https://preview.lazynerds.vercel.app")
     s = Settings()
-    assert s.ALLOWED_ORIGINS == ["https://lokeshnalabothula.in", "https://lazynerds.vercel.app"]
+    assert s.ALLOWED_ORIGINS == ["https://lazynerds.vercel.app", "https://preview.lazynerds.vercel.app"]
 
 
 def test_basesettings_real_env_var_json_array(monkeypatch):
@@ -111,9 +111,9 @@ def test_basesettings_real_env_var_json_array(monkeypatch):
     strong_key = "k" * 36
     monkeypatch.setenv("ENVIRONMENT", "production")
     monkeypatch.setenv("SECRET_KEY", strong_key)
-    monkeypatch.setenv("ALLOWED_ORIGINS", '["https://lokeshnalabothula.in", "https://api.lokeshnalabothula.in"]')
+    monkeypatch.setenv("ALLOWED_ORIGINS", '["https://lazynerds.vercel.app", "https://lazynerds-backend.onrender.com"]')
     s = Settings()
-    assert s.ALLOWED_ORIGINS == ["https://lokeshnalabothula.in", "https://api.lokeshnalabothula.in"]
+    assert s.ALLOWED_ORIGINS == ["https://lazynerds.vercel.app", "https://lazynerds-backend.onrender.com"]
 
 
 def test_development_fallback_when_origins_unset(monkeypatch):

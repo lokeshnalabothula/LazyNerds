@@ -6,6 +6,8 @@ import { api } from "@/lib/api";
 import { Asset } from "@/types/asset";
 import { AssetFormModal } from "@/components/assets/asset-form-modal";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
+import { useToast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useViewMode } from "@/lib/use-view-mode";
 import { formatDateTime } from "@/lib/utils";
 import {
@@ -28,6 +30,7 @@ import {
 } from "lucide-react";
 
 export default function AssetsPage() {
+  const { toast } = useToast();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -38,6 +41,8 @@ export default function AssetsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [assetToEdit, setAssetToEdit] = useState<Asset | null>(null);
+  const [assetToDelete, setAssetToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Device-aware view mode preference (Cards on mobile/tablet, Table on desktop)
   const { viewMode, setViewMode } = useViewMode("fixops_asset_view_mode", 1024);
@@ -66,15 +71,18 @@ export default function AssetsPage() {
     return () => clearTimeout(timer);
   }, [search, typeFilter, scopeFilter, criticalityFilter]);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete asset '${name}'? This cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteConfirm = async () => {
+    if (!assetToDelete) return;
+    setIsDeleting(true);
     try {
-      await api.deleteAsset(id);
+      await api.deleteAsset(assetToDelete.id);
+      toast.success(`Target asset '${assetToDelete.name}' has been deleted.`);
+      setAssetToDelete(null);
       await fetchAssets();
     } catch (err: any) {
-      alert(`Delete failed: ${err.message}`);
+      toast.error(`Delete failed: ${err.message}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -313,7 +321,7 @@ export default function AssetsPage() {
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(asset.id, asset.name)}
+                      onClick={() => setAssetToDelete({ id: asset.id, name: asset.name })}
                       className="p-1.5 rounded text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[34px] min-w-[34px] flex items-center justify-center"
                       title="Delete Asset"
                       aria-label={`Delete asset ${asset.name}`}
@@ -400,7 +408,7 @@ export default function AssetsPage() {
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(asset.id, asset.name)}
+                            onClick={() => setAssetToDelete({ id: asset.id, name: asset.name })}
                             className="p-1.5 rounded text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[34px] min-w-[34px] flex items-center justify-center"
                             title="Delete Asset"
                             aria-label={`Delete asset ${asset.name}`}
@@ -422,6 +430,17 @@ export default function AssetsPage() {
           onClose={() => setIsModalOpen(false)}
           onSaved={fetchAssets}
           assetToEdit={assetToEdit}
+        />
+
+        <ConfirmDialog
+          isOpen={Boolean(assetToDelete)}
+          onClose={() => setAssetToDelete(null)}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Target Asset"
+          description={`Are you sure you want to delete asset '${assetToDelete?.name}'? This cannot be undone.`}
+          confirmLabel="Delete Asset"
+          variant="destructive"
+          loading={isDeleting}
         />
       </div>
     </AppShell>

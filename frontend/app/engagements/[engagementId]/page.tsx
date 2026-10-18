@@ -7,6 +7,8 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Engagement,
   ENGAGEMENT_STATUS_CONFIG,
@@ -41,11 +43,13 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
   const resolvedParams = use(params);
   const engagementId = resolvedParams.engagementId;
   const router = useRouter();
+  const { toast } = useToast();
 
   const [engagement, setEngagement] = useState<Engagement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
   const fetchEngagement = async () => {
     setIsLoading(true);
@@ -70,13 +74,14 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
 
   const handleArchive = async () => {
     if (!engagement) return;
-    if (!confirm("Are you sure you want to cancel/archive this engagement?")) return;
     setActionLoading(true);
     try {
       const updated = await api.archiveEngagement(engagement.id);
       setEngagement(updated);
+      setIsCancelConfirmOpen(false);
+      toast.success(`Engagement '${engagement.name}' has been archived.`);
     } catch (err: any) {
-      alert(err.message || "Failed to cancel engagement.");
+      toast.error(err.message || "Failed to cancel engagement.");
     } finally {
       setActionLoading(false);
     }
@@ -88,8 +93,9 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
     try {
       const updated = await api.restoreEngagement(engagement.id);
       setEngagement(updated);
+      toast.success(`Engagement '${engagement.name}' reopened as active.`);
     } catch (err: any) {
-      alert(err.message || "Failed to reopen engagement.");
+      toast.error(err.message || "Failed to reopen engagement.");
     } finally {
       setActionLoading(false);
     }
@@ -172,7 +178,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleArchive}
+                onClick={() => setIsCancelConfirmOpen(true)}
                 disabled={actionLoading}
                 className="text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 gap-1.5"
               >
@@ -391,6 +397,17 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isCancelConfirmOpen}
+        onClose={() => setIsCancelConfirmOpen(false)}
+        onConfirm={handleArchive}
+        title="Cancel & Archive Engagement"
+        description={`Are you sure you want to cancel and archive '${engagement.name}'? All testing activities will be paused. This record can be reopened at any time.`}
+        confirmLabel="Cancel Engagement"
+        variant="destructive"
+        loading={actionLoading}
+      />
     </AppShell>
   );
 }

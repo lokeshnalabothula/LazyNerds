@@ -13,6 +13,7 @@ import { ClientForm } from "@/components/clients/client-form";
 import { ArchiveDialog } from "@/components/clients/archive-dialog";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/components/ui/toast";
 import { useViewMode } from "@/lib/use-view-mode";
 import { Client, ClientCreateInput, User as UserType } from "@/types/client";
 import { formatDate, formatDateTime, formatRelativeTime } from "@/lib/utils";
@@ -49,6 +50,7 @@ function ClientsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { toast } = useToast();
   const isFounder = user?.role === "founder";
   const isClientRole = user?.role === "client";
 
@@ -172,18 +174,24 @@ function ClientsContent() {
 
   // Handle individual archive
   const handleArchiveConfirm = async (client: Client) => {
-    await api.archiveClient(client.id);
-    setClientToArchive(null);
-    fetchClients();
+    try {
+      await api.archiveClient(client.id);
+      toast.success(`Client '${client.company_name}' archived successfully.`);
+      setClientToArchive(null);
+      fetchClients();
+    } catch (err: any) {
+      toast.error(err.message || "Could not archive client.");
+    }
   };
 
   // Handle individual restore
   const handleRestore = async (client: Client) => {
     try {
       await api.restoreClient(client.id);
+      toast.success(`Client '${client.company_name}' restored to active directory.`);
       fetchClients();
     } catch (err: any) {
-      alert(err.message || "Could not restore client.");
+      toast.error(err.message || "Could not restore client.");
     }
   };
 
@@ -192,12 +200,13 @@ function ClientsContent() {
     if (selectedClientIds.length === 0) return;
     setIsBulkLoading(true);
     try {
-      await api.bulkArchiveClients(selectedClientIds);
+      const res = await api.bulkArchiveClients(selectedClientIds);
+      toast.success(`Successfully archived ${res.archived_count} client organization${res.archived_count > 1 ? "s" : ""}.`);
       setSelectedClientIds([]);
       setIsBulkArchiveModalOpen(false);
       fetchClients();
     } catch (err: any) {
-      alert(err.message || "Could not bulk archive clients.");
+      toast.error(err.message || "Could not bulk archive clients.");
     } finally {
       setIsBulkLoading(false);
     }
@@ -208,11 +217,12 @@ function ClientsContent() {
     if (selectedClientIds.length === 0) return;
     setIsBulkLoading(true);
     try {
-      await api.bulkRestoreClients(selectedClientIds);
+      const res = await api.bulkRestoreClients(selectedClientIds);
+      toast.success(`Successfully restored ${res.restored_count} client organization${res.restored_count > 1 ? "s" : ""}.`);
       setSelectedClientIds([]);
       fetchClients();
     } catch (err: any) {
-      alert(err.message || "Could not bulk restore clients.");
+      toast.error(err.message || "Could not bulk restore clients.");
     } finally {
       setIsBulkLoading(false);
     }
@@ -225,10 +235,11 @@ function ClientsContent() {
     setIsAssigning(true);
     try {
       await api.assignClient(clientToAssign.id, selectedEmployeeId || null);
+      toast.success(`Assigned employee updated for ${clientToAssign.company_name}.`);
       setClientToAssign(null);
       fetchClients();
     } catch (err: any) {
-      alert(err.message || "Failed to update employee assignment.");
+      toast.error(err.message || "Failed to update employee assignment.");
     } finally {
       setIsAssigning(false);
     }

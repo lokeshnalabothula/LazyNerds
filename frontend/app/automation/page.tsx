@@ -5,6 +5,8 @@ import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { AutomationRule, AutomationExecution } from "@/types/automation";
 import { RuleFormModal } from "@/components/automation/rule-form-modal";
+import { useToast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatDateTime } from "@/lib/utils";
 import {
   Zap,
@@ -23,6 +25,7 @@ import {
 } from "lucide-react";
 
 export default function AutomationPage() {
+  const { toast } = useToast();
   const [rules, setRules] = useState<AutomationRule[]>([]);
   const [executions, setExecutions] = useState<AutomationExecution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +33,8 @@ export default function AutomationPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [ruleToEdit, setRuleToEdit] = useState<AutomationRule | null>(null);
+  const [ruleToDelete, setRuleToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeletingRule, setIsDeletingRule] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -54,32 +59,39 @@ export default function AutomationPage() {
   const handleToggleActive = async (rule: AutomationRule) => {
     try {
       await api.updateAutomationRule(rule.id, { is_active: !rule.is_active });
+      toast.success(`Workflow '${rule.name}' is now ${!rule.is_active ? "active" : "paused"}.`);
       await fetchData();
     } catch (err: any) {
-      alert(`Toggle failed: ${err.message}`);
+      toast.error(`Toggle failed: ${err.message}`);
     }
   };
 
-  const handleDeleteRule = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete workflow rule '${name}'?`)) return;
+  const handleDeleteRuleConfirm = async () => {
+    if (!ruleToDelete) return;
+    setIsDeletingRule(true);
     try {
-      await api.deleteAutomationRule(id);
+      await api.deleteAutomationRule(ruleToDelete.id);
+      toast.success(`Automation rule '${ruleToDelete.name}' deleted.`);
+      setRuleToDelete(null);
       await fetchData();
     } catch (err: any) {
-      alert(`Delete failed: ${err.message}`);
+      toast.error(`Delete failed: ${err.message}`);
+    } finally {
+      setIsDeletingRule(false);
     }
   };
 
-  const handleDispatchTest = async (ruleId: string) => {
+  const handleDispatchTest = async (ruleId: string, ruleName: string) => {
     try {
       setActionLoadingId(ruleId);
       await api.dispatchWorkflow(ruleId, {
         test: true,
         dispatched_at: new Date().toISOString(),
       });
+      toast.success(`Test execution dispatched for '${ruleName}'.`);
       await fetchData();
     } catch (err: any) {
-      alert(`Dispatch failed: ${err.message}`);
+      toast.error(`Dispatch failed: ${err.message}`);
     } finally {
       setActionLoadingId(null);
     }
@@ -89,9 +101,10 @@ export default function AutomationPage() {
     try {
       setActionLoadingId(executionId);
       await api.approveExecution(executionId, action);
+      toast.success(action === "approve" ? "Execution approved." : "Execution rejected.");
       await fetchData();
     } catch (err: any) {
-      alert(`Approval action failed: ${err.message}`);
+      toast.error(`Approval action failed: ${err.message}`);
     } finally {
       setActionLoadingId(null);
     }
@@ -247,10 +260,11 @@ export default function AutomationPage() {
 
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => handleDispatchTest(rule.id)}
+                        onClick={() => handleDispatchTest(rule.id, rule.name)}
                         disabled={actionLoadingId === rule.id}
-                        className="p-1 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="p-1 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                         title="Run Test Dispatch"
+                        aria-label={`Test dispatch rule ${rule.name}`}
                       >
                         {actionLoadingId === rule.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -263,15 +277,17 @@ export default function AutomationPage() {
                           setRuleToEdit(rule);
                           setIsFormOpen(true);
                         }}
-                        className="p-1 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="p-1 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                         title="Edit Rule"
+                        aria-label={`Edit rule ${rule.name}`}
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
                       <button
-                        onClick={() => handleDeleteRule(rule.id, rule.name)}
-                        className="p-1 rounded text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        onClick={() => setRuleToDelete({ id: rule.id, name: rule.name })}
+                        className="p-1 rounded text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                         title="Delete Rule"
+                        aria-label={`Delete rule ${rule.name}`}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -352,6 +368,17 @@ export default function AutomationPage() {
           onClose={() => setIsFormOpen(false)}
           onSaved={fetchData}
           ruleToEdit={ruleToEdit}
+        />
+
+        <ConfirmDialog
+          isOpen={Boolean(ruleToDelete)}
+          onClose={() => setRuleToDelete(null)}
+          onConfirm={handleDeleteRuleConfirm}
+          title="Delete Workflow Rule"
+          description={`Are you sure you want to delete workflow rule '${ruleToDelete?.name}'? Automatic dispatching and triggers for this rule will be permanently removed.`}
+          confirmLabel="Delete Rule"
+          variant="destructive"
+          loading={isDeletingRule}
         />
       </div>
     </AppShell>

@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_employee_or_founder
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.engagement import (
@@ -40,7 +40,7 @@ def read_engagements(
 ):
     """
     Returns a paginated list of engagement records with search and filtering.
-    Requires an authenticated user session.
+    Requires an authenticated user session. Enforces organization isolation for clients.
     """
     if sort_by not in SORT_FIELDS_ALLOWLIST:
         raise HTTPException(
@@ -53,6 +53,14 @@ def read_engagements(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Sort order must be 'asc' or 'desc'.",
         )
+
+    # Scoping for client role: clients only see their own organization's engagements
+    if current_user.role == "client":
+        if not current_user.client_id:
+            return EngagementListResponse(
+                items=[], total=0, page=page, page_size=page_size, total_pages=0
+            )
+        client_id = current_user.client_id
 
     items, total, total_pages = list_engagements(
         db=db,
@@ -80,11 +88,11 @@ def read_engagements(
 def create_new_engagement(
     engagement_in: EngagementCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_employee_or_founder),
 ):
     """
     Creates a new engagement linked to a valid client.
-    Transactionally committed in PostgreSQL.
+    Transactionally committed in PostgreSQL. Restricted to employees and founders.
     """
     try:
         new_engagement = create_engagement(db, engagement_in=engagement_in)
@@ -104,7 +112,7 @@ def read_engagement_by_id(
 ):
     """
     Fetches a specific engagement by UUID.
-    Returns 404 if not found.
+    Enforces tenant scoping for client accounts.
     """
     engagement = get_engagement_by_id(db, engagement_id=engagement_id)
     if not engagement:
@@ -112,6 +120,13 @@ def read_engagement_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This engagement could not be found.",
         )
+
+    if current_user.role == "client" and engagement.client_id != current_user.client_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not authorized to view another organization's engagement.",
+        )
+
     return EngagementOut.model_validate(engagement)
 
 
@@ -120,11 +135,11 @@ def update_existing_engagement(
     engagement_id: str,
     engagement_in: EngagementUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_employee_or_founder),
 ):
     """
     Performs a partial update of an engagement record.
-    Enforces lifecycle status transitions and date cross-validation.
+    Restricted to internal staff (employees and founders).
     """
     engagement = get_engagement_by_id(db, engagement_id=engagement_id)
     if not engagement:
@@ -147,7 +162,7 @@ def update_existing_engagement(
 def archive_existing_engagement(
     engagement_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_employee_or_founder),
 ):
     """
     Cancels/archives an engagement record, preserving audit history.
@@ -173,7 +188,7 @@ def archive_existing_engagement(
 def restore_existing_engagement(
     engagement_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_employee_or_founder),
 ):
     """
     Reopens a cancelled engagement back to draft status for replanning.

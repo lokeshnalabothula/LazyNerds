@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
 }
@@ -34,6 +34,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ghost:
         "bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100",
       destructive:
+        "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-sm",
+      danger:
         "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-sm",
     };
 

@@ -7,14 +7,21 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { Notification } from "@/types/notification";
-import { LogOut, Sun, Moon, Menu, Shield, Bell, CheckCheck, ExternalLink, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { LogOut, Sun, Moon, Menu, Shield, Bell, CheckCheck, ExternalLink, Loader2, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 interface TopbarProps {
   onToggleMobileNav?: () => void;
   title?: string;
+  isSidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
 }
 
-export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
+export const Topbar: React.FC<TopbarProps> = ({
+  onToggleMobileNav,
+  title,
+  isSidebarCollapsed,
+  onToggleSidebar,
+}) => {
   const { user, logout } = useAuth();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -123,11 +130,27 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileNav, title }) => {
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={onToggleMobileNav}
-          className="md:hidden p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+          className="md:hidden p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-label="Toggle navigation menu"
         >
           <Menu className="h-5 w-5" />
         </button>
+
+        {/* Desktop Sidebar Collapse Toggle */}
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="hidden md:flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors min-h-[36px] min-w-[36px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0"
+            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+          </button>
+        )}
 
         <div className="md:hidden flex items-center shrink-0">
           <div className="h-8 w-8 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center shadow-xs overflow-hidden">

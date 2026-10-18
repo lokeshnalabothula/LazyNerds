@@ -84,3 +84,65 @@ test("invalid saved preference falls back safely to device default", () => {
   assert.equal(result.mode, "table");
   assert.equal(result.source, "device_default");
 });
+
+// Sidebar collapse persistence test logic
+function resolveSidebarState({ savedPreference }) {
+  if (savedPreference === "true") return { isCollapsed: true, widthClass: "w-[68px]" };
+  return { isCollapsed: false, widthClass: "w-64" };
+}
+
+test("sidebar defaults to expanded (w-64) when no preference is saved", () => {
+  const result = resolveSidebarState({ savedPreference: null });
+  assert.equal(result.isCollapsed, false);
+  assert.equal(result.widthClass, "w-64");
+});
+
+test("sidebar collapses to compact (w-[68px]) when savedPreference is 'true'", () => {
+  const result = resolveSidebarState({ savedPreference: "true" });
+  assert.equal(result.isCollapsed, true);
+  assert.equal(result.widthClass, "w-[68px]");
+});
+
+test("sidebar expands back when savedPreference is 'false'", () => {
+  const result = resolveSidebarState({ savedPreference: "false" });
+  assert.equal(result.isCollapsed, false);
+  assert.equal(result.widthClass, "w-64");
+});
+
+// Keyboard shortcut target filter logic
+function shouldHandleSidebarShortcut(target) {
+  if (
+    target &&
+    (target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "SELECT" ||
+      target.isContentEditable)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+test("Ctrl+B/Cmd+B shortcut is ignored when focused on an INPUT field", () => {
+  assert.equal(shouldHandleSidebarShortcut({ tagName: "INPUT" }), false);
+});
+
+test("Ctrl+B/Cmd+B shortcut is ignored when focused on a TEXTAREA", () => {
+  assert.equal(shouldHandleSidebarShortcut({ tagName: "TEXTAREA" }), false);
+});
+
+test("Ctrl+B/Cmd+B shortcut is ignored when focused on a SELECT dropdown", () => {
+  assert.equal(shouldHandleSidebarShortcut({ tagName: "SELECT" }), false);
+});
+
+test("Ctrl+B/Cmd+B shortcut is ignored when focused on contentEditable element", () => {
+  assert.equal(shouldHandleSidebarShortcut({ tagName: "DIV", isContentEditable: true }), false);
+});
+
+test("Ctrl+B/Cmd+B shortcut triggers when target is body or neutral container", () => {
+  assert.equal(shouldHandleSidebarShortcut({ tagName: "BODY" }), true);
+  assert.equal(shouldHandleSidebarShortcut({ tagName: "DIV", isContentEditable: false }), true);
+  assert.equal(shouldHandleSidebarShortcut(null), true);
+});
+
+

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 from app.core.security import hash_password
 from app.models.client import Client
@@ -24,19 +24,24 @@ def register_client(db: Session, reg_in: ClientRegisterInput) -> ClientRegistrat
     normalized_email = reg_in.email.strip().lower()
 
     # Check if active approved user already exists
-    existing_user = db.query(User).filter(User.email == normalized_email).first()
+    existing_user = (
+        db.query(User)
+        .filter(func.lower(func.trim(User.email)) == normalized_email)
+        .first()
+    )
     if existing_user and existing_user.role in ("client", "employee", "founder", "admin"):
         raise ValueError("An account is already registered with this email address. Please sign in.")
 
     # Check for existing pending registration
     existing_reg = (
         db.query(ClientRegistration)
-        .filter(ClientRegistration.email == normalized_email)
+        .filter(func.lower(func.trim(ClientRegistration.email)) == normalized_email)
         .order_by(desc(ClientRegistration.created_at))
         .first()
     )
     if existing_reg and existing_reg.status == "pending":
         raise ValueError("A registration submission for this email is already currently pending founder review.")
+
 
     # Hash credentials securely
     hashed_pwd = hash_password(reg_in.password)
@@ -96,10 +101,12 @@ def get_registration_by_id(db: Session, reg_id: str) -> Optional[ClientRegistrat
 
 def get_registration_status_by_email(db: Session, email: str) -> Optional[ClientRegistration]:
     """Retrieves the latest registration status for an applicant email."""
+    if not email:
+        return None
     normalized_email = email.strip().lower()
     return (
         db.query(ClientRegistration)
-        .filter(ClientRegistration.email == normalized_email)
+        .filter(func.lower(func.trim(ClientRegistration.email)) == normalized_email)
         .order_by(desc(ClientRegistration.created_at))
         .first()
     )
@@ -169,8 +176,13 @@ def review_registration(
                 client.assigned_employee_id = assign_employee_id
 
         # 2. Establish User record for the client
-        user = db.query(User).filter(User.email == reg.email).first()
+        user = (
+            db.query(User)
+            .filter(func.lower(func.trim(User.email)) == reg.email.strip().lower())
+            .first()
+        )
         if not user:
+
             user = User(
                 email=reg.email,
                 full_name=reg.full_name,

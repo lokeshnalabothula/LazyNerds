@@ -6,9 +6,13 @@ from app.core.config import settings
 
 
 def hash_password(password: str) -> str:
-    """Hashes a plaintext password using bcrypt with random salt."""
+    """
+    Hashes a plaintext password using bcrypt with a random salt.
+    Safely truncates UTF-8 encoded bytes to 72 bytes to avoid bcrypt library limits.
+    """
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    pwd_bytes = password.encode("utf-8")[:72]
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
     return hashed.decode("utf-8")
 
 
@@ -16,14 +20,21 @@ get_password_hash = hash_password
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifies a plaintext password against a bcrypt hash."""
+    """
+    Verifies a plaintext password against a bcrypt hash.
+    Safely truncates plaintext UTF-8 encoded bytes to 72 bytes to match hash_password.
+    """
+    if not plain_password or not hashed_password:
+        return False
     try:
+        pwd_bytes = plain_password.encode("utf-8")[:72]
         return bcrypt.checkpw(
-            plain_password.encode("utf-8"),
+            pwd_bytes,
             hashed_password.encode("utf-8")
         )
     except Exception:
         return False
+
 
 
 def validate_password_strength(password: str) -> tuple[bool, str]:

@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_founder
@@ -18,7 +19,7 @@ from app.schemas.auth import (
     VerifyResetTokenRequest,
     VerifyResetTokenResponse,
 )
-from app.services import auth_service, audit_service, password_reset_service
+from app.services import auth_service, audit_service, password_reset_service, email_service
 from app.services.auth_service import authenticate_user
 
 router = APIRouter()
@@ -38,12 +39,14 @@ def login(
     user = authenticate_user(db, email=login_data.email, password=login_data.password)
     if not user:
         # Check if an applicant registration exists for this email
+        clean_email = login_data.email.strip().lower()
         reg = (
             db.query(ClientRegistration)
-            .filter(ClientRegistration.email == login_data.email.strip().lower())
+            .filter(func.lower(func.trim(ClientRegistration.email)) == clean_email)
             .order_by(ClientRegistration.created_at.desc())
             .first()
         )
+
         if reg:
             if reg.status == "pending":
                 raise HTTPException(
@@ -160,9 +163,26 @@ def forgot_password(
     Initiates password recovery.
     Always returns a generic 200 response to prevent account enumeration.
     Generates a secure, hashed, single-use token with 30-minute expiration.
+    Dispatches a branded password reset email with the recovery URL.
     """
-    raw_token = password_reset_service.request_password_reset(db, email=data.email)
+    reset_info = password_reset_service.initiate_password_reset(db, email=data.email)
     
+    email_status = "not_sent_no_account"
+    if reset_info:
+        raw_token, target_user = reset_info
+        reset_url = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password?token={raw_token}"
+        dispatch_result = email_service.send_password_reset_email(
+            to_email=target_user.email,
+            recipient_name=target_user.full_name,
+            reset_url=reset_url,
+        )
+        if dispatch_result.get("success"):
+            provider = dispatch_result.get("provider")
+            msg_id = dispatch_result.get("message_id")
+            email_status = f"dispatched_{provider}" + (f"_id_{msg_id}" if msg_id else "")
+        else:
+            email_status = f"failed_{dispatch_result.get('provider')}: {dispatch_result.get('error')}"
+
     # Audit event without exposing token
     audit_service.log_audit(
         db=db,
@@ -170,11 +190,9 @@ def forgot_password(
         action="FORGOT_PASSWORD_REQUEST",
         resource_type="user",
         resource_id="auth",
-        details=f"Password recovery requested for {data.email}. Token generated: {bool(raw_token)}",
+        details=f"Password recovery requested for {data.email}. Outcome: {email_status}",
     )
 
-    # In production, this would dispatch through the SMTP / Resend / Sendgrid service.
-    # The plaintext token is NEVER returned in the API response.
     return {
         "message": "If an account matches that email address, password recovery instructions have been dispatched."
     }

@@ -24,7 +24,7 @@ const resetPasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters long")
+      .min(10, "Password must be at least 10 characters long")
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[a-z]/, "Password must contain at least one lowercase letter")
       .regex(/[0-9]/, "Password must contain at least one digit")
@@ -245,7 +245,7 @@ function ResetPasswordContent() {
               <div className="p-2.5 rounded bg-zinc-950/60 border border-zinc-800/80 text-[11px] text-zinc-400 space-y-1 font-mono">
                 <p className="text-zinc-300 font-medium">Policy Requirements:</p>
                 <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
-                  <span>• Minimum 8 characters</span>
+                  <span>• Minimum 10 characters</span>
                   <span>• Uppercase letter [A-Z]</span>
                   <span>• Lowercase letter [a-z]</span>
                   <span>• Number [0-9]</span>

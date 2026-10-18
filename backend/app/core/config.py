@@ -50,9 +50,22 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: Union[str, List[str]] = DEFAULT_DEV_ORIGINS
 
     # Initial Admin Seed (used ONLY in non-production environments when DB is empty)
-    INITIAL_ADMIN_EMAIL: str = "founder@lazynerds.com"
+    INITIAL_ADMIN_EMAIL: str = "lokeshnalabothula@gmail.com"
     INITIAL_ADMIN_PASSWORD: str = os.getenv("INITIAL_ADMIN_PASSWORD", "dev-temporary-seed-only")
-    INITIAL_ADMIN_NAME: str = "Lazy Nerds Founder"
+    INITIAL_ADMIN_NAME: str = "Lokesh Nalabothula"
+
+    # Email Dispatch & Password Recovery Configuration
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://lazynerds.vercel.app")
+    EMAIL_PROVIDER: str = os.getenv("EMAIL_PROVIDER", "auto")  # "auto", "resend", "smtp", "mock"
+    EMAIL_FROM: str = os.getenv("EMAIL_FROM", "Lazy Nerds FixOps <noreply@lazynerds.com>")
+    RESEND_API_KEY: str | None = os.getenv("RESEND_API_KEY")
+    SMTP_HOST: str | None = os.getenv("SMTP_HOST")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: str | None = os.getenv("SMTP_USER")
+    SMTP_PASSWORD: str | None = os.getenv("SMTP_PASSWORD")
+    SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").lower() in ("true", "1", "yes")
+    SMTP_SSL: bool = os.getenv("SMTP_SSL", "false").lower() in ("true", "1", "yes")
+
 
     @field_validator("DATABASE_URL", "DATABASE_URL_UNPOOLED", mode="before")
     @classmethod

@@ -76,3 +76,72 @@ def test_password_reset_flow_end_to_end(client, db_session, test_user):
     )
     assert login_res.status_code == 200
     assert "access_token" in login_res.json()
+
+
+def test_forgot_password_case_insensitive_lookup(client, db_session, test_user):
+    """Verifies that forgot-password matches accounts regardless of case or surrounding spaces."""
+    mixed_case_email = f"  {test_user.email.upper()}  "
+    res = client.post("/api/v1/auth/forgot-password", json={"email": mixed_case_email})
+    assert res.status_code == 200
+
+    # Ensure a valid token was generated and associated with the user
+    token_record = (
+        db_session.query(PasswordResetToken)
+        .filter(PasswordResetToken.user_id == test_user.id)
+        .order_by(PasswordResetToken.created_at.desc())
+        .first()
+    )
+    assert token_record is not None
+    assert token_record.used_at is None
+
+
+def test_password_reset_long_password_bcrypt_safe(client, db_session, test_user):
+    """Verifies passwords longer than 72 bytes do not crash bcrypt and authenticate reliably."""
+    raw_token = password_reset_service.request_password_reset(db_session, email=test_user.email)
+    assert raw_token is not None
+
+    # An 80-character password with mixed requirements
+    long_pwd = "VeryLongPassphraseSecureFixOps2026!" + "A" * 40
+    assert len(long_pwd.encode("utf-8")) > 72
+
+    res = client.post(
+        "/api/v1/auth/reset-password",
+        json={"token": raw_token, "new_password": long_pwd}
+    )
+    assert res.status_code == 200
+
+    # Login with long password succeeds
+    login_res = client.post(
+        "/api/v1/auth/login",
+        json={"email": test_user.email, "password": long_pwd}
+    )
+    assert login_res.status_code == 200
+    assert "access_token" in login_res.json()
+
+
+def test_email_service_templates_and_dispatch():
+    """Unit test for email templates and mock dispatch service."""
+    from app.services.email_service import (
+        build_password_reset_html,
+        build_password_reset_plaintext,
+        send_password_reset_email,
+    )
+
+    url = "https://lazynerds.vercel.app/reset-password?token=test-token-xyz-123"
+    html = build_password_reset_html("Lokesh Nalabothula", "lokesh@example.com", url)
+    text = build_password_reset_plaintext("Lokesh Nalabothula", "lokesh@example.com", url)
+
+    assert "Lazy Nerds FixOps" in html
+    assert url in html
+    assert "30 minutes" in html
+    assert "Lokesh Nalabothula" in html
+
+    assert "Lazy Nerds FixOps" in text
+    assert url in text
+    assert "30 minutes" in text
+
+    # Dispatch via mock provider
+    result = send_password_reset_email("lokesh@example.com", "Lokesh Nalabothula", url)
+    assert result["success"] is True
+    assert result["provider"] in ("mock", "resend", "smtp")
+

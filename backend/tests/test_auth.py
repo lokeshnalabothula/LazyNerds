@@ -94,3 +94,18 @@ def test_change_password_too_short(auth_client, test_user):
         }
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY or response.status_code == 422
+
+
+def test_login_case_insensitive_and_whitespace(client, test_user):
+    """Tests that login succeeds even with mixed-case email and surrounding whitespace."""
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": f"  FOUNDER-TEST@lazynerds.com  ",
+            "password": "TestPassword2026!",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["user"]["email"] == "founder-test@lazynerds.com"
+

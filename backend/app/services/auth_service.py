@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.core.security import hash_password, verify_password
 from app.models.user import User
@@ -7,8 +8,11 @@ from app.schemas.auth import UserCreate
 
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
-    """Finds a user by email (case-insensitive lookup)."""
-    return db.query(User).filter(User.email == email.strip().lower()).first()
+    """Finds a user by email (robust case-insensitive and trimmed lookup)."""
+    if not email:
+        return None
+    clean_email = email.strip().lower()
+    return db.query(User).filter(func.lower(func.trim(User.email)) == clean_email).first()
 
 
 def get_user_by_id(db: Session, user_id: str) -> Optional[User]:
@@ -18,6 +22,8 @@ def get_user_by_id(db: Session, user_id: str) -> Optional[User]:
 
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     """Verifies credentials and returns User if valid, else None."""
+    if not email or not password:
+        return None
     user = get_user_by_email(db, email)
     if not user:
         return None
@@ -26,6 +32,7 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     if not user.is_active:
         return None
     return user
+
 
 
 def create_user(db: Session, user_in: UserCreate) -> User:

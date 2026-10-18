@@ -2,6 +2,7 @@ import hashlib
 import secrets
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Tuple
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, validate_password_strength
@@ -13,16 +14,21 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def request_password_reset(db: Session, email: str) -> Optional[str]:
+def initiate_password_reset(db: Session, email: str) -> Optional[Tuple[str, User]]:
     """
     Initiates password reset for the specified email.
     Generates a cryptographically secure URL-safe token.
     Stores only the SHA-256 hash in the database.
-    Returns the plaintext token only for transmission to the email dispatcher.
-    Returns None if account does not exist or is inactive (constant-time behavior).
+    Returns (raw_token, user) if account exists and is active, else None.
     """
+    if not email:
+        return None
     normalized_email = email.strip().lower()
-    user = db.query(User).filter(User.email == normalized_email).first()
+    user = (
+        db.query(User)
+        .filter(func.lower(func.trim(User.email)) == normalized_email)
+        .first()
+    )
     if not user or not user.is_active:
         return None
 
@@ -44,7 +50,20 @@ def request_password_reset(db: Session, email: str) -> Optional[str]:
     )
     db.add(reset_record)
     db.commit()
+    return raw_token, user
+
+
+def request_password_reset(db: Session, email: str) -> Optional[str]:
+    """
+    Initiates password reset for the specified email and returns the raw token string.
+    Backwards-compatible wrapper around initiate_password_reset.
+    """
+    result = initiate_password_reset(db, email=email)
+    if not result:
+        return None
+    raw_token, _ = result
     return raw_token
+
 
 
 def verify_password_reset_token(db: Session, raw_token: str) -> Optional[Tuple[PasswordResetToken, User]]:

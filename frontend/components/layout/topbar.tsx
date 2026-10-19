@@ -155,7 +155,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         <div className="md:hidden flex items-center shrink-0">
           <div className="h-8 w-8 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs overflow-hidden">
             <Image
-              src="/brand/profile.png"
+              src="/profile-sm.png"
               alt="Lazy Nerds"
               width={32}
               height={32}

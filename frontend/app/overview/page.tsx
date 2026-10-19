@@ -76,7 +76,7 @@ export default function OverviewPage() {
           <div className="flex items-center gap-4 min-w-0">
             <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-[#F5C518]/30 bg-[#1B1E24] flex items-center justify-center shadow-xs overflow-hidden shrink-0">
               <Image
-                src="/brand/profile.png"
+                src="/profile-sm.png"
                 alt="Lazy Nerds"
                 width={56}
                 height={56}

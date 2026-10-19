@@ -81,7 +81,7 @@ export default function LoginPage() {
         <div className="text-center space-y-3">
           <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-[#F5C518]/30 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200">
             <Image
-              src="/brand/profile.png"
+              src="/profile-sm.png"
               alt="Lazy Nerds"
               width={96}
               height={96}

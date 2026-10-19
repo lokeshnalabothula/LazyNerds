@@ -120,7 +120,7 @@ export default function RegisterPage() {
         <div className="text-center space-y-3">
           <div className="relative mx-auto w-24 h-24 rounded-2xl border border-zinc-800 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200 ring-2 ring-[#F5C518]/30">
             <Image
-              src="/brand/profile.png"
+              src="/profile-sm.png"
               alt="Lazy Nerds FixOps Mascot"
               width={96}
               height={96}

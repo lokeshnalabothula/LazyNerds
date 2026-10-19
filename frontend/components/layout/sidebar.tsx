@@ -16,10 +16,6 @@ import {
   LayoutDashboard,
   Zap,
   UserPlus,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -117,7 +113,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       aria-label="Application Navigation Sidebar"
     >
       {/* Brand Header */}
-      <div className="h-14 border-b border-zinc-200 dark:border-zinc-800 px-3 flex items-center justify-between shrink-0">
+      <div
+        className={cn(
+          "h-14 border-b border-zinc-200 dark:border-zinc-800 px-3 flex items-center shrink-0",
+          isCollapsed ? "justify-center" : "justify-start"
+        )}
+      >
         <Link
           href="/overview"
           onClick={onNavigate}
@@ -126,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className="h-9 w-9 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105 shrink-0">
             <Image
-              src="/brand/profile.png"
+              src="/profile-sm.png"
               alt="Lazy Nerds"
               width={36}
               height={36}
@@ -146,25 +147,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </Link>
-
-        {/* Desktop Collapse Button */}
-        {onToggleCollapse && (
-          <button
-            onClick={onToggleCollapse}
-            className={cn(
-              "hidden md:flex p-1.5 rounded-md text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors shrink-0",
-              isCollapsed && "mx-auto"
-            )}
-            title={isCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar"}
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
-        )}
       </div>
 
       {/* Navigation */}
@@ -270,15 +252,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer Info */}
       <div className="border-t border-zinc-200 dark:border-zinc-800 p-2.5 bg-zinc-100/40 dark:bg-zinc-900/40 shrink-0">
         {isCollapsed ? (
-          <div className="flex justify-center">
-            <button
-              onClick={onToggleCollapse}
-              className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors"
-              title="Expand sidebar"
-              aria-label="Expand sidebar"
-            >
-              <PanelLeftOpen className="h-4 w-4" />
-            </button>
+          <div className="flex justify-center text-[10px] font-mono text-zinc-400 select-none" title="Lazy Nerds FixOps v2.1.0">
+            v2.1
           </div>
         ) : (
           <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 px-1">

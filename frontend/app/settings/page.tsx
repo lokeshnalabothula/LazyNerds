@@ -150,7 +150,7 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3.5">
             <div className="h-12 w-12 rounded-xl border border-[#F5C518]/30 bg-[#1B1E24] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
               <Image
-                src="/brand/profile.png"
+                src="/profile-sm.png"
                 alt="Lazy Nerds Mascot Emblem"
                 width={48}
                 height={48}

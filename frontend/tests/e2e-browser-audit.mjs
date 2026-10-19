@@ -208,68 +208,51 @@ async function runAudit() {
       defects.push(`Engagements first visit at 1280px did not default to Table View: aria-pressed=${engagementTablePressed}`);
     }
 
-    // 6. Responsive Audit Across All 8 Viewports and All Routes
-    console.log('\n--- Phase 4: Full Responsive & Overflow Audit (8 Viewports x 12 Routes) ---');
-    let totalChecks = 0;
-    let overflowDefects = 0;
-
-    for (const vp of VIEWPORTS) {
-      await page.setViewport({ width: vp.width, height: vp.height });
-      // Sample key routes across all viewports
-      for (const route of ROUTES) {
-        totalChecks++;
-        try {
-          await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-          await new Promise(r => setTimeout(r, 300));
-
-          // Evaluate horizontal scroll and clipping
-          const layoutMetrics = await page.evaluate(() => {
-            const docEl = document.documentElement;
-            const body = document.body;
-            const scrollWidth = Math.max(docEl.scrollWidth, body.scrollWidth);
-            const innerWidth = window.innerWidth;
-            const hasOverflow = scrollWidth > innerWidth + 1; // 1px tolerance for subpixel rendering
-            
-            return {
-              scrollWidth,
-              innerWidth,
-              hasOverflow,
-            };
-          });
-
-          if (layoutMetrics.hasOverflow) {
-            overflowDefects++;
-            const defectMsg = `Horizontal scroll overflow detected on ${route.path} at ${vp.label}: scrollWidth=${layoutMetrics.scrollWidth} > innerWidth=${layoutMetrics.innerWidth}`;
-            console.error(`  ✗ ${defectMsg}`);
-            defects.push(defectMsg);
-          }
-        } catch (err) {
-          console.warn(`  ! Navigation note on ${route.path} at ${vp.label}: ${err.message}`);
-        }
-      }
-      console.log(`  ✓ Completed all routes at ${vp.label} (${vp.width}x${vp.height})`);
-    }
-
-    console.log(`\nResponsive audit completed: ${totalChecks} route/viewport combinations checked.`);
-    if (overflowDefects === 0) {
-      console.log('  ✓ ZERO horizontal scrolling or viewport overflow defects detected across all viewports!');
-      observations.push(`Audited 8 viewports (320px, 375px, 390px, 430px, 768px, 1024px, 1280px, 1440px) across 12 routes (total ${totalChecks} checks). 0 layout overflow defects.`);
-    }
-
-    // 7. Functional Workflow Test
-    console.log('\n--- Phase 5: Core End-to-End Workflow Verification ---');
+    // 6. Functional Workflow Test (Multi-Step Wizard & Operations)
+    console.log('\n--- Phase 4: Core End-to-End Workflow Verification ---');
     await page.setViewport({ width: 1280, height: 800 });
 
-    // Client Creation & Detail View
+    // Client Creation & Detail View via Guided Multi-Step Wizard
     await page.goto(`${BASE_URL}/clients/new`, { waitUntil: 'networkidle2' });
     const clientName = `Audit Test Corp ${Date.now()}`;
     await page.waitForSelector('input[name="company_name"]', { timeout: 10000 });
+    
+    // Step 1: Organization Details
     await page.type('input[name="company_name"]', clientName);
+    await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const continueBtn = btns.find(b => b.textContent.includes('Continue'));
+      if (continueBtn) continueBtn.click();
+    });
+
+    // Step 2: Contact Information
+    await page.waitForSelector('input[name="primary_contact_name"]', { timeout: 10000 });
     await page.type('input[name="primary_contact_name"]', 'Alex Thorne');
     await page.type('input[name="primary_contact_email"]', `alex.${Date.now()}@audittest.org`);
     await page.type('input[name="website"]', 'https://audittest.org');
-    
-    await page.click('button[type="submit"]');
+    await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const continueBtn = btns.find(b => b.textContent.includes('Continue'));
+      if (continueBtn) continueBtn.click();
+    });
+
+    // Step 3: Business Context & Scoping Notes
+    await page.waitForSelector('textarea[name="notes"]', { timeout: 10000 });
+    await page.type('textarea[name="notes"]', 'Automated E2E audit verification client.');
+    await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const continueBtn = btns.find(b => b.textContent.includes('Continue'));
+      if (continueBtn) continueBtn.click();
+    });
+
+    // Step 4: Review & Final Confirmation
+    await page.waitForFunction(() => document.body.textContent.includes('Review & Confirm Client Registration'), { timeout: 10000 });
+    await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const submitBtn = btns.find(b => b.textContent.includes('Confirm & Register Client'));
+      if (submitBtn) submitBtn.click();
+    });
+
     await page.waitForFunction(() => window.location.pathname.startsWith('/clients/'), { timeout: 15000 });
 
     const createdClientUrl = page.url();
@@ -315,6 +298,63 @@ async function runAudit() {
       console.log('  ✓ Settings page loaded with interactive Change Password card and system diagnostics');
       observations.push('Settings page Change Password card and diagnostic telemetry verified.');
     }
+
+    // 7. Responsive Audit Across All 8 Viewports and All Routes
+    console.log('\n--- Phase 5: Full Responsive & Overflow Audit (8 Viewports x 12 Routes) ---');
+    let totalChecks = 0;
+    let overflowDefects = 0;
+
+    for (const vp of VIEWPORTS) {
+      if (page.isClosed()) {
+        page = await browser.newPage();
+      }
+      await page.setViewport({ width: vp.width, height: vp.height });
+      // Sample key routes across all viewports
+      for (const route of ROUTES) {
+        totalChecks++;
+        try {
+          if (page.isClosed()) {
+            page = await browser.newPage();
+            await page.setViewport({ width: vp.width, height: vp.height });
+          }
+          await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+          await new Promise(r => setTimeout(r, 200));
+
+          // Evaluate horizontal scroll and clipping
+          const layoutMetrics = await page.evaluate(() => {
+            const docEl = document.documentElement;
+            const body = document.body;
+            const scrollWidth = Math.max(docEl.scrollWidth, body.scrollWidth);
+            const innerWidth = window.innerWidth;
+            const hasOverflow = scrollWidth > innerWidth + 1; // 1px tolerance for subpixel rendering
+            
+            return {
+              scrollWidth,
+              innerWidth,
+              hasOverflow,
+            };
+          });
+
+          if (layoutMetrics.hasOverflow) {
+            overflowDefects++;
+            const defectMsg = `Horizontal scroll overflow detected on ${route.path} at ${vp.label}: scrollWidth=${layoutMetrics.scrollWidth} > innerWidth=${layoutMetrics.innerWidth}`;
+            console.error(`  ✗ ${defectMsg}`);
+            defects.push(defectMsg);
+          }
+        } catch (err) {
+          console.warn(`  ! Navigation note on ${route.path} at ${vp.label}: ${err.message}`);
+        }
+      }
+      console.log(`  ✓ Completed all routes at ${vp.label} (${vp.width}x${vp.height})`);
+    }
+
+    console.log(`\nResponsive audit completed: ${totalChecks} route/viewport combinations checked.`);
+    if (overflowDefects === 0) {
+      console.log('  ✓ ZERO horizontal scrolling or viewport overflow defects detected across all viewports!');
+      observations.push(`Audited 8 viewports (320px, 375px, 390px, 430px, 768px, 1024px, 1280px, 1440px) across 12 routes (total ${totalChecks} checks). 0 layout overflow defects.`);
+    }
+
+
 
     // Check Console Errors
     if (consoleErrors.length > 0) {

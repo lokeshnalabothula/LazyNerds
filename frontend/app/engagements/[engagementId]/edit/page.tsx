@@ -88,24 +88,32 @@ export default function EditEngagementPage({ params }: EditEngagementPageProps) 
     <AppShell title={`Edit: ${engagement.name}`}>
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Navigation Breadcrumb */}
-        <div>
+        <div className="flex items-center justify-between">
           <Link
             href={`/engagements/${engagement.id}`}
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors group"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
             <span>Back to Engagement Details</span>
           </Link>
+          <span className="text-[11px] font-mono text-zinc-400">
+            ID: {engagement.id.slice(0, 8)}...
+          </span>
         </div>
 
-        {/* Card Header */}
-        <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs space-y-6">
-          <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
-            <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-              Edit Security Engagement
-            </h1>
+        {/* Card Header & Form */}
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111318] p-6 shadow-xs space-y-6">
+          <div className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                Edit Security Engagement
+              </h1>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
+                {engagement.status.toUpperCase()}
+              </span>
+            </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Modify operational details, target scope, or scheduling for {engagement.name}.
+              Modify operational parameters, target scope definitions, or scheduling for <strong className="font-mono text-zinc-700 dark:text-zinc-300">{engagement.name}</strong>.
             </p>
           </div>
 

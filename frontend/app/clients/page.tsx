@@ -296,14 +296,15 @@ function ClientsContent() {
                 </Button>
               </Link>
             )}
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              className="gap-1.5 shadow-sm text-xs font-semibold"
-              size="sm"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Client</span>
-            </Button>
+            <Link href="/clients/new">
+              <Button
+                className="gap-1.5 shadow-xs text-xs font-bold bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] border-none"
+                size="sm"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add Client</span>
+              </Button>
+            </Link>
           </div>
         </div>
 

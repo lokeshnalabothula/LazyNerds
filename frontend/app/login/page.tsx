@@ -82,19 +82,26 @@ export default function LoginPage() {
           <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-[#F5C518]/30 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200">
             <Image
               src="/profile-sm.png"
-              alt="Lazy Nerds"
+              alt="Lazy Nerds Mascot"
               width={96}
               height={96}
               priority
               className="object-cover w-full h-full"
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5 flex flex-col items-center">
             <div className="flex items-center justify-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-100 font-mono">
-                LAZY NERDS
-              </h1>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold">
+              <div className="h-8 w-44 relative">
+                <Image
+                  src="/title-sm.png"
+                  alt="Lazy Nerds"
+                  fill
+                  sizes="176px"
+                  priority
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold shrink-0">
                 FIXOPS
               </span>
             </div>

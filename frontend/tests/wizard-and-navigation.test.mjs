@@ -63,6 +63,35 @@ describe("Brand Assets & Navigation Integrity", () => {
       "Sidebar footer must NOT contain duplicate expand button"
     );
   });
+
+  test("official brand wordmark title-sm.png is rendered in key application surfaces", () => {
+    const sidebarCode = fs.readFileSync(path.join(frontendDir, "components", "layout", "sidebar.tsx"), "utf8");
+    const loginCode = fs.readFileSync(path.join(frontendDir, "app", "login", "page.tsx"), "utf8");
+    const registerCode = fs.readFileSync(path.join(frontendDir, "app", "register", "page.tsx"), "utf8");
+    const settingsCode = fs.readFileSync(path.join(frontendDir, "app", "settings", "page.tsx"), "utf8");
+
+    assert.ok(sidebarCode.includes("title-sm.png"), "Sidebar header must display title-sm.png wordmark");
+    assert.ok(loginCode.includes("title-sm.png"), "Login page must display title-sm.png wordmark");
+    assert.ok(registerCode.includes("title-sm.png"), "Register page must display title-sm.png wordmark");
+    assert.ok(settingsCode.includes("title-sm.png"), "Settings page must display title-sm.png wordmark");
+  });
+
+  test("client and engagement edit forms provide structured, sectioned layout with icons", () => {
+    const clientFormCode = fs.readFileSync(path.join(frontendDir, "components", "clients", "client-form.tsx"), "utf8");
+    const engFormCode = fs.readFileSync(path.join(frontendDir, "components", "engagements", "engagement-form.tsx"), "utf8");
+
+    // Client form has 3 clear sections
+    assert.ok(clientFormCode.includes("1. Organization Profile"), "ClientForm must include Organization Profile section");
+    assert.ok(clientFormCode.includes("2. Primary Security Contact"), "ClientForm must include Primary Security Contact section");
+    assert.ok(clientFormCode.includes("3. Business Context & Scoping Notes"), "ClientForm must include Business Context section");
+
+    // Engagement form has 4 clear sections and locked client display on edit
+    assert.ok(engFormCode.includes("1. Client & Methodology"), "EngagementForm must include Client & Methodology section");
+    assert.ok(engFormCode.includes("2. Scheduling & Operational Lifecycle"), "EngagementForm must include Scheduling section");
+    assert.ok(engFormCode.includes("3. Scope & Rules of Engagement"), "EngagementForm must include Scope section");
+    assert.ok(engFormCode.includes("4. Assessor Assignment"), "EngagementForm must include Assessor section");
+    assert.ok(engFormCode.includes("initialData.client_company_name"), "EngagementForm must display read-only client card when editing");
+  });
 });
 
 describe("Client Multi-Step Wizard Validation & Flow", () => {

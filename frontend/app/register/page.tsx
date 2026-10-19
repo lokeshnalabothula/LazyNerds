@@ -128,13 +128,20 @@ export default function RegisterPage() {
               className="object-cover w-full h-full"
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5 flex flex-col items-center">
             <div className="flex items-center justify-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100 font-mono">
-                LAZY NERDS
-              </h1>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#F5C518]/15 text-[#F5C518] border border-[#F5C518]/30 tracking-widest">
-                FIXOPS ONBOARDING
+              <div className="h-9 w-48 relative">
+                <Image
+                  src="/title-sm.png"
+                  alt="Lazy Nerds"
+                  fill
+                  sizes="192px"
+                  priority
+                  className="object-contain"
+                />
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 tracking-wider shrink-0">
+                ONBOARDING
               </span>
             </div>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">

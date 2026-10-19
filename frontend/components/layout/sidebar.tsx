@@ -136,13 +136,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col min-w-0 transition-opacity duration-200">
-              <span className="text-xs font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono truncate flex items-center gap-1.5">
-                LAZY NERDS
-                <span className="h-1.5 w-1.5 rounded-full bg-[#F5C518]" />
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-[#B88700] dark:text-[#FFD84D] font-semibold truncate font-mono">
-                FixOps Platform
+            <div className="flex items-center gap-1.5 min-w-0 transition-opacity duration-200">
+              <div className="h-7 w-32 relative">
+                <Image
+                  src="/title-sm.png"
+                  alt="Lazy Nerds"
+                  fill
+                  sizes="128px"
+                  priority
+                  className="object-contain object-left"
+                />
+              </div>
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold font-mono shrink-0">
+                OPS
               </span>
             </div>
           )}

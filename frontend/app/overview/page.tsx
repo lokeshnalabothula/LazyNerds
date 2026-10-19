@@ -119,12 +119,20 @@ export default function OverviewPage() {
               <span>Refresh Telemetry</span>
             </Button>
             {!isClient && (
-              <Link href="/engagements/new">
-                <Button size="sm" className="text-xs h-9 gap-1.5 shadow-xs font-semibold">
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>New Engagement</span>
-                </Button>
-              </Link>
+              <>
+                <Link href="/clients/new">
+                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50">
+                    <Users className="h-3.5 w-3.5" />
+                    <span>New Client</span>
+                  </Button>
+                </Link>
+                <Link href="/engagements/new">
+                  <Button size="sm" className="text-xs h-9 gap-1.5 bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] font-bold border-none shadow-xs">
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>New Engagement</span>
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
         </div>

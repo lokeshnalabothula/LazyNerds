@@ -208,9 +208,18 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            {client.status === "active" && (
+              <Link href={`/engagements/new?client_id=${client.id}`}>
+                <Button size="sm" className="gap-1.5 text-xs bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] font-bold border-none shadow-xs">
+                  <Shield className="h-3.5 w-3.5" />
+                  <span>New Engagement</span>
+                </Button>
+              </Link>
+            )}
+
             <Link href={`/clients/${client.id}/edit`}>
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                 <Edit2 className="h-3.5 w-3.5" />
                 <span>Edit Profile</span>
               </Button>
@@ -221,7 +230,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsArchiveDialogOpen(true)}
-                className="gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
+                className="gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
               >
                 <Archive className="h-3.5 w-3.5" />
                 <span>Archive</span>
@@ -231,7 +240,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                 variant="outline"
                 size="sm"
                 onClick={handleRestore}
-                className="gap-1.5 text-emerald-600 dark:text-emerald-400"
+                className="gap-1.5 text-xs text-emerald-600 dark:text-emerald-400"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span>Restore</span>

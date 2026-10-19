@@ -232,6 +232,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
+      {/* User Quick Profile */}
+      {user && (
+        <div className="border-t border-zinc-200 dark:border-zinc-800 p-2 shrink-0">
+          <Link
+            href="/settings"
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors group",
+              isCollapsed ? "justify-center" : "justify-start"
+            )}
+            title={`Operator: ${user.full_name || user.email}`}
+          >
+            <div className="relative h-8 w-8 rounded-full border border-[#F5C518]/40 bg-[#1B1E24] overflow-hidden shrink-0 shadow-xs ring-1 ring-[#F5C518]/20 group-hover:scale-105 transition-transform">
+              <Image
+                src="/profile-sm.png"
+                alt={user.full_name || "Profile Picture"}
+                width={32}
+                height={32}
+                className="object-cover w-full h-full"
+              />
+            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col min-w-0 text-left">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate group-hover:text-[#F5C518] transition-colors">
+                  {user.full_name || user.email}
+                </span>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate capitalize font-mono">
+                  {user.role} operator
+                </span>
+              </div>
+            )}
+          </Link>
+        </div>
+      )}
+
       {/* Footer Info */}
       <div className="border-t border-zinc-200 dark:border-zinc-800 p-2.5 bg-zinc-100/40 dark:bg-zinc-900/40 shrink-0">
         {isCollapsed ? (

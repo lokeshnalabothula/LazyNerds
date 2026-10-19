@@ -302,25 +302,41 @@ export const Topbar: React.FC<TopbarProps> = ({
           )}
         </button>
 
-        {/* User Identity */}
+        {/* User Identity & Profile Avatar */}
         {user ? (
           <div className="flex items-center gap-2 sm:gap-3 pl-1.5 sm:pl-2 border-l border-zinc-200 dark:border-zinc-800">
-            <div className="hidden sm:flex flex-col text-right max-w-[140px] truncate">
-              <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                {user.full_name || user.email}
-              </span>
-              <span
-                className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded w-fit self-end font-semibold tracking-wider ${
-                  user.role === "founder"
-                    ? "bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30"
-                    : user.role === "client"
-                    ? "bg-zinc-800 text-zinc-300 border border-zinc-700"
-                    : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                }`}
-              >
-                {user.role}
-              </span>
-            </div>
+            <Link
+              href="/settings"
+              className="flex items-center gap-2 group p-1 -m-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
+              title="View profile & platform settings"
+            >
+              <div className="relative h-8 w-8 rounded-full border border-[#F5C518]/40 bg-[#1B1E24] overflow-hidden shrink-0 shadow-xs ring-1 ring-[#F5C518]/20 transition-transform group-hover:scale-105">
+                <Image
+                  src="/profile-sm.png"
+                  alt={user.full_name || "Profile Picture"}
+                  width={32}
+                  height={32}
+                  priority
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <div className="hidden sm:flex flex-col text-right max-w-[140px] truncate">
+                <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate group-hover:text-[#F5C518] transition-colors">
+                  {user.full_name || user.email}
+                </span>
+                <span
+                  className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded w-fit self-end font-semibold tracking-wider ${
+                    user.role === "founder"
+                      ? "bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30"
+                      : user.role === "client"
+                      ? "bg-zinc-800 text-zinc-300 border border-zinc-700"
+                      : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  }`}
+                >
+                  {user.role}
+                </span>
+              </div>
+            </Link>
             <Button
               variant="ghost"
               size="sm"

@@ -193,33 +193,64 @@ export default function SettingsPage() {
           </div>
 
           {user && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <span className="text-zinc-400 block text-[11px]">Full Name</span>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                  {user.full_name}
-                </span>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800/60">
+                <div className="relative h-16 w-16 rounded-2xl border-2 border-[#F5C518]/40 bg-[#1B1E24] overflow-hidden shrink-0 shadow-md ring-2 ring-[#F5C518]/20">
+                  <Image
+                    src="/profile.png"
+                    alt={user.full_name || "Profile Picture"}
+                    width={64}
+                    height={64}
+                    priority
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+                      {user.full_name}
+                    </h3>
+                    <Badge variant="active" size="sm" className="capitalize">
+                      {user.role}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                    {user.email}
+                  </p>
+                  <p className="text-[11px] text-zinc-400 font-mono">
+                    Official Operator Profile Picture • FixOps Identity
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <span className="text-zinc-400 block text-[11px]">Account Email</span>
-                <span className="font-mono text-zinc-800 dark:text-zinc-200">
-                  {user.email}
-                </span>
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-zinc-400 block text-[11px]">Full Name</span>
+                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                    {user.full_name}
+                  </span>
+                </div>
 
-              <div>
-                <span className="text-zinc-400 block text-[11px]">Assigned Role</span>
-                <Badge variant="active" size="sm" className="capitalize">
-                  {user.role}
-                </Badge>
-              </div>
+                <div>
+                  <span className="text-zinc-400 block text-[11px]">Account Email</span>
+                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                    {user.email}
+                  </span>
+                </div>
 
-              <div>
-                <span className="text-zinc-400 block text-[11px]">Operator ID</span>
-                <span className="font-mono text-[11px] text-zinc-500 break-all select-all">
-                  {user.id}
-                </span>
+                <div>
+                  <span className="text-zinc-400 block text-[11px]">Assigned Role</span>
+                  <Badge variant="active" size="sm" className="capitalize">
+                    {user.role}
+                  </Badge>
+                </div>
+
+                <div>
+                  <span className="text-zinc-400 block text-[11px]">Operator ID</span>
+                  <span className="font-mono text-[11px] text-zinc-500 break-all select-all">
+                    {user.id}
+                  </span>
+                </div>
               </div>
             </div>
           )}

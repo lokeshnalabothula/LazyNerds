@@ -91,10 +91,13 @@ def get_findings(
     severity: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    client_id: Optional[str] = None,
     page: int = 1,
     page_size: int = 50,
 ) -> tuple[List[Finding], int]:
     query = db.query(Finding)
+    if client_id:
+        query = query.join(Engagement).filter(Engagement.client_id == client_id)
     if engagement_id:
         query = query.filter(Finding.engagement_id == engagement_id)
     if asset_id:

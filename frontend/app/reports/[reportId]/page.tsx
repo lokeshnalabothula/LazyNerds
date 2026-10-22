@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
-import { api } from "@/lib/api";
+import { api, getStoredToken } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 import { Report } from "@/types/report";
 import { formatDateTime } from "@/lib/utils";
 import {
@@ -24,7 +25,31 @@ export default function ReportDetailPage() {
 
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleDownload = async (format: "html" | "markdown") => {
+    if (!report) return;
+    try {
+      setDownloading(format);
+      const blob = await api.downloadReportDeliverable(report.id, format);
+      const url = window.URL.createObjectURL(blob);
+      if (format === "html") {
+        window.open(url, "_blank");
+      } else {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `FixOps_Report_${report.id.slice(0, 8)}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to download report deliverable. Please try again.");
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -57,23 +82,33 @@ export default function ReportDetailPage() {
 
           {report && (
             <div className="flex items-center gap-2">
-              <a
-                href={`/api/v1/reports/${report.id}/download?format=markdown`}
-                download
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload("markdown")}
+                disabled={downloading !== null}
+                className="text-xs h-9 gap-1.5"
               >
-                <Download className="h-3.5 w-3.5" />
+                {downloading === "markdown" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
                 <span>Download Markdown</span>
-              </a>
-              <a
-                href={`/api/v1/reports/${report.id}/download?format=html`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs"
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleDownload("html")}
+                disabled={downloading !== null}
+                className="text-xs h-9 gap-1.5 font-bold"
               >
-                <Printer className="h-3.5 w-3.5" />
+                {downloading === "html" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Printer className="h-3.5 w-3.5" />
+                )}
                 <span>Print / HTML Deliverable</span>
-              </a>
+              </Button>
             </div>
           )}
         </div>

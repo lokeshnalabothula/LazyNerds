@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
+from app.models.engagement import Engagement
 from app.models.user import User
 from app.schemas.asset import (
     AssetCreate,
@@ -29,6 +30,30 @@ def list_assets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    if current_user.role == "client":
+        if not current_user.client_id:
+            return {
+                "items": [],
+                "total": 0,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": 1,
+            }
+        # Client accounts are strictly scoped to their assigned organization;
+        # any client-supplied client_id query param is safely overridden.
+        client_id = current_user.client_id
+
+        if engagement_id:
+            eng = db.query(Engagement).filter(Engagement.id == engagement_id).first()
+            if not eng or eng.client_id != current_user.client_id:
+                return {
+                    "items": [],
+                    "total": 0,
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": 1,
+                }
+
     items, total = asset_service.get_assets(
         db=db,
         client_id=client_id,
@@ -56,6 +81,12 @@ def create_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    if current_user.role == "client":
+        if not current_user.client_id or asset_in.client_id != current_user.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not authorized to create assets for another organization.",
+            )
     try:
         return asset_service.create_asset(db, asset_in, current_user)
     except ValueError as e:
@@ -74,6 +105,12 @@ def get_asset(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Asset with ID '{asset_id}' not found.",
         )
+    if current_user.role == "client":
+        if not current_user.client_id or asset.client_id != current_user.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not authorized to view another organization's assets.",
+            )
     return asset
 
 
@@ -84,6 +121,18 @@ def update_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    asset = asset_service.get_asset_by_id(db, asset_id)
+    if not asset:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Asset with ID '{asset_id}' not found.",
+        )
+    if current_user.role == "client":
+        if not current_user.client_id or asset.client_id != current_user.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not authorized to modify another organization's assets.",
+            )
     try:
         return asset_service.update_asset(db, asset_id, asset_in, current_user)
     except ValueError as e:
@@ -96,6 +145,18 @@ def delete_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    asset = asset_service.get_asset_by_id(db, asset_id)
+    if not asset:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Asset with ID '{asset_id}' not found.",
+        )
+    if current_user.role == "client":
+        if not current_user.client_id or asset.client_id != current_user.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not authorized to delete another organization's assets.",
+            )
     try:
         asset_service.delete_asset(db, asset_id, current_user)
     except ValueError as e:

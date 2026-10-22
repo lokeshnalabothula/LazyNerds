@@ -23,28 +23,28 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 47 92% 53%;
-    --radius: 0.375rem;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 220 17% 8%;
+    --background: 220 17% 6%;
     --foreground: 0 0% 98%;
-    --card: 220 14% 12%;
+    --card: 220 17% 8%;
     --card-foreground: 0 0% 98%;
-    --popover: 220 14% 12%;
+    --popover: 220 17% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 47 92% 53%;
     --primary-foreground: 220 17% 8%;
-    --secondary: 220 12% 18%;
+    --secondary: 220 12% 15%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 12% 18%;
+    --muted: 220 12% 15%;
     --muted-foreground: 220 9% 60%;
     --accent: 47 92% 53%;
     --accent-foreground: 220 17% 8%;
     --destructive: 0 62.8% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 12% 18%;
-    --input: 220 12% 18%;
+    --border: 220 12% 16%;
+    --input: 220 12% 16%;
     --ring: 47 92% 53%;
   }
 
@@ -82,6 +82,34 @@
 @keyframes slide {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(250%); }
+}
+
+@layer utilities {
+  /* Premium glossy primary button styling */
+  .gloss-yellow-btn {
+    background-image: linear-gradient(180deg, #FFD84D 0%, #F5C518 55%, #E5B50F 100%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 0 12px rgba(245, 197, 24, 0.15);
+  }
+  .gloss-yellow-btn:hover {
+    background-image: linear-gradient(180deg, #FFE588 0%, #FFD84D 55%, #F5C518 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 0 16px rgba(245, 197, 24, 0.25);
+  }
+  .gloss-yellow-btn:active {
+    background-image: linear-gradient(180deg, #DDAA07 0%, #B88700 100%);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Premium technical dark card with subtle top highlight */
+  .gloss-card {
+    background-color: #111318;
+    border: 1px solid rgba(38, 42, 50, 0.9);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  /* Controlled yellow accent glow for active status badges & focus */
+  .glow-yellow {
+    box-shadow: 0 0 12px rgba(245, 197, 24, 0.2);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

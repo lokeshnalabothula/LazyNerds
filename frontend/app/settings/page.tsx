@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { AuditLog } from "@/types/overview";
@@ -150,8 +151,8 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3.5">
             <div className="h-12 w-12 rounded-xl border border-[#F5C518]/30 bg-[#1B1E24] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
               <Image
-                src="/profile-sm.png"
-                alt="Lazy Nerds Mascot Emblem"
+                src="/brand/logo-icon.png"
+                alt="Lazy Nerds Logo Emblem"
                 width={48}
                 height={48}
                 priority
@@ -195,16 +196,14 @@ export default function SettingsPage() {
           {user && (
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800/60">
-                <div className="relative h-16 w-16 rounded-2xl border-2 border-[#F5C518]/40 bg-[#1B1E24] overflow-hidden shrink-0 shadow-md ring-2 ring-[#F5C518]/20">
-                  <Image
-                    src="/profile.png"
-                    alt={user.full_name || "Profile Picture"}
-                    width={64}
-                    height={64}
-                    priority
-                    className="object-cover w-full h-full"
-                  />
-                </div>
+                <Avatar
+                  src="/profile.png"
+                  alt={user.full_name || "Profile Picture"}
+                  size="xl"
+                  fallbackText={user.full_name || user.email}
+                  priority
+                  className="rounded-2xl border-2 shadow-md ring-2 ring-[#F5C518]/20"
+                />
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono">

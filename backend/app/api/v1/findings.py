@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_employee_or_founder
 from app.db.session import get_db
 from app.models.user import User
+from app.models.engagement import Engagement
 from app.models.finding import Assessment
 from app.schemas.finding import (
     FindingCreate,
@@ -35,6 +36,16 @@ def list_findings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    client_id_filter = current_user.client_id if current_user.role == "client" else None
+    if current_user.role == "client" and not current_user.client_id:
+        return {
+            "items": [],
+            "total": 0,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": 1,
+        }
+
     items, total = finding_service.get_findings(
         db=db,
         engagement_id=engagement_id,
@@ -42,6 +53,7 @@ def list_findings(
         severity=severity,
         status=status_filter,
         search=search,
+        client_id=client_id_filter,
         page=page,
         page_size=page_size,
     )
@@ -59,7 +71,7 @@ def list_findings(
 def create_finding(
     finding_in: FindingCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_employee_or_founder),
 ):
     try:
         return finding_service.create_finding(db, finding_in, current_user)
@@ -76,8 +88,21 @@ def list_assessments(
     current_user: User = Depends(get_current_user),
 ):
     query = db.query(Assessment)
-    if engagement_id:
-        query = query.filter(Assessment.engagement_id == engagement_id)
+    if current_user.role == "client":
+        if not current_user.client_id:
+            return {
+                "items": [],
+                "total": 0,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": 1,
+            }
+        query = query.join(Engagement).filter(Engagement.client_id == current_user.client_id)
+        if engagement_id:
+            query = query.filter(Assessment.engagement_id == engagement_id)
+    else:
+        if engagement_id:
+            query = query.filter(Assessment.engagement_id == engagement_id)
 
     total = query.count()
     items = (
@@ -104,6 +129,12 @@ def get_assessment(
     assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
     if not assessment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
+    if current_user.role == "client":
+        if not assessment.engagement or assessment.engagement.client_id != current_user.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not authorized to view another organization's assessment.",
+            )
     return assessment
 
 
@@ -111,7 +142,7 @@ def get_assessment(
 def import_scan(
     req: ScanImportRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_employee_or_founder),
 ):
     try:
         return scan_adapters.run_or_import_scan(
@@ -139,6 +170,12 @@ def get_finding(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Finding with ID '{finding_id}' not found.",
         )
+    if current_user.role == "client":
+        if not finding.engagement or finding.engagement.client_id != current_user.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not authorized to view another organization's findings.",
+            )
     return finding
 
 
@@ -149,6 +186,11 @@ def update_finding(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    if current_user.role == "client":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Client accounts may not directly alter vulnerability finding records.",
+        )
     try:
         return finding_service.update_finding(db, finding_id, finding_in, current_user)
     except ValueError as e:
@@ -160,7 +202,7 @@ def add_verification(
     finding_id: str,
     verif_in: VerificationCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_employee_or_founder),
 ):
     try:
         return finding_service.add_verification(db, finding_id, verif_in, current_user)

@@ -18,7 +18,7 @@ export default function TermsPage() {
             className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-100 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Return to Workspace Overview</span>
+            <span>Return to Workspace Dashboard</span>
           </Link>
         </div>
 
@@ -129,7 +129,7 @@ export default function TermsPage() {
             </Link>
             <span>•</span>
             <Link href="/overview" className="hover:text-zinc-300 hover:underline">
-              Workspace Overview
+              Workspace Dashboard
             </Link>
           </div>
         </div>

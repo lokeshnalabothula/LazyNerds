@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { AutomationRule, AutomationExecution } from "@/types/automation";
 import { RuleFormModal } from "@/components/automation/rule-form-modal";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatDateTime } from "@/lib/utils";
@@ -31,6 +32,15 @@ export default function AutomationPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
+  const [reminderStatus, setReminderStatus] = useState<{
+    status: string;
+    last_executed_at: string | null;
+    last_status: string | null;
+    open_findings_with_deadlines: number;
+    overdue_count: number;
+  } | null>(null);
+  const [runningReminders, setRunningReminders] = useState(false);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [ruleToEdit, setRuleToEdit] = useState<AutomationRule | null>(null);
   const [ruleToDelete, setRuleToDelete] = useState<{ id: string; name: string } | null>(null);
@@ -52,9 +62,41 @@ export default function AutomationPage() {
     }
   };
 
+  const fetchReminderStatus = async () => {
+    try {
+      const data = await api.getRemediationReminderStatus();
+      setReminderStatus(data);
+    } catch {
+      // Ignore
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchReminderStatus();
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("create") === "true") {
+        setRuleToEdit(null);
+        setIsFormOpen(true);
+      }
+    }
   }, []);
+
+  const handleRunRemediationReminders = async () => {
+    try {
+      setRunningReminders(true);
+      const res = await api.runRemediationReminders();
+      toast.success(
+        `Remediation check complete: ${res.reminders_sent} reminder(s) dispatched, ${res.duplicates_skipped} duplicate(s) avoided.`
+      );
+      await Promise.all([fetchData(), fetchReminderStatus()]);
+    } catch (err: any) {
+      toast.error(`Reminder check failed: ${err.message}`);
+    } finally {
+      setRunningReminders(false);
+    }
+  };
 
   const handleToggleActive = async (rule: AutomationRule) => {
     try {
@@ -126,16 +168,90 @@ export default function AutomationPage() {
             </p>
           </div>
 
-          <button
+          <Button
+            size="sm"
             onClick={() => {
               setRuleToEdit(null);
               setIsFormOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs"
+            className="text-xs h-9 px-4 gap-1.5 font-bold"
+            aria-label="Configure new cybersecurity workflow"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>New Workflow Rule</span>
-          </button>
+            <span>New Workflow</span>
+          </Button>
+        </div>
+
+        {/* Flagship Production Automation: Remediation Follow-up Engine */}
+        <div className="rounded-xl border border-[#F5C518]/30 bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200/60 dark:border-zinc-800 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-[#F5C518]/15 border border-[#F5C518]/40 flex items-center justify-center text-[#F5C518]">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+                    Flagship Automation: Remediation Follow-up Reminder
+                  </h2>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase">
+                    Verified
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Continuously tracks assigned remediation tasks, alerts owners of approaching or overdue deadlines, and strictly enforces a 24-hour duplicate notification cooldown.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={handleRunRemediationReminders}
+              disabled={runningReminders}
+              className="text-xs h-9 px-4 gap-1.5 shrink-0 font-bold"
+            >
+              {runningReminders ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              ) : (
+                <Play className="h-3.5 w-3.5 mr-1.5" />
+              )}
+              <span>Run Follow-up Check Now</span>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-3 rounded-lg border border-zinc-200/60 dark:border-zinc-800 bg-zinc-50/50 dark:bg-[#161920]">
+              <span className="text-[10px] text-zinc-400 font-mono block">Pending Tracked Tasks</span>
+              <span className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                {reminderStatus?.open_findings_with_deadlines ?? "—"}
+              </span>
+            </div>
+            <div className="p-3 rounded-lg border border-zinc-200/60 dark:border-zinc-800 bg-zinc-50/50 dark:bg-[#161920]">
+              <span className="text-[10px] text-zinc-400 font-mono block">Overdue Vulnerabilities</span>
+              <span className={`text-base font-bold font-mono ${reminderStatus?.overdue_count ? "text-rose-500" : "text-emerald-500"}`}>
+                {reminderStatus?.overdue_count ?? "—"}
+              </span>
+            </div>
+            <div className="p-3 rounded-lg border border-zinc-200/60 dark:border-zinc-800 bg-zinc-50/50 dark:bg-[#161920]">
+              <span className="text-[10px] text-zinc-400 font-mono block">Duplicate Cooldown</span>
+              <span className="text-base font-bold font-mono text-[#F5C518]">
+                24 Hours Guard
+              </span>
+            </div>
+            <div className="p-3 rounded-lg border border-zinc-200/60 dark:border-zinc-800 bg-zinc-50/50 dark:bg-[#161920]">
+              <span className="text-[10px] text-zinc-400 font-mono block">Last Run Status</span>
+              <span className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 capitalize truncate block mt-1">
+                {reminderStatus?.last_status || "Ready (Idle)"}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#161920]/60 border border-zinc-200 dark:border-zinc-800/80 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono flex items-start gap-2">
+            <span className="text-[#F5C518] font-bold shrink-0">EXECUTION NOTE:</span>
+            <span>
+              Direct API execution is verified end-to-end. For automatic background recurring execution in production, configure an external cron trigger (Render Cron Job, GitHub Actions, or Neon Function Trigger) to call <code className="text-zinc-200 bg-zinc-800 px-1 py-0.5 rounded">POST /api/v1/automation/remediation-reminders/run</code>.
+            </span>
+          </div>
         </div>
 
         {/* Pending Human Approvals Queue (Module F Governance) */}

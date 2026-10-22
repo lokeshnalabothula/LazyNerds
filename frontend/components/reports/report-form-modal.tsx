@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { Engagement } from "@/types/engagement";
 import { ReportType } from "@/types/report";
-import { Loader2, PieChart } from "lucide-react";
+import { Loader2, PieChart, AlertCircle, Plus } from "lucide-react";
 
 interface ReportFormModalProps {
   isOpen: boolean;
@@ -101,29 +102,49 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
             {error}
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-            Target Engagement *
-          </label>
-          <select
-            value={engagementId}
-            onChange={(e) => handleSelectEngagement(e.target.value)}
-            className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
-            required
-          >
-            <option value="">Select engagement...</option>
-            {engagements.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!loadingOptions && engagements.length === 0 ? (
+          <div className="p-5 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-center space-y-3 bg-zinc-50/50 dark:bg-zinc-900/40">
+            <AlertCircle className="h-6 w-6 text-amber-500 mx-auto" />
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                No In-Scope Engagements Available
+              </p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
+                Assessment reports require an active or completed engagement record to compile verified findings and scoping telemetry.
+              </p>
+            </div>
+            <Link href="/engagements/new" onClick={onClose} className="inline-block">
+              <Button size="sm" type="button" className="text-xs gap-1.5 font-bold">
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create New Engagement</span>
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div>
+              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                Target Engagement *
+              </label>
+              <select
+                value={engagementId}
+                onChange={(e) => handleSelectEngagement(e.target.value)}
+                className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+                required
+              >
+                <option value="">Select engagement...</option>
+                {engagements.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
         <div>
           <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
@@ -152,14 +173,21 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
             <option value="remediation_audit">Remediation & Verification Audit (Fixed vs Outstanding)</option>
           </select>
         </div>
+        </>
+        )}
 
         <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={generating}>
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={generating}>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={generating || engagements.length === 0 || !engagementId}
+            className="font-bold"
+          >
             {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <PieChart className="h-3.5 w-3.5 mr-1.5" />}
-            <span>Generate Report</span>
+            <span>{generating ? "Compiling Telemetry…" : "Generate Report"}</span>
           </Button>
         </div>
       </form>

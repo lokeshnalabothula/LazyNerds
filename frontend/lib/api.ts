@@ -77,7 +77,7 @@ class ApiError extends Error {
   }
 }
 
-function getStoredToken(): string | null {
+export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("fixops_token");
 }
@@ -103,11 +103,26 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include", // Send HttpOnly cookie
-  });
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 15000) : null;
+  const signal = options.signal || (controller ? controller.signal : undefined);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include", // Send HttpOnly cookie
+      signal,
+    });
+  } catch (err: any) {
+    if (err.name === "AbortError") {
+      throw new ApiError(408, "Request timed out after 15 seconds. Please verify backend connectivity.");
+    }
+    throw err;
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     let errorDetail = "An unexpected error occurred.";
@@ -503,6 +518,30 @@ export const api = {
     });
   },
 
+  async runRemediationReminders(): Promise<{
+    status: string;
+    findings_checked: number;
+    reminders_sent: number;
+    duplicates_skipped: number;
+    errors: number;
+    details: any[];
+  }> {
+    return request("/automation/remediation-reminders/run", {
+      method: "POST",
+    });
+  },
+
+  async getRemediationReminderStatus(): Promise<{
+    status: string;
+    rule_id?: string | null;
+    last_executed_at: string | null;
+    last_status: string | null;
+    open_findings_with_deadlines: number;
+    overdue_count: number;
+  }> {
+    return request("/automation/remediation-reminders/status");
+  },
+
   // Reports (Module G)
   async getReports(params: { page?: number; page_size?: number; engagement_id?: string; report_type?: string } = {}): Promise<ReportListResponse> {
     const query = new URLSearchParams();
@@ -523,6 +562,20 @@ export const api = {
       method: "POST",
       body: JSON.stringify(input),
     });
+  },
+
+  async downloadReportDeliverable(reportId: string, format: "html" | "markdown"): Promise<Blob> {
+    const token = getStoredToken();
+    const headers = new Headers();
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    const res = await fetch(`${API_BASE_URL}/reports/${encodeURIComponent(reportId)}/download?format=${format}`, {
+      headers,
+      credentials: "include",
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to download report (${res.status}: ${res.statusText})`);
+    }
+    return res.blob();
   },
 
   // Notifications (Module H)

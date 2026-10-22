@@ -147,8 +147,8 @@ function RegistrationsContent() {
             Only the organization founder can review, approve, or reject new client self-registrations and manage employee assignments.
           </p>
           <div className="pt-2">
-            <Link href="/overview" className="text-xs text-brand-400 hover:underline">
-              Return to Operations Overview
+            <Link href="/overview" className="text-xs text-[#F5C518] hover:underline font-semibold">
+              Return to Operations Dashboard
             </Link>
           </div>
         </div>

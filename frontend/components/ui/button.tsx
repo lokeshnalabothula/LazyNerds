@@ -22,21 +22,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] disabled:pointer-events-none disabled:opacity-50 select-none text-sm";
+      "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-50 select-none text-sm";
 
     const variantStyles = {
       primary:
-        "bg-[#F5C518] text-[#111318] hover:bg-[#FFD84D] active:bg-[#DDAA07] font-semibold shadow-xs",
+        "gloss-yellow-btn text-[#111318] border border-[#F5C518]/60 font-bold",
       secondary:
-        "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700",
+        "bg-zinc-100 dark:bg-[#1B1E24] text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-[#262A32] border border-zinc-200 dark:border-zinc-800 shadow-xs",
       outline:
-        "border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60",
+        "border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111318] text-zinc-900 dark:text-zinc-100 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-[#1B1E24] shadow-xs",
       ghost:
-        "bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100",
+        "bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100",
       destructive:
-        "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-sm",
+        "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm border border-rose-500/40 font-semibold",
       danger:
-        "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-sm",
+        "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm border border-rose-500/40 font-semibold",
     };
 
     const sizeStyles = {
@@ -52,7 +52,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
         {...props}
       >
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+        {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 shrink-0" />}
         {children}
       </button>
     );

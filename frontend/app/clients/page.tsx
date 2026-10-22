@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
-import { ClientForm } from "@/components/clients/client-form";
 import { ArchiveDialog } from "@/components/clients/archive-dialog";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -79,7 +78,6 @@ function ClientsContent() {
   const [isBulkLoading, setIsBulkLoading] = useState(false);
 
   // Dialog states
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [clientToArchive, setClientToArchive] = useState<Client | null>(null);
   const [clientToAssign, setClientToAssign] = useState<Client | null>(null);
   const [employees, setEmployees] = useState<UserType[]>([]);
@@ -162,14 +160,6 @@ function ClientsContent() {
     setSelectedClientIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
-  };
-
-  // Handle client creation
-  const handleCreateClient = async (data: ClientCreateInput) => {
-    const created = await api.createClient(data);
-    setIsAddModalOpen(false);
-    fetchClients();
-    router.push(`/clients/${created.id}`);
   };
 
   // Handle individual archive
@@ -258,8 +248,8 @@ function ClientsContent() {
             Client accounts are isolated to their dedicated organization portal. Please navigate via the sidebar.
           </p>
           <div className="pt-2">
-            <Link href="/overview" className="text-xs text-brand-400 hover:underline">
-              Return to Overview
+            <Link href="/overview" className="text-xs text-[#F5C518] hover:underline font-semibold">
+              Return to Dashboard
             </Link>
           </div>
         </div>
@@ -472,14 +462,15 @@ function ClientsContent() {
                   </p>
                 </div>
                 {!search && (
-                  <Button
-                    size="sm"
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="gap-1.5"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Add First Client</span>
-                  </Button>
+                  <Link href="/clients/new">
+                    <Button
+                      size="sm"
+                      className="gap-1.5 font-bold"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add First Client</span>
+                    </Button>
+                  </Link>
                 )}
               </div>
             )
@@ -888,21 +879,6 @@ function ClientsContent() {
           </button>
         </div>
       )}
-
-      {/* Add Client Modal */}
-      <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title="Add New Client"
-        description="Create an organization profile and primary cybersecurity contact point."
-        maxWidth="lg"
-      >
-        <ClientForm
-          onSubmit={handleCreateClient}
-          onCancel={() => setIsAddModalOpen(false)}
-          submitLabel="Create Client"
-        />
-      </Modal>
 
       {/* Individual Archive Confirmation Dialog */}
       <ArchiveDialog

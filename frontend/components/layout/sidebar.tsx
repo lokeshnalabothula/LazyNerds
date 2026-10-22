@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { Avatar } from "@/components/ui/avatar";
 import {
   Users,
   Shield,
@@ -36,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navigationItems = [
     {
-      name: "Overview",
+      name: "Dashboard",
       href: "/overview",
       icon: LayoutDashboard,
       description: "Security Operations & Telemetry",
@@ -127,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className="h-9 w-9 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105 shrink-0">
             <Image
-              src="/profile-sm.png"
+              src="/brand/logo-icon.png"
               alt="Lazy Nerds"
               width={36}
               height={36}
@@ -232,15 +233,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             title={`Operator: ${user.full_name || user.email}`}
           >
-            <div className="relative h-8 w-8 rounded-full border border-[#F5C518]/40 bg-[#1B1E24] overflow-hidden shrink-0 shadow-xs ring-1 ring-[#F5C518]/20 group-hover:scale-105 transition-transform">
-              <Image
-                src="/profile-sm.png"
-                alt={user.full_name || "Profile Picture"}
-                width={32}
-                height={32}
-                className="object-cover w-full h-full"
-              />
-            </div>
+            <Avatar
+              src="/profile-sm.png"
+              alt={user.full_name || "Profile Picture"}
+              size="sm"
+              fallbackText={user.full_name || user.email}
+              className="group-hover:scale-105 transition-transform"
+            />
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 text-left">
                 <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate group-hover:text-[#F5C518] transition-colors">

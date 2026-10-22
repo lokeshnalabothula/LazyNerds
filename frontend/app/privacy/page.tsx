@@ -137,7 +137,7 @@ export default function PrivacyPolicyPage() {
             </Link>
             <span>•</span>
             <Link href="/overview" className="hover:text-zinc-300 hover:underline">
-              Workspace Overview
+              Workspace Dashboard
             </Link>
           </div>
         </div>

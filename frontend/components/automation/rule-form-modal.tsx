@@ -77,6 +77,14 @@ export const RuleFormModal: React.FC<RuleFormModalProps> = ({
       return;
     }
 
+    if (actionType === "send_notification" || actionType === "assign_remediation_task") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!recipient || !emailRegex.test(recipient.trim())) {
+        setError("Please enter a valid recipient/assignee email address.");
+        return;
+      }
+    }
+
     try {
       setSaving(true);
       setError(null);

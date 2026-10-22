@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { Notification } from "@/types/notification";
@@ -155,7 +156,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         <div className="md:hidden flex items-center shrink-0">
           <div className="h-8 w-8 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs overflow-hidden">
             <Image
-              src="/profile-sm.png"
+              src="/brand/logo-icon.png"
               alt="Lazy Nerds"
               width={32}
               height={32}
@@ -310,16 +311,14 @@ export const Topbar: React.FC<TopbarProps> = ({
               className="flex items-center gap-2 group p-1 -m-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors"
               title="View profile & platform settings"
             >
-              <div className="relative h-8 w-8 rounded-full border border-[#F5C518]/40 bg-[#1B1E24] overflow-hidden shrink-0 shadow-xs ring-1 ring-[#F5C518]/20 transition-transform group-hover:scale-105">
-                <Image
-                  src="/profile-sm.png"
-                  alt={user.full_name || "Profile Picture"}
-                  width={32}
-                  height={32}
-                  priority
-                  className="object-cover w-full h-full"
-                />
-              </div>
+              <Avatar
+                src="/profile-sm.png"
+                alt={user.full_name || "Profile Picture"}
+                size="sm"
+                fallbackText={user.full_name || user.email}
+                priority
+                className="group-hover:scale-105 transition-transform"
+              />
               <div className="hidden sm:flex flex-col text-right max-w-[140px] truncate">
                 <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate group-hover:text-[#F5C518] transition-colors">
                   {user.full_name || user.email}

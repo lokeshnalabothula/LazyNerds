@@ -135,10 +135,13 @@ def get_reports(
     db: Session,
     engagement_id: Optional[str] = None,
     report_type: Optional[str] = None,
+    client_id: Optional[str] = None,
     page: int = 1,
     page_size: int = 50,
 ) -> tuple[List[Report], int]:
     query = db.query(Report)
+    if client_id:
+        query = query.join(Engagement).filter(Engagement.client_id == client_id)
     if engagement_id:
         query = query.filter(Report.engagement_id == engagement_id)
     if report_type:

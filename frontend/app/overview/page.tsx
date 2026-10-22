@@ -69,20 +69,13 @@ export default function OverviewPage() {
     metrics && metrics.pending_approvals_total > 0;
 
   return (
-    <AppShell title="Platform Overview">
+    <AppShell title="Dashboard">
       <div className="space-y-6 max-w-7xl mx-auto pb-16">
-        {/* Top Operations Header with Brand Emblem */}
+        {/* Top Operations Header with Operational Telemetry Badge */}
         <div className="rounded-xl border border-[#F5C518]/25 bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-[#F5C518]/30 bg-[#1B1E24] flex items-center justify-center shadow-xs overflow-hidden shrink-0">
-              <Image
-                src="/profile-sm.png"
-                alt="Lazy Nerds"
-                width={56}
-                height={56}
-                priority
-                className="object-cover w-full h-full"
-              />
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] flex items-center justify-center shrink-0 text-[#F5C518]">
+              <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-[#F5C518]" />
             </div>
             <div className="space-y-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -93,7 +86,7 @@ export default function OverviewPage() {
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
                   {isClient
                     ? "ORGANIZATION SECURITY POSTURE"
-                    : "CYBERSECURITY OPERATIONS CENTER"}
+                    : "CYBERSECURITY OPERATIONS DASHBOARD"}
                 </h1>
                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 shrink-0 font-bold">
                   {user?.role || "Active"} Mode
@@ -126,8 +119,14 @@ export default function OverviewPage() {
                     <span>New Client</span>
                   </Button>
                 </Link>
+                <Link href="/automation?create=true">
+                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50">
+                    <Zap className="h-3.5 w-3.5 text-[#F5C518]" />
+                    <span>New Workflow</span>
+                  </Button>
+                </Link>
                 <Link href="/engagements/new">
-                  <Button size="sm" className="text-xs h-9 gap-1.5 bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] font-bold border-none shadow-xs">
+                  <Button size="sm" className="text-xs h-9 gap-1.5 font-bold">
                     <Plus className="h-3.5 w-3.5" />
                     <span>New Engagement</span>
                   </Button>
@@ -409,13 +408,13 @@ export default function OverviewPage() {
                   Quick Workflow Shortcuts
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <Link
                   href="/findings"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-brand-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
-                    <UploadCloud className="h-4 w-4 text-brand-500" />
+                    <UploadCloud className="h-4 w-4 text-[#F5C518]" />
                     <span>Import Scanner Output</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
@@ -428,6 +427,17 @@ export default function OverviewPage() {
                   <div className="flex items-center gap-2.5">
                     <Layers className="h-4 w-4 text-indigo-500" />
                     <span>Engagements & Audits</span>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
+                </Link>
+
+                <Link
+                  href="/automation"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Zap className="h-4 w-4 text-[#F5C518]" />
+                    <span>Automation & Rules</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
                 </Link>

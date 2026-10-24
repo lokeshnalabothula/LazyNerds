@@ -24,6 +24,9 @@ def health_check(db: Session = Depends(get_db)):
         "status": "ok" if db_healthy else "degraded",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
+        "commit": settings.GIT_COMMIT,
+        "environment": settings.ENVIRONMENT,
+        "worker_dispatch_mode": settings.WORKER_DISPATCH_MODE,
         "database": "connected" if db_healthy else "disconnected",
         "timestamp": serialize_utc_datetime(datetime.now(timezone.utc)),
     }

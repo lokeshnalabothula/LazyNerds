@@ -4,6 +4,7 @@ import path from "path";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  outputFileTracingRoot: path.resolve(__dirname),
   webpack: (config) => {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),

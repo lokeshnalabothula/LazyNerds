@@ -273,6 +273,129 @@ def generate_lab_blackbox_nuclei(target_url: str) -> List[Dict[str, Any]]:
     ]
 
 
+def ingest_scan_results(
+    db: Session,
+    assessment_id: str,
+    parsed_findings: List[Dict[str, Any]],
+    raw_output_obj: Any = None,
+    user_email: str = "system@lazynerds.com",
+    is_mock_run: bool = False,
+    deliverables: Optional[Dict[str, Any]] = None,
+) -> Assessment:
+    """
+    Normalizes, deduplicates, and ingests security findings into the FixOps database.
+    Updates the Assessment status to 'completed', attaches deliverables, and triggers automation events.
+    """
+    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+    if not assessment:
+        raise ValueError(f"Assessment {assessment_id} not found.")
+
+    target_asset_id = None
+    if assessment.target_asset_ids:
+        try:
+            ids = json.loads(assessment.target_asset_ids)
+            if ids and isinstance(ids, list):
+                target_asset_id = ids[0]
+        except Exception:
+            pass
+
+    scan_mode = "blackbox"
+    if assessment.assessment_tool == "shannon":
+        scan_mode = "source_assisted"
+    elif assessment.execution_summary:
+        try:
+            summary = json.loads(assessment.execution_summary)
+            scan_mode = summary.get("scan_mode", scan_mode)
+            if summary.get("benchmark_mode"):
+                is_mock_run = True
+        except Exception:
+            pass
+
+    assessment.raw_output = json.dumps(raw_output_obj)[:50000] if raw_output_obj else None
+    assessment.findings_count = len(parsed_findings)
+    assessment.completed_at = datetime.now(timezone.utc)
+    assessment.status = "completed"
+
+    for f_data in parsed_findings:
+        if is_mock_run:
+            finding_title = f"[LAB BENCHMARK] {f_data['title']}"
+            finding_status = "verification_pending"
+            remediation_notes = "[LAB BENCHMARK] Simulated test finding from benchmark suite. Not an active exploit verification."
+        else:
+            finding_title = f_data["title"]
+            finding_status = "open"
+            remediation_notes = f_data.get("remediation_notes") or (
+                "[Source: Shannon AI Pentest (source-assisted)]"
+                if scan_mode == "source_assisted"
+                else "[Source: Nuclei Black-Box Scanner]"
+            )
+
+        finding = Finding(
+            engagement_id=assessment.engagement_id,
+            asset_id=target_asset_id,
+            assessment_id=assessment_id,
+            title=finding_title[:255],
+            severity=f_data.get("severity", "medium"),
+            cvss_score=f_data.get("cvss_score"),
+            status=finding_status,
+            cve_id=f_data.get("cve_id"),
+            description=f_data.get("description"),
+            impact=f_data.get("impact"),
+            remediation_guidance=f_data.get("remediation_guidance"),
+            evidence=f_data.get("evidence"),
+            references_url=f_data.get("references_url"),
+            remediation_notes=remediation_notes,
+        )
+        db.add(finding)
+        db.commit()
+        db.refresh(finding)
+
+        dispatch_event(
+            db=db,
+            event_type="on_finding_created",
+            context={
+                "finding_id": finding.id,
+                "title": finding.title,
+                "severity": finding.severity,
+                "engagement_id": assessment.engagement_id,
+                "asset_id": target_asset_id,
+                "cve_id": finding.cve_id,
+            },
+            trigger_source=f"scanner:{finding.title}",
+        )
+
+    # Deliverables handling
+    if deliverables and assessment.execution_summary:
+        try:
+            summary = json.loads(assessment.execution_summary)
+            summary["deliverables"] = deliverables
+            assessment.execution_summary = json.dumps(summary)
+            db.commit()
+        except Exception:
+            pass
+
+    update_assessment_progress(
+        assessment_id=assessment_id,
+        phase="completed",
+        progress_percent=100,
+        message=f"Assessment complete. Successfully imported {len(parsed_findings)} finding(s).",
+        active_agent=None,
+        log_line=f"Scan finished. Created {len(parsed_findings)} FixOps findings.",
+        db=db,
+    )
+
+    log_audit(
+        db=db,
+        user_email=user_email,
+        action="LAUNCH_SCAN_COMPLETE",
+        resource_type="assessment",
+        resource_id=assessment_id,
+        details=f"Completed {scan_mode} scan ({'Lab Benchmark' if is_mock_run else 'Live'}). Imported {len(parsed_findings)} findings.",
+    )
+
+    return assessment
+
+
 def execute_scan_worker_job(
     assessment_id: str,
     engagement_id: str,
@@ -528,79 +651,15 @@ def execute_scan_worker_job(
             )
 
         # -------------------------------------------------------------
-        # Ingestion into FixOps Database
+        # Ingestion into FixOps Database via ingest_scan_results
         # -------------------------------------------------------------
-        assessment.raw_output = json.dumps(raw_output_obj)[:50000] if raw_output_obj else None
-        assessment.findings_count = len(parsed_findings)
-        assessment.completed_at = datetime.now(timezone.utc)
-        assessment.status = "completed"
-
-        # Auto-create Finding entities with strict attribution
-        for f_data in parsed_findings:
-            if is_mock_run:
-                finding_title = f"[LAB BENCHMARK] {f_data['title']}"
-                finding_status = "verification_pending"
-                remediation_notes = "[LAB BENCHMARK] Simulated test finding from benchmark suite. Not an active exploit verification."
-            else:
-                finding_title = f_data["title"]
-                finding_status = "open"
-                remediation_notes = f_data.get("remediation_notes") or (
-                    "[Source: Shannon AI Pentest (source-assisted)]"
-                    if scan_mode == "source_assisted"
-                    else "[Source: Nuclei Black-Box Scanner]"
-                )
-
-            finding = Finding(
-                engagement_id=engagement_id,
-                asset_id=target_asset_id,
-                assessment_id=assessment_id,
-                title=finding_title[:255],
-                severity=f_data["severity"],
-                cvss_score=f_data.get("cvss_score"),
-                status=finding_status,
-                cve_id=f_data.get("cve_id"),
-                description=f_data.get("description"),
-                impact=f_data.get("impact"),
-                remediation_guidance=f_data.get("remediation_guidance"),
-                evidence=f_data.get("evidence"),
-                references_url=f_data.get("references_url"),
-                remediation_notes=remediation_notes,
-            )
-            db.add(finding)
-            db.commit()
-            db.refresh(finding)
-
-            dispatch_event(
-                db=db,
-                event_type="on_finding_created",
-                context={
-                    "finding_id": finding.id,
-                    "title": finding.title,
-                    "severity": finding.severity,
-                    "engagement_id": engagement_id,
-                    "asset_id": target_asset_id,
-                    "cve_id": finding.cve_id,
-                },
-                trigger_source=f"scanner:{finding.title}",
-            )
-
-        update_assessment_progress(
+        ingest_scan_results(
+            db=db,
             assessment_id=assessment_id,
-            phase="completed",
-            progress_percent=100,
-            message=f"Assessment complete. Successfully imported {len(parsed_findings)} finding(s).",
-            active_agent=None,
-            log_line=f"Scan finished. Created {len(parsed_findings)} FixOps findings.",
-            db=db,
-        )
-
-        log_audit(
-            db=db,
+            parsed_findings=parsed_findings,
+            raw_output_obj=raw_output_obj,
             user_email=user_email,
-            action="LAUNCH_SCAN_COMPLETE",
-            resource_type="assessment",
-            resource_id=assessment_id,
-            details=f"Completed {scan_mode} scan ({'Lab Benchmark' if is_mock_run else 'Live'}) on {target_url}. Imported {len(parsed_findings)} findings.",
+            is_mock_run=is_mock_run,
         )
 
     except Exception as e:
@@ -749,37 +808,62 @@ def launch_scan(
         details=f"Queued {scan_mode} scan against asset {asset.name} ({asset.target}).",
     )
 
-    # 6. Execution (Synchronous for testing or Asynchronous Background Worker)
+    # 6. Execution (Synchronous for testing, Distributed Worker Queue, or Embedded Worker Thread)
+    should_run_embedded = False
     if sync_execution:
-        execute_scan_worker_job(
+        should_run_embedded = True
+    elif is_mock_run:
+        should_run_embedded = True
+    elif settings.WORKER_DISPATCH_MODE == "embedded":
+        should_run_embedded = True
+    elif settings.WORKER_DISPATCH_MODE == "auto":
+        is_production = settings.ENVIRONMENT.lower() == "production"
+        has_docker_or_nuclei = bool(shutil.which("docker") or shutil.which("nuclei"))
+        if not is_production and has_docker_or_nuclei:
+            should_run_embedded = True
+
+    if should_run_embedded:
+        if sync_execution:
+            execute_scan_worker_job(
+                assessment_id=assessment.id,
+                engagement_id=engagement_id,
+                target_asset_id=target_asset_id,
+                target_url=asset.target,
+                scan_mode=scan_mode,
+                source_repo=source_repo,
+                user_email=user_email,
+                is_mock_run=is_mock_run,
+                db=db,
+            )
+            db.refresh(assessment)
+        else:
+            worker_thread = threading.Thread(
+                target=execute_scan_worker_job,
+                kwargs={
+                    "assessment_id": assessment.id,
+                    "engagement_id": engagement_id,
+                    "target_asset_id": target_asset_id,
+                    "target_url": asset.target,
+                    "scan_mode": scan_mode,
+                    "source_repo": source_repo,
+                    "user_email": user_email,
+                    "is_mock_run": is_mock_run,
+                },
+                daemon=True,
+            )
+            ACTIVE_SCAN_THREADS[assessment.id] = worker_thread
+            worker_thread.start()
+    else:
+        # Queued for standalone Docker worker
+        update_assessment_progress(
             assessment_id=assessment.id,
-            engagement_id=engagement_id,
-            target_asset_id=target_asset_id,
-            target_url=asset.target,
-            scan_mode=scan_mode,
-            source_repo=source_repo,
-            user_email=user_email,
-            is_mock_run=is_mock_run,
+            phase="queued",
+            progress_percent=0,
+            message="Scan queued. Waiting for an authorized FixOps Docker worker to claim the job...",
+            active_agent="dispatcher",
+            log_line=f"Assessment queued for worker dispatch (Target: {asset.target}, Mode: {scan_mode}).",
             db=db,
         )
-        db.refresh(assessment)
-    else:
-        worker_thread = threading.Thread(
-            target=execute_scan_worker_job,
-            kwargs={
-                "assessment_id": assessment.id,
-                "engagement_id": engagement_id,
-                "target_asset_id": target_asset_id,
-                "target_url": asset.target,
-                "scan_mode": scan_mode,
-                "source_repo": source_repo,
-                "user_email": user_email,
-                "is_mock_run": is_mock_run,
-            },
-            daemon=True,
-        )
-        ACTIVE_SCAN_THREADS[assessment.id] = worker_thread
-        worker_thread.start()
 
     return assessment
 

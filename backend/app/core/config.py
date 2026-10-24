@@ -66,6 +66,15 @@ class Settings(BaseSettings):
     SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").lower() in ("true", "1", "yes")
     SMTP_SSL: bool = os.getenv("SMTP_SSL", "false").lower() in ("true", "1", "yes")
 
+    # Scanner & Distributed Worker Dispatch Configuration
+    FIXOPS_WORKER_TOKEN: str = os.getenv("FIXOPS_WORKER_TOKEN", "fixops_worker_secret_token_dev_2026")
+    WORKER_DISPATCH_MODE: str = os.getenv("WORKER_DISPATCH_MODE", "auto")  # "auto", "distributed", "embedded"
+    ALLOW_EMBEDDED_DOCKER: bool = os.getenv("ALLOW_EMBEDDED_DOCKER", "false").lower() in ("true", "1", "yes")
+    ALLOW_LAB_TESTING: bool = os.getenv("ALLOW_LAB_TESTING", "true").lower() in ("true", "1", "yes")
+    DOCKER_MAX_CPUS: float = float(os.getenv("DOCKER_MAX_CPUS", "2.0"))
+    DOCKER_MAX_MEMORY: str = os.getenv("DOCKER_MAX_MEMORY", "2g")
+    GIT_COMMIT: str = os.getenv("RENDER_GIT_COMMIT", os.getenv("VERCEL_GIT_COMMIT_SHA", os.getenv("GIT_COMMIT", "94fafa4")))
+
 
     @field_validator("DATABASE_URL", "DATABASE_URL_UNPOOLED", mode="before")
     @classmethod

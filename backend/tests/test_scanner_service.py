@@ -466,6 +466,18 @@ def test_live_scan_fails_honestly_when_no_ai_credits(db_session, test_client_rec
 
 
 def test_real_nuclei_execution_in_docker(db_session, test_client_record):
+    import shutil
+    import subprocess
+    docker_bin = shutil.which("docker")
+    if not docker_bin:
+        pytest.skip("Docker is not installed on this host")
+    try:
+        check = subprocess.run([docker_bin, "info"], capture_output=True, timeout=5)
+        if check.returncode != 0:
+            pytest.skip("Docker daemon is not responsive; skipping live container test")
+    except Exception:
+        pytest.skip("Docker daemon health check timed out; skipping live container test")
+
     eng = Engagement(
         client_id=test_client_record.id,
         name="Real Nuclei Test Engagement",

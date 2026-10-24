@@ -23,6 +23,7 @@ from app.services.scan_adapters import (
     run_or_import_scan,
 )
 from app.services.automation_engine import dispatch_event
+from app.core.ai_provider import validate_ai_provider_preflight, sanitize_ai_error
 
 logger = logging.getLogger("fixops.scanner")
 
@@ -480,6 +481,14 @@ def execute_scan_worker_job(
                         parsed_findings = []
                         raw_output_obj = {"status": "no_findings", "stdout": proc.stdout, "stderr": proc.stderr}
                 elif docker_bin:
+                    # Quick responsiveness preflight to avoid hanging if daemon is stopped or crashed
+                    try:
+                        info_check = subprocess.run([docker_bin, "info"], capture_output=True, timeout=5)
+                        if info_check.returncode != 0:
+                            raise RuntimeError(f"Docker daemon is not responsive: {info_check.stderr.decode('utf-8', errors='replace')[:200] if info_check.stderr else 'Daemon offline'}")
+                    except subprocess.TimeoutExpired:
+                        raise RuntimeError("Docker daemon is unresponsive (health check timed out after 5s). Please restart Docker.")
+
                     docker_target = target_url
                     if "127.0.0.1" in docker_target or "localhost" in docker_target:
                         docker_target = docker_target.replace("127.0.0.1", "host.docker.internal").replace("localhost", "host.docker.internal")
@@ -574,24 +583,14 @@ def execute_scan_worker_job(
                 db=db,
             )
 
-            has_ai_key = bool(
-                os.getenv("SHANNON_AI_API_KEY")
-                or os.getenv("XAI_API_KEY")
-                or os.getenv("OPENAI_API_KEY")
-                or os.getenv("ANTHROPIC_API_KEY")
-            )
-
             if is_mock_run:
                 sarif_data = generate_lab_assessment_sarif(target_url=target_url, repo_path=source_repo)
                 parsed_findings = parse_shannon_records(sarif_data)
                 raw_output_obj = sarif_data
             else:
-                if not has_ai_key:
-                    raise RuntimeError(
-                        "AI Penetration Testing requires configured LLM provider credits (e.g. xAI Grok, OpenAI, or Anthropic). "
-                        "No valid AI credits configured on worker. Live scan cannot proceed without an active AI provider. "
-                        "Use Lab Benchmark mode for offline verification."
-                    )
+                is_valid_provider, preflight_err = validate_ai_provider_preflight()
+                if not is_valid_provider:
+                    raise RuntimeError(preflight_err)
 
                 # Full production Docker execution
                 workspace_dir = get_scan_workspace_dir(assessment_id)
@@ -663,14 +662,15 @@ def execute_scan_worker_job(
         )
 
     except Exception as e:
-        logger.error(f"Error during scan job execution for {assessment_id}: {e}", exc_info=True)
+        clean_err = sanitize_ai_error(str(e))
+        logger.error(f"Error during scan job execution for {assessment_id}: {clean_err}", exc_info=True)
         try:
             update_assessment_progress(
                 assessment_id=assessment_id,
                 phase="failed",
                 progress_percent=100,
-                message=f"Scan execution failed: {str(e)}",
-                log_line=f"Error encountered: {str(e)}",
+                message=f"Scan execution failed: {clean_err}",
+                log_line=f"Error encountered: {clean_err}",
                 db=db,
             )
             assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()

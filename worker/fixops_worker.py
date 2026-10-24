@@ -41,6 +41,30 @@ logging.basicConfig(
 )
 logger = logging.getLogger("fixops.worker")
 
+# Import AI provider utilities from backend core if available
+try:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+    from app.core.ai_provider import (
+        parse_model_spec,
+        resolve_provider_credentials,
+        validate_ai_provider_preflight,
+        sanitize_ai_error,
+    )
+except ImportError:
+    def sanitize_ai_error(msg: str, **kwargs) -> str:
+        clean = re.sub(r"(ci_live_[a-zA-Z0-9_\-]{16,})", "[REDACTED_KEY]", str(msg))
+        clean = re.sub(r"(sk-[a-zA-Z0-9_\-]{16,})", "[REDACTED_KEY]", clean)
+        clean = re.sub(r"(xai-[a-zA-Z0-9_\-]{16,})", "[REDACTED_KEY]", clean)
+        if "insufficient_balance" in clean or "402" in clean:
+            return "AI provider billing error: Insufficient wallet balance on provider (HTTP 402). Please top up credits."
+        return clean
+
+    def validate_ai_provider_preflight(**kwargs) -> Tuple[bool, Optional[str]]:
+        has_key = bool(os.getenv("SHANNON_AI_API_KEY") or os.getenv("OPENAI_API_KEY") or os.getenv("XAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY"))
+        if not has_key:
+            return False, "No valid AI credentials found in environment. Use Lab Benchmark mode for offline verification."
+        return True, None
+
 # ---------------------------------------------------------------------------
 # Configuration Defaults
 # ---------------------------------------------------------------------------
@@ -310,18 +334,9 @@ def run_shannon_scan(job: Dict[str, Any], workspace: str) -> Tuple[List[Dict[str
         return mock_findings, {"status": "benchmark_mock", "count": 1}
 
     # Live Shannon AI Scan: Check AI credentials
-    has_ai_key = bool(
-        os.getenv("SHANNON_AI_API_KEY")
-        or os.getenv("XAI_API_KEY")
-        or os.getenv("OPENAI_API_KEY")
-        or os.getenv("ANTHROPIC_API_KEY")
-    )
-    if not has_ai_key:
-        raise RuntimeError(
-            "AI Penetration Testing requires configured LLM provider credits (e.g. xAI Grok, OpenAI, or Anthropic). "
-            "No valid AI credits configured on worker. Live scan cannot proceed without an active AI provider. "
-            "Use Lab Benchmark mode for offline verification."
-        )
+    is_valid_provider, preflight_err = validate_ai_provider_preflight(verify_network=True)
+    if not is_valid_provider:
+        raise RuntimeError(preflight_err)
 
     raise RuntimeError(
         "Live Shannon AI scan credits are currently disabled to prevent unapproved API billing. "
@@ -376,15 +391,16 @@ def process_job(job: Dict[str, Any]):
             },
         )
     except Exception as e:
-        logger.error(f"Execution failed for job {assessment_id}: {e}", exc_info=True)
+        clean_err = sanitize_ai_error(str(e))
+        logger.error(f"Execution failed for job {assessment_id}: {clean_err}", exc_info=True)
         try:
             api_request(
                 f"/workers/jobs/{assessment_id}/fail",
                 method="POST",
                 data={
                     "worker_id": WORKER_ID,
-                    "error_message": str(e),
-                    "error_logs": f"Exception encountered on worker {WORKER_ID}: {repr(e)}",
+                    "error_message": clean_err,
+                    "error_logs": f"Exception encountered on worker {WORKER_ID}: {clean_err}",
                 },
             )
         except Exception as api_err:

@@ -22,21 +22,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-50 select-none text-sm";
+      "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] disabled:pointer-events-none disabled:opacity-50 select-none text-sm";
 
     const variantStyles = {
       primary:
-        "gloss-yellow-btn text-[#111318] border border-[#F5C518]/60 font-bold",
+        "gloss-yellow-btn text-[#090A0D] font-bold active:scale-[0.99]",
       secondary:
-        "bg-zinc-100 dark:bg-[#1B1E24] text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-[#262A32] border border-zinc-200 dark:border-zinc-800 shadow-xs",
+        "btn-glass-secondary font-medium",
       outline:
-        "border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111318] text-zinc-900 dark:text-zinc-100 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-[#1B1E24] shadow-xs",
+        "border border-[#222630] bg-transparent text-[#F9FAFB] hover:bg-[#161920] hover:border-[#F5C518]/40 shadow-xs font-medium",
       ghost:
-        "bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100",
+        "bg-transparent text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-white/[0.05] font-medium",
       destructive:
-        "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm border border-rose-500/40 font-semibold",
+        "bg-[#F43F5E] text-white hover:bg-[#E11D48] active:bg-[#BE123C] shadow-sm border border-[#F43F5E]/40 font-semibold",
       danger:
-        "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 shadow-sm border border-rose-500/40 font-semibold",
+        "bg-[#F43F5E] text-white hover:bg-[#E11D48] active:bg-[#BE123C] shadow-sm border border-[#F43F5E]/40 font-semibold",
     };
 
     const sizeStyles = {

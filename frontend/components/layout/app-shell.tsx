@@ -87,7 +87,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row text-zinc-900 dark:text-zinc-100 overflow-x-hidden">
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#090A0D] flex flex-col md:flex-row text-zinc-900 dark:text-[#F9FAFB] overflow-x-hidden">
       {/* Desktop Collapsible Sidebar */}
         <div
           className={cn(
@@ -109,7 +109,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
               onClick={() => setMobileNavOpen(false)}
               aria-label="Close navigation overlay"
             />
-            <div className="relative w-64 max-w-[85vw] h-full z-10 bg-zinc-50 dark:bg-zinc-950 shadow-2xl animate-in slide-in-from-left duration-200">
+            <div className="relative w-64 max-w-[85vw] h-full z-10 bg-zinc-50 dark:bg-[#0B0D12] shadow-2xl animate-in slide-in-from-left duration-200 border-r border-zinc-200 dark:border-[#222630]">
               <Sidebar onNavigate={() => setMobileNavOpen(false)} />
             </div>
           </div>

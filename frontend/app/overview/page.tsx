@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -106,7 +105,7 @@ export default function OverviewPage() {
               size="sm"
               onClick={fetchMetrics}
               disabled={loading}
-              className="text-xs h-9 gap-1.5 border-[#E2E3E0] dark:border-[#262A32] hover:border-[#F5C518]/50"
+              className="text-xs h-9 gap-1.5 border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh Telemetry</span>
@@ -114,19 +113,19 @@ export default function OverviewPage() {
             {!isClient && (
               <>
                 <Link href="/clients/new">
-                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50">
+                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50">
                     <Users className="h-3.5 w-3.5" />
                     <span>New Client</span>
                   </Button>
                 </Link>
                 <Link href="/automation?create=true">
-                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50">
+                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50">
                     <Zap className="h-3.5 w-3.5 text-[#F5C518]" />
                     <span>New Workflow</span>
                   </Button>
                 </Link>
                 <Link href="/engagements/new">
-                  <Button size="sm" className="text-xs h-9 gap-1.5 font-bold">
+                  <Button size="sm" className="text-xs h-9 gap-1.5 btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
                     <Plus className="h-3.5 w-3.5" />
                     <span>New Engagement</span>
                   </Button>
@@ -253,33 +252,33 @@ export default function OverviewPage() {
               {!isClient ? (
                 <Link
                   href="/clients"
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col justify-between shadow-xs"
+                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 mb-2">
-                      <span className="text-[11px] font-medium uppercase tracking-wider">Clients</span>
-                      <Users className="h-4 w-4 text-brand-500" />
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                      <span className="text-[11px] font-mono uppercase tracking-wider">Clients</span>
+                      <Users className="h-4 w-4 text-[#F5C518]" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
                       {metrics.clients_total}
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 mt-2 truncate">
+                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
                     {metrics.clients_active} active accounts
                   </div>
                 </Link>
               ) : (
-                <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 flex flex-col justify-between shadow-xs">
+                <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] flex flex-col justify-between shadow-xs">
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 mb-2">
-                      <span className="text-[11px] font-medium uppercase tracking-wider">Security State</span>
-                      <Shield className="h-4 w-4 text-brand-500" />
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                      <span className="text-[11px] font-mono uppercase tracking-wider">Security State</span>
+                      <Shield className="h-4 w-4 text-[#34D399]" />
                     </div>
-                    <div className="text-xl font-bold font-mono text-emerald-500">
+                    <div className="text-xl font-bold font-mono text-[#34D399]">
                       PROTECTED
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 mt-2 truncate">
+                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
                     FixOps Agent Active
                   </div>
                 </div>
@@ -288,18 +287,18 @@ export default function OverviewPage() {
               {/* Engagements Card */}
               <Link
                 href="/engagements"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col justify-between shadow-xs"
+                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 mb-2">
-                    <span className="text-[11px] font-medium uppercase tracking-wider">Engagements</span>
-                    <Layers className="h-4 w-4 text-indigo-500" />
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                    <span className="text-[11px] font-mono uppercase tracking-wider">Engagements</span>
+                    <Layers className="h-4 w-4 text-indigo-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
                     {metrics.engagements_total}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 mt-2 truncate">
+                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
                   {metrics.engagements_active} ongoing
                 </div>
               </Link>
@@ -307,18 +306,18 @@ export default function OverviewPage() {
               {/* Assets Card */}
               <Link
                 href="/assets"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col justify-between shadow-xs"
+                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 mb-2">
-                    <span className="text-[11px] font-medium uppercase tracking-wider">In-Scope Assets</span>
-                    <Shield className="h-4 w-4 text-emerald-500" />
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                    <span className="text-[11px] font-mono uppercase tracking-wider">In-Scope Assets</span>
+                    <Shield className="h-4 w-4 text-emerald-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
                     {metrics.assets_in_scope}
                   </div>
                 </div>
-                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-2 truncate">
+                <div className="text-[10px] text-emerald-600 dark:text-[#34D399] mt-2 truncate font-mono">
                   {metrics.assets_total} registered total
                 </div>
               </Link>
@@ -326,18 +325,18 @@ export default function OverviewPage() {
               {/* Open Findings Card */}
               <Link
                 href="/findings?status=open"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col justify-between shadow-xs"
+                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 mb-2">
-                    <span className="text-[11px] font-medium uppercase tracking-wider">Open Findings</span>
-                    <FileCheck2 className="h-4 w-4 text-amber-500" />
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                    <span className="text-[11px] font-mono uppercase tracking-wider">Open Findings</span>
+                    <FileCheck2 className="h-4 w-4 text-amber-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
                     {metrics.findings_open}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 mt-2 truncate">
+                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
                   {metrics.findings_total} total identified
                 </div>
               </Link>
@@ -345,18 +344,18 @@ export default function OverviewPage() {
               {/* Remediated Card */}
               <Link
                 href="/findings?status=verified_fixed"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col justify-between shadow-xs"
+                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 mb-2">
-                    <span className="text-[11px] font-medium uppercase tracking-wider">Remediated</span>
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                    <span className="text-[11px] font-mono uppercase tracking-wider">Remediated</span>
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                  <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-[#34D399]">
                     {metrics.findings_verified_fixed}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 mt-2 truncate">
+                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
                   {metrics.findings_in_remediation} in progress
                 </div>
               </Link>
@@ -365,79 +364,79 @@ export default function OverviewPage() {
               {!isClient ? (
                 <Link
                   href="/automation"
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col justify-between shadow-xs"
+                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 mb-2">
-                      <span className="text-[11px] font-medium uppercase tracking-wider">Automations</span>
-                      <Zap className="h-4 w-4 text-amber-500" />
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                      <span className="text-[11px] font-mono uppercase tracking-wider">Automations</span>
+                      <Zap className="h-4 w-4 text-amber-400" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
                       {metrics.automation_executions_total}
                     </div>
                   </div>
-                  <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-2 truncate">
+                  <div className="text-[10px] text-amber-600 dark:text-[#FFD84D] mt-2 truncate font-mono">
                     {metrics.automation_rules_active} rules active
                   </div>
                 </Link>
               ) : (
                 <Link
                   href="/reports"
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group flex flex-col justify-between shadow-xs"
+                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 mb-2">
-                      <span className="text-[11px] font-medium uppercase tracking-wider">Reports</span>
-                      <FileText className="h-4 w-4 text-blue-500" />
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
+                      <span className="text-[11px] font-mono uppercase tracking-wider">Reports</span>
+                      <FileText className="h-4 w-4 text-blue-400" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
                       Available
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 mt-2 truncate">
-                    Verified PDFs & Summaries
+                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
+                    Verified Deliverables
                   </div>
                 </Link>
               )}
             </div>
 
             {/* Quick Workflow Hub */}
-            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-xs space-y-3">
+            <div className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase font-mono tracking-wider text-zinc-500">
+                <span className="text-xs font-semibold uppercase font-mono tracking-wider text-zinc-500 dark:text-[#9CA3AF]">
                   Quick Workflow Shortcuts
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <Link
                   href="/findings"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
                     <UploadCloud className="h-4 w-4 text-[#F5C518]" />
-                    <span>Import Scanner Output</span>
+                    <span className="text-zinc-800 dark:text-[#F9FAFB]">Import Scanner Output</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
                 </Link>
 
                 <Link
                   href="/engagements"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-indigo-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Layers className="h-4 w-4 text-indigo-500" />
-                    <span>Engagements & Audits</span>
+                    <Layers className="h-4 w-4 text-indigo-400" />
+                    <span className="text-zinc-800 dark:text-[#F9FAFB]">Engagements & Audits</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
                 </Link>
 
                 <Link
                   href="/automation"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
                     <Zap className="h-4 w-4 text-[#F5C518]" />
-                    <span>Automation & Rules</span>
+                    <span className="text-zinc-800 dark:text-[#F9FAFB]">Automation & Rules</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
                 </Link>
@@ -445,22 +444,22 @@ export default function OverviewPage() {
                 {isFounder ? (
                   <Link
                     href="/registrations"
-                    className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-amber-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-amber-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <UserCheck className="h-4 w-4 text-amber-500" />
-                      <span>Review Onboarding Queue</span>
+                      <UserCheck className="h-4 w-4 text-amber-400" />
+                      <span className="text-zinc-800 dark:text-[#F9FAFB]">Review Onboarding Queue</span>
                     </div>
                     <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
                   </Link>
                 ) : (
                   <Link
                     href="/assets"
-                    className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-emerald-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Shield className="h-4 w-4 text-emerald-500" />
-                      <span>Asset Inventory</span>
+                      <Shield className="h-4 w-4 text-emerald-400" />
+                      <span className="text-zinc-800 dark:text-[#F9FAFB]">Asset Inventory</span>
                     </div>
                     <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
                   </Link>
@@ -468,11 +467,11 @@ export default function OverviewPage() {
 
                 <Link
                   href="/reports"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
-                    <FileText className="h-4 w-4 text-blue-500" />
-                    <span>Security Reports</span>
+                    <FileText className="h-4 w-4 text-blue-400" />
+                    <span className="text-zinc-800 dark:text-[#F9FAFB]">Security Reports</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-100" />
                 </Link>
@@ -482,14 +481,14 @@ export default function OverviewPage() {
             {/* Severity Distribution & Activity Center */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Finding Severity Distribution */}
-              <div className="p-4 sm:p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 lg:col-span-1 shadow-xs space-y-4">
+              <div className="p-4 sm:p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] lg:col-span-1 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 font-mono">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     Severity Breakdown
                   </h2>
                   <Link
                     href="/findings"
-                    className="text-[11px] text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-0.5"
+                    className="text-[11px] text-[#F5C518] hover:underline flex items-center gap-0.5 font-semibold"
                   >
                     <span>View all</span>
                     <ArrowRight className="h-3 w-3" />
@@ -498,10 +497,10 @@ export default function OverviewPage() {
 
                 <div className="space-y-3">
                   {[
-                    { label: "Critical", count: metrics.severity_distribution.critical, color: "bg-rose-500", text: "text-rose-500" },
-                    { label: "High", count: metrics.severity_distribution.high, color: "bg-orange-500", text: "text-orange-500" },
-                    { label: "Medium", count: metrics.severity_distribution.medium, color: "bg-amber-500", text: "text-amber-500" },
-                    { label: "Low", count: metrics.severity_distribution.low, color: "bg-blue-500", text: "text-blue-500" },
+                    { label: "Critical", count: metrics.severity_distribution.critical, color: "bg-[#F43F5E]", text: "text-[#F43F5E]" },
+                    { label: "High", count: metrics.severity_distribution.high, color: "bg-[#FB923C]", text: "text-[#FB923C]" },
+                    { label: "Medium", count: metrics.severity_distribution.medium, color: "bg-[#FBBF24]", text: "text-[#FBBF24]" },
+                    { label: "Low", count: metrics.severity_distribution.low, color: "bg-[#60A5FA]", text: "text-[#60A5FA]" },
                     { label: "Info", count: metrics.severity_distribution.info, color: "bg-zinc-500", text: "text-zinc-500" },
                   ].map((item) => {
                     const pct = metrics.findings_total > 0 ? (item.count / metrics.findings_total) * 100 : 0;
@@ -515,7 +514,7 @@ export default function OverviewPage() {
                             {item.count}
                           </span>
                         </div>
-                        <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full bg-zinc-100 dark:bg-[#161920] rounded-full overflow-hidden border border-transparent dark:border-[#222630]/60">
                           <div
                             className={`h-full ${item.color} rounded-full transition-all duration-500`}
                             style={{ width: `${pct}%` }}
@@ -528,36 +527,36 @@ export default function OverviewPage() {
               </div>
 
               {/* Audit Trail & Live Activity */}
-              <div className="p-4 sm:p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 lg:col-span-2 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 font-mono">
+              <div className="p-4 sm:p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] lg:col-span-2 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-[#222630] pb-2.5">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     Verified Activity & Audit Log
                   </h2>
-                  <span className="text-[10px] text-zinc-400 font-mono">
+                  <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] font-mono">
                     Timezone: Asia/Kolkata (IST)
                   </span>
                 </div>
 
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                <div className="divide-y divide-zinc-100 dark:divide-[#222630]">
                   {metrics.recent_activity.length === 0 ? (
-                    <div className="py-8 text-center text-xs text-zinc-400">
+                    <div className="py-8 text-center text-xs text-zinc-400 dark:text-[#6B7280]">
                       No security operations recorded yet. Activity will appear here in real-time as assessments and scans are dispatched.
                     </div>
                   ) : (
                     metrics.recent_activity.slice(0, 6).map((log) => (
                       <div key={log.id} className="py-2.5 flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-3 text-xs">
                         <div className="flex items-start gap-2 min-w-0">
-                          <Clock className="h-3.5 w-3.5 text-zinc-400 shrink-0 mt-0.5" />
+                          <Clock className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0 mt-0.5" />
                           <div className="min-w-0">
-                            <span className="font-semibold text-zinc-900 dark:text-zinc-100 font-mono text-[11px] block truncate">
+                            <span className="font-semibold text-zinc-900 dark:text-[#F9FAFB] font-mono text-[11px] block truncate">
                               {log.action}
                             </span>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-[11px] mt-0.5 break-words">
+                            <p className="text-zinc-500 dark:text-[#9CA3AF] text-[11px] mt-0.5 break-words">
                               {log.details || `Operation on ${log.resource_type}`}
                             </p>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right text-[10px] text-zinc-400 font-mono shrink-0 pl-5 sm:pl-0">
+                        <div className="text-left sm:text-right text-[10px] text-zinc-400 dark:text-[#9CA3AF] font-mono shrink-0 pl-5 sm:pl-0">
                           <TimeDisplay value={log.created_at} mode="datetime" />
                         </div>
                       </div>

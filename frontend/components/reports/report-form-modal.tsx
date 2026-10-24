@@ -108,18 +108,18 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
         )}
 
         {!loadingOptions && engagements.length === 0 ? (
-          <div className="p-5 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-center space-y-3 bg-zinc-50/50 dark:bg-zinc-900/40">
+          <div className="p-5 rounded-xl border border-dashed border-zinc-300 dark:border-[#222630] text-center space-y-3 bg-zinc-50/50 dark:bg-[#161920]/40">
             <AlertCircle className="h-6 w-6 text-amber-500 mx-auto" />
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                 No In-Scope Engagements Available
               </p>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
+              <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] max-w-xs mx-auto leading-relaxed">
                 Assessment reports require an active or completed engagement record to compile verified findings and scoping telemetry.
               </p>
             </div>
             <Link href="/engagements/new" onClick={onClose} className="inline-block">
-              <Button size="sm" type="button" className="text-xs gap-1.5 font-bold">
+              <Button size="sm" type="button" className="text-xs gap-1.5 btn-glossy-gold font-bold">
                 <Plus className="h-3.5 w-3.5" />
                 <span>Create New Engagement</span>
               </Button>
@@ -128,13 +128,13 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
         ) : (
           <>
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
                 Target Engagement *
               </label>
               <select
                 value={engagementId}
                 onChange={(e) => handleSelectEngagement(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
                 required
               >
                 <option value="">Select engagement...</option>
@@ -146,45 +146,45 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
               </select>
             </div>
 
-        <div>
-          <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-            Report Title *
-          </label>
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Q4 Penetration Testing Comprehensive Report"
-            required
-          />
-        </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
+                Report Title *
+              </label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Q4 Penetration Testing Comprehensive Report"
+                required
+              />
+            </div>
 
-        <div>
-          <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-            Report Type *
-          </label>
-          <select
-            value={reportType}
-            onChange={(e) => setReportType(e.target.value as ReportType)}
-            className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
-          >
-            <option value="full_assessment">Full Assessment (Executive Summary + Scope + All Findings)</option>
-            <option value="executive_summary">Executive Summary Only (High-Level Posture & Risk Matrix)</option>
-            <option value="technical_findings">Technical Findings (Vulnerabilities, CVSS & Evidence Only)</option>
-            <option value="remediation_audit">Remediation & Verification Audit (Fixed vs Outstanding)</option>
-          </select>
-        </div>
-        </>
+            <div>
+              <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
+                Report Type *
+              </label>
+              <select
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value as ReportType)}
+                className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
+              >
+                <option value="full_assessment">Full Assessment (Executive Summary + Scope + All Findings)</option>
+                <option value="executive_summary">Executive Summary Only (High-Level Posture & Risk Matrix)</option>
+                <option value="technical_findings">Technical Findings (Vulnerabilities, CVSS & Evidence Only)</option>
+                <option value="remediation_audit">Remediation & Verification Audit (Fixed vs Outstanding)</option>
+              </select>
+            </div>
+          </>
         )}
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={generating}>
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-[#222630]">
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={generating} className="border-zinc-200 dark:border-[#222630]">
             Cancel
           </Button>
           <Button
             type="submit"
             size="sm"
             disabled={generating || engagements.length === 0 || !engagementId}
-            className="font-bold"
+            className="btn-glossy-gold font-bold"
           >
             {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <PieChart className="h-3.5 w-3.5 mr-1.5" />}
             <span>{generating ? "Compiling Telemetry…" : "Generate Report"}</span>

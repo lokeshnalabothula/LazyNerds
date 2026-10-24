@@ -9,13 +9,13 @@ export const metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#090A0D] text-zinc-200 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Navigation */}
         <div>
           <Link
             href="/clients"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-[#F9FAFB] transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Return to Workspace</span>
@@ -23,21 +23,21 @@ export default function PrivacyPolicyPage() {
         </div>
 
         {/* Header */}
-        <div className="border-b border-zinc-800 pb-6 space-y-2">
-          <div className="flex items-center gap-2 text-brand-400 font-mono text-xs uppercase tracking-wider">
+        <div className="border-b border-[#222630] pb-6 space-y-2">
+          <div className="flex items-center gap-2 text-[#F5C518] font-mono text-xs uppercase tracking-wider">
             <Shield className="h-4 w-4" />
             <span>Lazy Nerds FixOps Security & Governance</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
+          <h1 className="text-2xl font-bold tracking-tight text-[#F9FAFB] font-mono">
             Privacy Policy
           </h1>
-          <p className="text-xs text-zinc-400 font-mono">
+          <p className="text-xs text-[#9CA3AF] font-mono">
             Effective Date: October 14, 2026 | Version 1.0.0
           </p>
         </div>
 
         {/* Notice on Legal Review */}
-        <div className="p-4 rounded-md border border-amber-500/20 bg-amber-500/10 text-xs text-amber-300 leading-relaxed font-mono">
+        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-xs text-amber-300 leading-relaxed font-mono">
           <strong>LEGAL NOTICE FOR DEPLOYMENT:</strong> Sections marked with brackets (e.g., [COMPANY LEGAL ENTITY], [REGISTERED JURISDICTION]) represent verified corporate parameters that must be reviewed and customized by Lazy Nerds legal counsel prior to public launch.
         </div>
 

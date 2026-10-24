@@ -87,7 +87,7 @@ export default function ReportDetailPage() {
                 size="sm"
                 onClick={() => handleDownload("markdown")}
                 disabled={downloading !== null}
-                className="text-xs h-9 gap-1.5"
+                className="text-xs h-9 gap-1.5 border-zinc-200 dark:border-[#222630] dark:bg-[#161920]"
               >
                 {downloading === "markdown" ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -100,7 +100,7 @@ export default function ReportDetailPage() {
                 size="sm"
                 onClick={() => handleDownload("html")}
                 disabled={downloading !== null}
-                className="text-xs h-9 gap-1.5 font-bold"
+                className="text-xs h-9 gap-1.5 btn-glossy-gold font-bold"
               >
                 {downloading === "html" ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -115,7 +115,7 @@ export default function ReportDetailPage() {
 
         {loading ? (
           <div className="h-64 flex items-center justify-center text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500 mr-2" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#F5C518] mr-2" />
             <span className="text-xs font-mono">Loading report document...</span>
           </div>
         ) : error || !report ? (
@@ -123,39 +123,39 @@ export default function ReportDetailPage() {
             {error || "Report deliverable not found."}
           </div>
         ) : (
-          <article className="p-8 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs space-y-6">
+          <article className="p-8 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs space-y-6">
             {/* Header Metadata */}
-            <div className="border-b border-zinc-200 dark:border-zinc-800 pb-6 space-y-3">
+            <div className="border-b border-zinc-200 dark:border-[#222630] pb-6 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 font-bold">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold">
                   {report.report_type.replace("_", " ")}
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold">
                   {report.status}
                 </span>
               </div>
 
-              <h1 className="text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-50 tracking-tight">
+              <h1 className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                 {report.title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-6 text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="flex flex-wrap items-center gap-6 text-xs text-zinc-500 dark:text-[#9CA3AF]">
                 <div className="flex items-center gap-1.5">
-                  <Shield className="h-3.5 w-3.5 text-zinc-400" />
+                  <Shield className="h-3.5 w-3.5 text-[#F5C518]" />
                   <span>Engagement: </span>
                   <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                     {report.engagement_name || "Linked Engagement"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-zinc-400" />
+                  <Calendar className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
                   <span>Generated: </span>
                   <span className="font-mono text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>
                     {formatDateTime(report.created_at)}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5 text-zinc-400" />
+                  <User className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
                   <span>Auditor: </span>
                   <span className="text-zinc-800 dark:text-zinc-200">
                     {report.generated_by || "FixOps Automated Reporting"}
@@ -166,7 +166,7 @@ export default function ReportDetailPage() {
 
             {/* Rendered Report Content */}
             <div className="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed font-sans">
-              <pre className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-950 font-sans text-xs text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap leading-relaxed border border-zinc-200 dark:border-zinc-800">
+              <pre className="p-5 rounded-xl bg-zinc-50 dark:bg-[#08090b] font-mono text-xs text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap leading-relaxed border border-zinc-200 dark:border-[#222630]">
                 {report.summary_content}
               </pre>
             </div>

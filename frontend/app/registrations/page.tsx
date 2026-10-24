@@ -174,19 +174,19 @@ function RegistrationsContent() {
     <AppShell title="Client Registrations">
       <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 dark:border-[#222630] pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
+              <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-[#F9FAFB] font-mono tracking-tight">
                 CLIENT REGISTRATION QUEUE
               </h1>
               {pendingCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F5C518]/20 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
                   {pendingCount} PENDING
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
               Review, verify scope, approve tenant workspaces, and assign operational security engineers.
             </p>
           </div>
@@ -197,13 +197,13 @@ function RegistrationsContent() {
               size="sm"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="text-xs h-9"
+              className="text-xs h-9 border-zinc-200 dark:border-[#222630] dark:bg-[#161920]"
             >
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? "animate-spin" : ""}`} />
               <span>Refresh</span>
             </Button>
             <Link href="/clients">
-              <Button size="sm" className="text-xs h-9">
+              <Button size="sm" className="text-xs h-9 btn-glossy-gold font-bold">
                 <Building2 className="h-3.5 w-3.5 mr-1.5" />
                 <span>Client Directory</span>
               </Button>
@@ -213,7 +213,7 @@ function RegistrationsContent() {
 
         {/* Filters and Search Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-          <div className="flex items-center gap-1.5 p-1 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs overflow-x-auto">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-zinc-100 dark:bg-[#111318] border border-zinc-200 dark:border-[#222630] text-xs overflow-x-auto">
             {[
               { id: "pending", label: "Pending Review" },
               { id: "all", label: "All Submissions" },
@@ -224,10 +224,10 @@ function RegistrationsContent() {
               <button
                 key={tab.id}
                 onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap ${
                   statusFilter === tab.id
-                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#F9FAFB] shadow-xs font-semibold border border-zinc-200/80 dark:border-[#222630]"
+                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-zinc-200"
                 }`}
               >
                 {tab.label}
@@ -236,13 +236,13 @@ function RegistrationsContent() {
           </div>
 
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400 dark:text-[#9CA3AF]" />
             <input
               type="text"
               placeholder="Search registrations…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 pl-8 pr-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-brand-500"
+              className="w-full rounded-lg bg-white dark:bg-[#161920] border border-zinc-200 dark:border-[#222630] pl-8 pr-3 py-1.5 text-xs text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#9CA3AF]/60 focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
             />
           </div>
         </div>
@@ -282,12 +282,12 @@ function RegistrationsContent() {
             {filteredItems.map((reg) => (
               <div
                 key={reg.id}
-                className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all space-y-4"
+                className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs hover:border-[#F5C518]/40 dark:hover:border-[#F5C518]/40 transition-all space-y-4"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-[#F9FAFB] font-mono">
                         {reg.company_name}
                       </h3>
                       {reg.status === "pending" && (
@@ -311,7 +311,7 @@ function RegistrationsContent() {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 flex-wrap">
+                    <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-[#9CA3AF] flex-wrap">
                       <span>Submitted <TimeDisplay value={reg.created_at} mode="relative" /></span>
                       <span>•</span>
                       <span>{reg.industry || "General Industry"}</span>
@@ -328,7 +328,7 @@ function RegistrationsContent() {
                             href={reg.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-brand-500 hover:underline inline-flex items-center gap-1"
+                            className="text-[#B88700] dark:text-[#FFD84D] hover:underline inline-flex items-center gap-1 font-mono"
                           >
                             <span>Website</span>
                             <ExternalLink className="h-3 w-3" />
@@ -361,7 +361,7 @@ function RegistrationsContent() {
                           setSelectedReg(reg);
                           setReviewAction("request_info");
                         }}
-                        className="h-8 text-xs text-amber-400 hover:text-amber-300"
+                        className="h-8 text-xs text-amber-400 hover:text-amber-300 border-zinc-200 dark:border-[#222630] dark:bg-[#161920]"
                       >
                         <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
                         <span>Request Info</span>
@@ -385,33 +385,33 @@ function RegistrationsContent() {
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-xs">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3.5 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-200 dark:border-[#222630] text-xs">
                   {/* Contact Info */}
                   <div className="space-y-1">
-                    <span className="text-[10px] uppercase font-mono font-semibold text-zinc-400">
+                    <span className="text-[10px] uppercase font-mono font-semibold text-zinc-400 dark:text-[#9CA3AF]">
                       Primary Contact
                     </span>
-                    <p className="font-semibold text-zinc-900 dark:text-zinc-200">{reg.full_name}</p>
-                    <p className="text-zinc-500 dark:text-zinc-400">{reg.email}</p>
-                    {reg.job_title && <p className="text-zinc-500">{reg.job_title}</p>}
-                    {reg.phone && <p className="text-zinc-500">{reg.phone}</p>}
+                    <p className="font-semibold text-zinc-900 dark:text-[#F9FAFB]">{reg.full_name}</p>
+                    <p className="text-zinc-500 dark:text-[#9CA3AF] font-mono text-[11px]">{reg.email}</p>
+                    {reg.job_title && <p className="text-zinc-500 dark:text-[#9CA3AF]">{reg.job_title}</p>}
+                    {reg.phone && <p className="text-zinc-500 dark:text-[#9CA3AF] font-mono text-[11px]">{reg.phone}</p>}
                   </div>
 
                   {/* Scope & Domains */}
                   <div className="space-y-1 md:col-span-2">
-                    <span className="text-[10px] uppercase font-mono font-semibold text-zinc-400">
+                    <span className="text-[10px] uppercase font-mono font-semibold text-zinc-400 dark:text-[#9CA3AF]">
                       Scope & Requested Services
                     </span>
-                    <p className="font-medium text-zinc-800 dark:text-zinc-300">
+                    <p className="font-medium text-zinc-800 dark:text-zinc-200">
                       {reg.requested_services || "FixOps Automated Vulnerability Management"}
                     </p>
                     {reg.primary_domains && (
-                      <p className="text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
+                      <p className="text-zinc-500 dark:text-[#9CA3AF] font-mono text-[11px]">
                         Target Domains: {reg.primary_domains}
                       </p>
                     )}
                     {reg.scope_description && (
-                      <p className="text-zinc-500 dark:text-zinc-400 italic">
+                      <p className="text-zinc-500 dark:text-[#9CA3AF] italic">
                         &quot;{reg.scope_description}&quot;
                       </p>
                     )}
@@ -420,7 +420,7 @@ function RegistrationsContent() {
 
                 {/* Review Notes or Rejection History */}
                 {(reg.review_notes || reg.rejection_reason) && (
-                  <div className="p-2.5 rounded bg-zinc-100 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 text-[11px] text-zinc-600 dark:text-zinc-400">
+                  <div className="p-2.5 rounded-lg bg-zinc-100 dark:bg-[#161920]/60 border border-zinc-200 dark:border-[#222630] text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
                     {reg.review_notes && (
                       <p>
                         <strong className="text-zinc-700 dark:text-zinc-300">Review Notes:</strong>{" "}

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -137,86 +136,72 @@ export default function SettingsPage() {
     <AppShell title="Settings & Administration">
       <div className="max-w-4xl space-y-6 mx-auto">
         {/* Header */}
-        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono">
+        <div className="border-b border-zinc-200 dark:border-[#222630] pb-4">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
             Platform Settings & Administration
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
+          <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 leading-relaxed">
             Authenticated operator profile, credential management, audit logging, and platform diagnostics.
           </p>
         </div>
 
         {/* Brand & Platform Identity Card */}
-        <div className="rounded-xl border border-[#F5C518]/25 bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="h-12 w-12 rounded-xl border border-[#F5C518]/30 bg-[#1B1E24] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
-              <Image
-                src="/brand/logo-icon.png"
-                alt="Lazy Nerds Logo Emblem"
-                width={48}
-                height={48}
-                priority
-                className="object-cover w-full h-full"
-              />
+            <div className="h-10 w-10 rounded-xl border border-[#F5C518]/30 bg-[#161920] flex items-center justify-center shrink-0 shadow-xs font-mono font-bold text-sm text-[#FFD84D]">
+              LN
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+                <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
                   LAZY NERDS FIXOPS
                 </span>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
                   PRODUCTION
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] mt-0.5">
                 Autonomous Cybersecurity Operations & Vulnerability Remediation Platform
               </p>
             </div>
           </div>
-          <div className="relative h-9 w-40 shrink-0 hidden sm:flex items-center justify-end">
-            <Image
-              src="/brand/title-sm.png"
-              alt="Lazy Nerds Wordmark"
-              width={160}
-              height={36}
-              className="object-contain w-auto h-full opacity-90 hover:opacity-100 transition-opacity"
-            />
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-xs font-mono text-zinc-500 dark:text-[#9CA3AF]">
+              v2.1.0 • Enterprise
+            </span>
           </div>
         </div>
 
         {/* User Account Card */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-3">
-            <User className="h-4 w-4 text-brand-500" />
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
+            <User className="h-4 w-4 text-[#F5C518]" />
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
               Authenticated Personnel
             </h2>
           </div>
 
           {user && (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800/60">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-4 border-b border-zinc-100 dark:border-[#222630]">
                 <Avatar
-                  src="/profile.png"
-                  alt={user.full_name || "Profile Picture"}
                   size="xl"
                   fallbackText={user.full_name || user.email}
-                  priority
-                  className="rounded-2xl border-2 shadow-md ring-2 ring-[#F5C518]/20"
+                  alt={user.full_name || "Operator"}
                 />
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-[#F9FAFB] font-mono">
                       {user.full_name}
                     </h3>
                     <Badge variant="active" size="sm" className="capitalize">
                       {user.role}
                     </Badge>
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                  <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     {user.email}
                   </p>
-                  <p className="text-[11px] text-zinc-400 font-mono">
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
                     Official Operator Profile Picture • FixOps Identity
                   </p>
                 </div>
@@ -224,28 +209,28 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="text-zinc-400 block text-[11px]">Full Name</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 block text-[11px]">Full Name</span>
                   <span className="font-medium text-zinc-800 dark:text-zinc-200">
                     {user.full_name}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-zinc-400 block text-[11px]">Account Email</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 block text-[11px]">Account Email</span>
                   <span className="font-mono text-zinc-800 dark:text-zinc-200">
                     {user.email}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-zinc-400 block text-[11px]">Assigned Role</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 block text-[11px]">Assigned Role</span>
                   <Badge variant="active" size="sm" className="capitalize">
                     {user.role}
                   </Badge>
                 </div>
 
                 <div>
-                  <span className="text-zinc-400 block text-[11px]">Operator ID</span>
+                  <span className="text-zinc-400 dark:text-zinc-500 block text-[11px]">Operator ID</span>
                   <span className="font-mono text-[11px] text-zinc-500 break-all select-all">
                     {user.id}
                   </span>
@@ -254,12 +239,12 @@ export default function SettingsPage() {
             </div>
           )}
 
-          <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
+          <div className="pt-2 border-t border-zinc-200 dark:border-[#222630] flex justify-end">
             <Button
               variant="outline"
               size="sm"
               onClick={logout}
-              className="gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 min-h-[36px]"
+              className="gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 min-h-[36px] border-zinc-200 dark:border-[#222630] dark:bg-[#161920]"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Sign out of Workspace</span>
@@ -268,21 +253,21 @@ export default function SettingsPage() {
         </div>
 
         {/* Localization & Time Zone Preferences Card */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-3">
-            <Globe className="h-4 w-4 text-brand-500" />
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
+            <Globe className="h-4 w-4 text-[#F5C518]" />
             <div>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                 Localization & Operational Time Zone
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-0.5">
                 Configure your preferred time zone for displaying assessment dates, audit logs, and security telemetry.
               </p>
             </div>
           </div>
 
           {tzSavedMsg && (
-            <div className="p-3 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 shrink-0" />
               <span>{tzSavedMsg}</span>
             </div>
@@ -290,14 +275,14 @@ export default function SettingsPage() {
 
           <div className="space-y-4 max-w-md">
             <div>
-              <label htmlFor="timezone-select" className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <label htmlFor="timezone-select" className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1.5">
                 Active Time Zone Preference
               </label>
               <select
                 id="timezone-select"
                 value={selectedTzSetting}
                 onChange={(e) => handleTimezoneChange(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-[38px] focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#F9FAFB] min-h-[38px] focus:outline-none focus:ring-1 focus:ring-[#F5C518] font-mono"
               >
                 {SUPPORTED_TIMEZONES.map((tz) => (
                   <option key={tz.value} value={tz.value}>
@@ -307,14 +292,14 @@ export default function SettingsPage() {
               </select>
             </div>
 
-            <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-1.5 text-xs">
-              <div className="flex justify-between items-center text-zinc-500">
+            <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-200 dark:border-[#222630] space-y-1.5 text-xs">
+              <div className="flex justify-between items-center text-zinc-500 dark:text-[#9CA3AF]">
                 <span>Resolved Active Zone:</span>
-                <span className="font-mono font-semibold text-brand-600 dark:text-brand-400">
+                <span className="font-mono font-semibold text-[#B88700] dark:text-[#FFD84D]">
                   {effectiveTz}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-zinc-500">
+              <div className="flex justify-between items-center text-zinc-500 dark:text-[#9CA3AF]">
                 <span>Sample Live Timestamp:</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>
                   {formatDateTime(new Date().toISOString(), effectiveTz)}
@@ -325,14 +310,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Password Management Card */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-3">
-            <Lock className="h-4 w-4 text-brand-500" />
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
+            <Lock className="h-4 w-4 text-[#F5C518]" />
             <div>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                 Security & Credential Management
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-0.5">
                 Update your account password using strong cryptographic verification.
               </p>
             </div>
@@ -340,21 +325,21 @@ export default function SettingsPage() {
 
           <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
             {passwordError && (
-              <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-start gap-2">
+              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-start gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{passwordError}</span>
               </div>
             )}
 
             {passwordSuccess && (
-              <div className="p-3 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-start gap-2">
+              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{passwordSuccess}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
                 Current Password
               </label>
               <input
@@ -364,12 +349,12 @@ export default function SettingsPage() {
                 required
                 autoComplete="current-password"
                 placeholder="••••••••••••"
-                className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-[36px] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#9CA3AF]/60 min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
                 New Secure Password
               </label>
               <input
@@ -379,12 +364,12 @@ export default function SettingsPage() {
                 required
                 autoComplete="new-password"
                 placeholder="Minimum 10 characters"
-                className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-[36px] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#9CA3AF]/60 min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
                 Confirm New Password
               </label>
               <input
@@ -394,7 +379,7 @@ export default function SettingsPage() {
                 required
                 autoComplete="new-password"
                 placeholder="Re-enter new password"
-                className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-[36px] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#9CA3AF]/60 min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               />
             </div>
 
@@ -402,7 +387,7 @@ export default function SettingsPage() {
               type="submit"
               size="sm"
               isLoading={passwordLoading}
-              className="min-h-[36px]"
+              className="min-h-[36px] btn-glossy-gold font-bold"
             >
               <KeyRound className="h-3.5 w-3.5 mr-1.5" />
               <span>Update Password</span>
@@ -411,26 +396,26 @@ export default function SettingsPage() {
         </div>
 
         {/* System & Database Diagnostics */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-3">
-            <Database className="h-4 w-4 text-brand-500" />
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
+            <Database className="h-4 w-4 text-[#F5C518]" />
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
               Platform & Database Diagnostics
             </h2>
           </div>
 
           <div className="space-y-3 text-xs">
-            <div className="flex items-center justify-between p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800">
-              <span className="text-zinc-600 dark:text-zinc-400">Backend API Gateway</span>
+            <div className="flex items-center justify-between p-3.5 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-100 dark:border-[#222630]">
+              <span className="text-zinc-600 dark:text-[#9CA3AF]">Backend API Gateway</span>
               <Badge variant="active" size="sm">
                 Operational (FixOps v2.0.0)
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800">
-              <span className="text-zinc-600 dark:text-zinc-400">Database Engine</span>
+            <div className="flex items-center justify-between p-3.5 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-100 dark:border-[#222630]">
+              <span className="text-zinc-600 dark:text-[#9CA3AF]">Database Engine</span>
               {healthLoading ? (
-                <span className="text-zinc-400 font-mono text-[11px]">Checking status…</span>
+                <span className="text-zinc-400 dark:text-zinc-500 font-mono text-[11px]">Checking status…</span>
               ) : healthStatus?.database === "connected" ? (
                 <Badge variant="active" size="sm">
                   Connected & Pooled
@@ -442,8 +427,8 @@ export default function SettingsPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800">
-              <span className="text-zinc-600 dark:text-zinc-400">Schema Revision</span>
+            <div className="flex items-center justify-between p-3.5 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-100 dark:border-[#222630]">
+              <span className="text-zinc-600 dark:text-[#9CA3AF]">Schema Revision</span>
               <span className="font-mono text-zinc-700 dark:text-zinc-300 text-[11px]">
                 003_complete_fixops_platform
               </span>
@@ -452,46 +437,46 @@ export default function SettingsPage() {
         </div>
 
         {/* Audit Log Trail */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-zinc-200 dark:border-[#222630] pb-3">
             <div className="flex items-center gap-2">
-              <History className="h-4 w-4 text-brand-500" />
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <History className="h-4 w-4 text-[#F5C518]" />
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                 Security Audit Log Trail
               </h2>
             </div>
-            <span className="text-[10px] text-zinc-400 font-mono">
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
               Immutable Operations Record
             </span>
           </div>
 
           {loadingLogs ? (
             <div className="py-8 text-center text-zinc-400 text-xs">
-              <Loader2 className="h-4 w-4 animate-spin mx-auto mb-1 text-brand-500" />
+              <Loader2 className="h-4 w-4 animate-spin mx-auto mb-1 text-[#F5C518]" />
               <span>Loading audit trail…</span>
             </div>
           ) : auditLogs.length === 0 ? (
-            <div className="py-6 text-center text-xs text-zinc-400">
+            <div className="py-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
               No audit log entries available for this account.
             </div>
           ) : (
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+            <div className="divide-y divide-zinc-100 dark:divide-[#222630]">
               {auditLogs.map((log) => (
                 <div key={log.id} className="py-3 flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-3 text-xs">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold font-mono text-[11px] text-zinc-900 dark:text-zinc-100">
+                      <span className="font-semibold font-mono text-[11px] text-zinc-900 dark:text-[#F9FAFB]">
                         {log.action}
                       </span>
-                      <span className="text-[10px] text-zinc-400 font-mono truncate">
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono truncate">
                         {log.user_email}
                       </span>
                     </div>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-[11px] mt-0.5 break-words">
+                    <p className="text-zinc-500 dark:text-[#9CA3AF] text-[11px] mt-0.5 break-words">
                       {log.details || `Operation on ${log.resource_type}:${log.resource_id}`}
                     </p>
                   </div>
-                  <div className="text-left sm:text-right text-[10px] text-zinc-400 font-mono shrink-0">
+                  <div className="text-left sm:text-right text-[10px] text-zinc-400 dark:text-zinc-500 font-mono shrink-0">
                     {formatDateTime(log.created_at)}
                   </div>
                 </div>

@@ -189,7 +189,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           </div>
         </div>
         {/* Header Hero Card */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs space-y-4">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -212,16 +212,16 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
                 </Badge>
               </div>
 
-              <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+              <h1 className="text-xl font-bold text-zinc-900 dark:text-[#F9FAFB]">
                 {engagement.name}
               </h1>
 
-              <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-                <Building2 className="h-4 w-4 text-zinc-400" />
+              <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-[#9CA3AF]">
+                <Building2 className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                 <span>Client Organization:</span>
                 <Link
                   href={`/clients/${engagement.client_id}`}
-                  className="font-semibold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+                  className="font-semibold text-[#B88700] dark:text-[#FFD84D] hover:underline inline-flex items-center gap-1"
                 >
                   {engagement.client_company_name || "Client Record"}
                   <ExternalLink className="h-3 w-3" />
@@ -230,21 +230,21 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
             </div>
 
             {/* Quick Summary Grid */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-md bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-100 dark:border-zinc-800/80 text-xs shrink-0 min-w-[240px]">
+            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-100 dark:border-[#222630] text-xs shrink-0 min-w-[240px]">
               <div>
-                <span className="text-[11px] text-zinc-400 block font-medium">Scheduled Start</span>
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block font-medium">Scheduled Start</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">
                   {engagement.start_date ? formatDate(engagement.start_date) : "Unset"}
                 </span>
               </div>
               <div>
-                <span className="text-[11px] text-zinc-400 block font-medium">Target Due Date</span>
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block font-medium">Target Due Date</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200">
                   {engagement.due_date ? formatDate(engagement.due_date) : "Unset"}
                 </span>
               </div>
-              <div className="col-span-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
-                <span className="text-[11px] text-zinc-400 block font-medium">Assigned Assessor</span>
+              <div className="col-span-2 pt-2 border-t border-zinc-200/60 dark:border-[#222630]">
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block font-medium">Assigned Assessor</span>
                 <span className="font-mono text-zinc-800 dark:text-zinc-200 truncate block">
                   {engagement.assigned_to || "Unassigned"}
                 </span>
@@ -258,26 +258,26 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           {/* Main Info (Left 2 Columns) */}
           <div className="md:col-span-2 space-y-6">
             {/* Scope Summary */}
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-3">
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-brand-500" />
+            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+              <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[#F5C518]" />
                 Authorized Target Scope
               </h3>
               {engagement.scope_summary ? (
-                <div className="p-3 rounded-md bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800/80 font-mono text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+                <div className="p-3.5 rounded-lg bg-zinc-50 dark:bg-[#08090b] border border-zinc-100 dark:border-[#222630] font-mono text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
                   {engagement.scope_summary}
                 </div>
               ) : (
-                <p className="text-xs text-zinc-400 italic">
+                <p className="text-xs text-zinc-400 dark:text-zinc-500 italic">
                   No specific target scope recorded. Edit this engagement to add in-scope endpoints, URLs, or CIDR blocks.
                 </p>
               )}
             </div>
 
             {/* Description / Rules of Engagement */}
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-3">
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
-                <FileText className="h-4 w-4 text-brand-500" />
+            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+              <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-2">
+                <FileText className="h-4 w-4 text-[#F5C518]" />
                 Narrative & Context Notes
               </h3>
               {engagement.description ? (
@@ -285,54 +285,54 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
                   {engagement.description}
                 </div>
               ) : (
-                <p className="text-xs text-zinc-400 italic">
+                <p className="text-xs text-zinc-400 dark:text-zinc-500 italic">
                   No description provided for this engagement.
                 </p>
               )}
             </div>
 
             {/* Associated Security Operations */}
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-4">
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
-                <Layers className="h-4 w-4 text-brand-500" />
+            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+              <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-2">
+                <Layers className="h-4 w-4 text-[#F5C518]" />
                 Associated Security Operations
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Link
                   href={`/assets?clientId=${engagement.client_id}`}
-                  className="p-3 rounded-md border border-zinc-200 dark:border-zinc-800 hover:border-brand-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group block"
+                  className="p-3.5 rounded-lg border border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-[#161920] transition-colors group block"
                 >
-                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] mb-1">
                     <span>Target Assets</span>
-                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-brand-500" />
+                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-[#F5C518]" />
                   </div>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                     Scoped hosts, web targets, and CIDR ranges.
                   </p>
                 </Link>
 
                 <Link
                   href={`/findings?engagementId=${engagement.id}`}
-                  className="p-3 rounded-md border border-zinc-200 dark:border-zinc-800 hover:border-brand-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group block"
+                  className="p-3.5 rounded-lg border border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-[#161920] transition-colors group block"
                 >
-                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] mb-1">
                     <span>Vulnerability Findings</span>
-                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-brand-500" />
+                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-[#F5C518]" />
                   </div>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                     Security findings and verified fixes for this engagement.
                   </p>
                 </Link>
 
                 <Link
                   href={`/reports?engagementId=${engagement.id}`}
-                  className="p-3 rounded-md border border-zinc-200 dark:border-zinc-800 hover:border-brand-500/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group block"
+                  className="p-3.5 rounded-lg border border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-[#161920] transition-colors group block"
                 >
-                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] mb-1">
                     <span>Executive Reports</span>
-                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-brand-500" />
+                    <ExternalLink className="h-3 w-3 text-zinc-400 group-hover:text-[#F5C518]" />
                   </div>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                     Generated compliance, summary, and technical reports.
                   </p>
                 </Link>
@@ -343,22 +343,22 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           {/* Sidebar Metadata (Right Column) */}
           <div className="space-y-6">
             {/* Associated Client Profile Card */}
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-xs space-y-3">
-              <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5 text-zinc-400" />
+            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+              <h4 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
                 Client Workspace
               </h4>
-              <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-100 dark:border-zinc-800/80 space-y-2 text-xs">
-                <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="p-3.5 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-100 dark:border-[#222630] space-y-2 text-xs">
+                <div className="font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                   {engagement.client_company_name || "Client Organization"}
                 </div>
-                <div className="font-mono text-[11px] text-zinc-400 break-all">
+                <div className="font-mono text-[11px] text-zinc-400 dark:text-zinc-500 break-all">
                   UUID: {engagement.client_id}
                 </div>
-                <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                <div className="pt-2 border-t border-zinc-200/60 dark:border-[#222630]">
                   <Link
                     href={`/clients/${engagement.client_id}`}
-                    className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+                    className="text-xs font-semibold text-[#B88700] dark:text-[#FFD84D] hover:underline inline-flex items-center gap-1"
                   >
                     <span>Open full client profile</span>
                     <ExternalLink className="h-3 w-3" />
@@ -368,26 +368,26 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
             </div>
 
             {/* Audit & Compliance Timestamps */}
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-xs space-y-3">
-              <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-zinc-400" />
+            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+              <h4 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
                 Immutable Audit Trail
               </h4>
               <div className="space-y-2 text-xs">
                 <div>
-                  <span className="text-[11px] text-zinc-400 block font-medium">Created</span>
+                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block font-medium">Created</span>
                   <span className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300" suppressHydrationWarning>
                     {formatDateTime(engagement.created_at)}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-                  <span className="text-[11px] text-zinc-400 block font-medium">Last Modified</span>
+                <div className="pt-2 border-t border-zinc-100 dark:border-[#222630]">
+                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block font-medium">Last Modified</span>
                   <span className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300" suppressHydrationWarning>
                     {formatDateTime(engagement.updated_at)}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-                  <span className="text-[11px] text-zinc-400 block font-medium">Engagement UUID</span>
+                <div className="pt-2 border-t border-zinc-100 dark:border-[#222630]">
+                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block font-medium">Engagement UUID</span>
                   <span className="font-mono text-[10px] text-zinc-500 break-all">
                     {engagement.id}
                   </span>

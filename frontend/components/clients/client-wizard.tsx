@@ -222,11 +222,11 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
   return (
     <div className="space-y-6" onKeyDown={handleKeyDown}>
       {/* Visual Stepper Bar */}
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-[#F5C518] animate-pulse motion-reduce:animate-none" />
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-700 dark:text-[#F9FAFB]">
               Stage {currentStep + 1} of {STEPS.length}: {STEPS[currentStep].title}
             </span>
           </div>
@@ -236,7 +236,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
         </div>
 
         {/* Progress Track */}
-        <div className="w-full bg-zinc-100 dark:bg-zinc-800/80 h-1.5 rounded-full overflow-hidden mb-4">
+        <div className="w-full bg-zinc-100 dark:bg-[#161920] h-1.5 rounded-full overflow-hidden mb-4 border border-transparent dark:border-[#222630]/60">
           <div
             className="h-full bg-gradient-to-r from-[#FFD84D] to-[#F5C518] transition-all duration-300 ease-out"
             style={{ width: `${calculateProgress()}%` }}
@@ -257,10 +257,10 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                 className={cn(
                   "p-2.5 rounded-lg border text-left transition-all duration-150 flex items-start gap-2.5 relative group",
                   isActive
-                    ? "border-[#F5C518] bg-[#F5C518]/10 dark:bg-[#1B1E24] shadow-xs ring-1 ring-[#F5C518]/30"
+                    ? "border-[#F5C518] bg-[#F5C518]/10 dark:bg-[#161920] shadow-xs ring-1 ring-[#F5C518]/30"
                     : isCompleted
-                    ? "border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-600"
-                    : "border-zinc-200 dark:border-zinc-800/80 bg-zinc-100/30 dark:bg-zinc-900/20 text-zinc-400"
+                    ? "border-zinc-300 dark:border-[#222630] bg-white/60 dark:bg-[#161920]/40 hover:border-zinc-400 dark:hover:border-zinc-600"
+                    : "border-zinc-200 dark:border-[#222630]/60 bg-zinc-100/30 dark:bg-[#111318]/40 text-zinc-400"
                 )}
                 aria-current={isActive ? "step" : undefined}
               >
@@ -271,7 +271,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                       ? "bg-[#F5C518] text-[#111318]"
                       : isCompleted
                       ? "bg-[#F5C518]/20 text-[#B88700] dark:text-[#FFD84D]"
-                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-500"
+                      : "bg-zinc-200 dark:bg-[#161920] text-zinc-500"
                   )}
                 >
                   {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : step.number}
@@ -281,15 +281,15 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                     className={cn(
                       "text-xs font-semibold truncate",
                       isActive
-                        ? "text-zinc-900 dark:text-zinc-100"
+                        ? "text-zinc-900 dark:text-[#FFD84D]"
                         : isCompleted
-                        ? "text-zinc-700 dark:text-zinc-300"
-                        : "text-zinc-400 dark:text-zinc-500"
+                        ? "text-zinc-700 dark:text-[#F9FAFB]"
+                        : "text-zinc-400 dark:text-[#6B7280]"
                     )}
                   >
                     {step.title}
                   </div>
-                  <div className="text-[10px] text-zinc-400 truncate hidden sm:block">
+                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] truncate hidden sm:block">
                     {step.subtitle}
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
       )}
 
       {/* Wizard Step Body */}
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111318] p-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs">
         {/* Stage 1: Organization Details */}
         {currentStep === 0 && (
           <div className="space-y-5 animate-in fade-in duration-200">
@@ -431,8 +431,8 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                       className={cn(
                         "p-3 rounded-xl border text-left transition-all duration-150 flex items-start gap-3 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]",
                         isSelected
-                          ? "border-[#F5C518] bg-[#F5C518]/10 dark:bg-[#1B1E24] shadow-xs ring-1 ring-[#F5C518]/40"
-                          : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40"
+                          ? "border-[#F5C518] bg-[#F5C518]/10 dark:bg-[#161920] shadow-xs ring-1 ring-[#F5C518]/40"
+                          : "border-zinc-200 dark:border-[#222630] bg-zinc-50/50 dark:bg-[#161920]/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100/50 dark:hover:bg-[#161920]/80"
                       )}
                     >
                       <div
@@ -440,7 +440,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                           "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors",
                           isSelected
                             ? "bg-[#F5C518] text-[#111318]"
-                            : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
+                            : "bg-zinc-200 dark:bg-[#111318] text-zinc-400 dark:text-[#9CA3AF] group-hover:text-zinc-200"
                         )}
                       >
                         <Icon className="h-4 w-4" />
@@ -451,7 +451,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                             className={cn(
                               "text-xs font-semibold block truncate",
                               isSelected
-                                ? "text-zinc-900 dark:text-zinc-100"
+                                ? "text-zinc-900 dark:text-[#F9FAFB]"
                                 : "text-zinc-700 dark:text-zinc-300"
                             )}
                           >
@@ -461,7 +461,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                             <CheckCircle2 className="h-3.5 w-3.5 text-[#F5C518] shrink-0 ml-1" />
                           )}
                         </div>
-                        <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-2 leading-relaxed">
+                        <p className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-0.5 line-clamp-2 leading-relaxed">
                           {item.desc}
                         </p>
                       </div>
@@ -604,7 +604,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
         )}
 
         {/* Wizard Controls */}
-        <div className="flex items-center justify-between pt-6 border-t border-zinc-100 dark:border-zinc-800 mt-6">
+        <div className="flex items-center justify-between pt-6 border-t border-zinc-100 dark:border-[#222630] mt-6">
           <Button
             type="button"
             variant="outline"
@@ -622,7 +622,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
               type="button"
               size="sm"
               onClick={handleNext}
-              className="text-xs h-9 px-5 gap-1.5"
+              className="text-xs h-9 px-5 gap-1.5 btn-glossy-gold text-[#111318] font-bold border-none shadow-md"
             >
               <span>Continue to Stage {currentStep + 2}</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -633,7 +633,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
               size="sm"
               disabled={isSubmitting}
               onClick={handleSubmit(handleFormSubmit)}
-              className="text-xs h-9 px-5 gap-1.5"
+              className="text-xs h-9 px-5 gap-1.5 btn-glossy-gold text-[#111318] font-bold border-none shadow-md"
             >
               {isSubmitting ? (
                 <>

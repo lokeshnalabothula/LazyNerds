@@ -102,17 +102,17 @@ export default function EditEngagementPage({ params }: EditEngagementPageProps) 
         </div>
 
         {/* Card Header & Form */}
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111318] p-6 shadow-xs space-y-6">
-          <div className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs space-y-6">
+          <div className="border-b border-zinc-100 dark:border-[#222630] pb-4">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              <h1 className="text-base font-bold text-zinc-900 dark:text-[#F9FAFB]">
                 Edit Security Engagement
               </h1>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
                 {engagement.status.toUpperCase()}
               </span>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1">
               Modify operational parameters, target scope definitions, or scheduling for <strong className="font-mono text-zinc-700 dark:text-zinc-300">{engagement.name}</strong>.
             </p>
           </div>

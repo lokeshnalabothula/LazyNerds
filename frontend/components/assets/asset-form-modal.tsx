@@ -159,7 +159,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Client Selector */}
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Client Organization *
             </label>
             <select
@@ -169,7 +169,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
                 setEngagementId("");
               }}
               disabled={!!assetToEdit || loadingOptions}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               required
             >
               <option value="">Select client...</option>
@@ -183,13 +183,13 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
 
           {/* Engagement Selector */}
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Linked Engagement (Optional)
             </label>
             <select
               value={engagementId}
               onChange={(e) => setEngagementId(e.target.value)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="">None / Platform Asset</option>
               {filteredEngagements.map((eng) => (
@@ -204,7 +204,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
         {/* Asset Name & Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Asset Name *
             </label>
             <Input
@@ -216,13 +216,13 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Asset Type *
             </label>
             <select
               value={assetType}
               onChange={(e) => setAssetType(e.target.value as AssetType)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="web_application">Web Application</option>
               <option value="api">API Endpoint</option>
@@ -236,7 +236,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
 
         {/* Target URL / IP */}
         <div>
-          <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+          <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
             Target URL / Host / IP *
           </label>
           <Input
@@ -250,13 +250,13 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
         {/* Environment, Criticality & Scope */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Environment
             </label>
             <select
               value={environment}
               onChange={(e) => setEnvironment(e.target.value as EnvironmentType)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="production">Production</option>
               <option value="staging">Staging</option>
@@ -265,13 +265,13 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Criticality
             </label>
             <select
               value={criticality}
               onChange={(e) => setCriticality(e.target.value as CriticalityType)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="critical">Critical</option>
               <option value="high">High</option>
@@ -281,13 +281,13 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Scope Boundary
             </label>
             <select
               value={inScope ? "true" : "false"}
               onChange={(e) => setInScope(e.target.value === "true")}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="true">In-Scope (Approved)</option>
               <option value="false">Out-of-Scope (Restricted)</option>
@@ -297,7 +297,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+          <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
             Scoping & Verification Notes
           </label>
           <Textarea
@@ -308,11 +308,11 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={saving}>
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-[#222630]">
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={saving} className="border-zinc-200 dark:border-[#222630]">
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={saving}>
+          <Button type="submit" size="sm" disabled={saving} className="btn-glossy-gold font-bold">
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
             {assetToEdit ? "Update Asset" : "Register Asset"}
           </Button>

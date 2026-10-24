@@ -261,34 +261,34 @@ function ClientsContent() {
     <AppShell title="Client Directory">
       <div className="space-y-6 pb-20">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-[#222630] pb-5">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB]">
                 Clients
               </h1>
               {isFounder && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 font-semibold uppercase">
-                  Founder Control
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-semibold uppercase">
+                  Founder Oversight
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Manage client organizations, authorized security points of contact, and communication history.
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
+              Client Directory & Scoping Workspace — Manage organization profiles, authorized security points of contact, and linked assessments.
             </p>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {isFounder && (
               <Link href="/registrations">
                 <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                  <UserCheck className="h-4 w-4 text-amber-500" />
+                  <UserCheck className="h-4 w-4 text-[#F5C518]" />
                   <span>Review Queue</span>
                 </Button>
               </Link>
             )}
             <Link href="/clients/new">
               <Button
-                className="gap-1.5 shadow-xs text-xs font-bold bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] border-none"
+                className="gap-1.5 text-xs font-bold btn-glossy-gold text-[#111318] border-none shadow-md"
                 size="sm"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -298,11 +298,39 @@ function ClientsContent() {
           </div>
         </div>
 
+        {/* Quick KPI Stat Chips */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-medium">Total Directory</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-mono">
+              {total}
+            </div>
+          </div>
+          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <span className="text-[10px] font-mono uppercase text-emerald-600 dark:text-[#34D399] block font-medium">Active Accounts</span>
+            <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-[#34D399] mt-1 font-mono">
+              {statusFilter === "active" ? clients.length : (statusFilter === "archived" ? "—" : clients.filter(c => c.status === "active").length)}
+            </div>
+          </div>
+          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-medium">Archived Scopes</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-700 dark:text-zinc-300 mt-1 font-mono">
+              {statusFilter === "archived" ? clients.length : (statusFilter === "active" ? "—" : clients.filter(c => c.status === "archived").length)}
+            </div>
+          </div>
+          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <span className="text-[10px] font-mono uppercase text-amber-500 dark:text-[#FFD84D] block font-medium">Active Selection</span>
+            <div className="text-xl sm:text-2xl font-bold text-amber-500 dark:text-[#FFD84D] mt-1 font-mono">
+              {selectedClientIds.length}
+            </div>
+          </div>
+        </div>
+
         {/* Filter and Search Bar */}
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           <div className="flex items-center gap-2 flex-1 max-w-md">
             <div className="relative w-full">
-              <Search className="h-4 w-4 absolute left-3 top-2.5 text-zinc-400" />
+              <Search className="h-4 w-4 absolute left-3 top-2.5 text-zinc-400 dark:text-[#6B7280]" />
               <input
                 type="text"
                 placeholder="Search by company, contact, or email..."
@@ -311,23 +339,23 @@ function ClientsContent() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Status Tabs */}
-            <div className="inline-flex rounded-md border border-zinc-200 dark:border-zinc-800 p-0.5 bg-zinc-100 dark:bg-zinc-900 text-xs">
+            <div className="inline-flex rounded-lg border border-zinc-200 dark:border-[#222630] p-0.5 bg-zinc-100 dark:bg-[#111318] text-xs">
               <button
                 onClick={() => {
                   setStatusFilter("active");
                   setPage(1);
                 }}
-                className={`px-3 py-1 rounded font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md font-medium transition-colors ${
                   statusFilter === "active"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
+                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
                 }`}
               >
                 Active
@@ -337,10 +365,10 @@ function ClientsContent() {
                   setStatusFilter("archived");
                   setPage(1);
                 }}
-                className={`px-3 py-1 rounded font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md font-medium transition-colors ${
                   statusFilter === "archived"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
+                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
                 }`}
               >
                 Archived
@@ -356,7 +384,7 @@ function ClientsContent() {
                 setSortOrder(so);
                 setPage(1);
               }}
-              className="text-xs rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-1.5 px-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="text-xs rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] py-1.5 px-2.5 text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
             >
               <option value="created_at-desc">Newest First</option>
               <option value="created_at-asc">Oldest First</option>
@@ -366,16 +394,16 @@ function ClientsContent() {
             </select>
 
             {/* View Mode Toggle */}
-            <div className="inline-flex rounded-md border border-zinc-200 dark:border-zinc-800 p-0.5 bg-zinc-100 dark:bg-zinc-900 text-xs">
+            <div className="inline-flex rounded-lg border border-zinc-200 dark:border-[#222630] p-0.5 bg-zinc-100 dark:bg-[#111318] text-xs">
               <button
                 type="button"
                 onClick={() => setViewMode("table")}
                 aria-label="Switch to list view"
                 aria-pressed={viewMode === "table"}
-                className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
+                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
                 }`}
               >
                 <LayoutList className="h-3.5 w-3.5" />
@@ -386,10 +414,10 @@ function ClientsContent() {
                 onClick={() => setViewMode("cards")}
                 aria-label="Switch to card view"
                 aria-pressed={viewMode === "cards"}
-                className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
                   viewMode === "cards"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
+                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
                 }`}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -400,7 +428,7 @@ function ClientsContent() {
         </div>
 
         {/* Directory Content Table / Cards */}
-        <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] overflow-hidden shadow-xs">
           {isLoading ? (
             viewMode === "cards" ? (
               <div className="p-4">
@@ -481,10 +509,10 @@ function ClientsContent() {
                 return (
                   <div
                     key={client.id}
-                    className={`rounded-lg border bg-white dark:bg-zinc-950/60 p-4 space-y-3.5 shadow-xs transition-all flex flex-col justify-between group ${
+                    className={`rounded-xl border bg-white dark:bg-[#111318] p-4 space-y-3.5 shadow-xs transition-all flex flex-col justify-between group ${
                       isSelected
-                        ? "border-brand-500/80 ring-1 ring-brand-500/50 bg-brand-500/5"
-                        : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                        ? "border-[#F5C518] ring-1 ring-[#F5C518]/50 bg-[#F5C518]/5 dark:bg-[#F5C518]/10"
+                        : "border-zinc-200 dark:border-[#222630] hover:border-zinc-300 dark:hover:border-[#F5C518]/30"
                     }`}
                   >
                     <div className="space-y-2.5">
@@ -495,19 +523,19 @@ function ClientsContent() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectClient(client.id)}
-                            className="mt-1 h-3.5 w-3.5 rounded border-zinc-300 dark:border-zinc-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                            className="mt-1 h-3.5 w-3.5 rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
                             aria-label={`Select ${client.company_name}`}
                           />
                           <div className="min-w-0 flex-1">
                             <Link
                               href={`/clients/${client.id}`}
-                              className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1.5 group/link"
+                              className="font-semibold text-sm text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] flex items-center gap-1.5 group/link"
                             >
                               <span className="truncate">{client.company_name}</span>
                               <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover/link:opacity-100 transition-opacity text-zinc-400" />
                             </Link>
                             {client.industry && (
-                              <span className="text-[11px] text-zinc-400 font-mono block mt-0.5 truncate">
+                              <span className="text-[11px] text-zinc-400 dark:text-[#9CA3AF] font-mono block mt-0.5 truncate">
                                 {client.industry}
                               </span>
                             )}
@@ -519,35 +547,35 @@ function ClientsContent() {
                       </div>
 
                       {/* Contact Details */}
-                      <div className="space-y-1.5 text-xs pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
+                      <div className="space-y-1.5 text-xs pt-1 border-t border-zinc-100 dark:border-[#222630]">
                         <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
-                          <User className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                          <User className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
                           <span className="truncate">{client.primary_contact_name}</span>
                         </div>
-                        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
-                          <Mail className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
+                          <Mail className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
                           <a
                             href={`mailto:${client.primary_contact_email}`}
-                            className="hover:text-brand-500 hover:underline truncate"
+                            className="hover:text-[#F5C518] hover:underline truncate"
                             title={client.primary_contact_email}
                           >
                             {client.primary_contact_email}
                           </a>
                         </div>
                         {client.phone && (
-                          <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500">
-                            <Phone className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                          <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
+                            <Phone className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
                             <span className="truncate">{client.phone}</span>
                           </div>
                         )}
                         {client.website && (
-                          <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500">
-                            <Globe className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                          <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
+                            <Globe className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
                             <a
                               href={client.website}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="hover:text-brand-500 hover:underline truncate flex items-center gap-1"
+                              className="hover:text-[#F5C518] hover:underline truncate flex items-center gap-1"
                             >
                               <span className="truncate">{client.website.replace(/^https?:\/\//, "")}</span>
                               <ExternalLink className="h-2.5 w-2.5 shrink-0" />
@@ -558,8 +586,8 @@ function ClientsContent() {
 
                       {/* Assigned Security Lead (Founder Controls) */}
                       {isFounder && (
-                        <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
-                          <span className="text-[10px] text-zinc-400 uppercase font-mono">
+                        <div className="pt-2 border-t border-zinc-100 dark:border-[#222630] flex items-center justify-between text-xs">
+                          <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] uppercase font-mono">
                             Security Lead:
                           </span>
                           <button
@@ -567,9 +595,9 @@ function ClientsContent() {
                               setClientToAssign(client);
                               setSelectedEmployeeId(client.assigned_employee_id || "");
                             }}
-                            className="text-[11px] font-mono text-zinc-300 hover:text-brand-400 underline decoration-dotted flex items-center gap-1"
+                            className="text-[11px] font-mono text-zinc-300 hover:text-[#FFD84D] underline decoration-dotted flex items-center gap-1"
                           >
-                            <UserCheck className="h-3 w-3 text-brand-500" />
+                            <UserCheck className="h-3 w-3 text-[#F5C518]" />
                             <span>
                               {employees.find((e) => e.id === client.assigned_employee_id)?.full_name ||
                                 (client.assigned_employee_id ? "Assigned" : "Assign Lead")}
@@ -579,15 +607,15 @@ function ClientsContent() {
                       )}
 
                       {/* Timestamps */}
-                      <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/60 grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-500">
+                      <div className="pt-2 border-t border-zinc-100 dark:border-[#222630] grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-500">
                         <div>
-                          <span className="text-[10px] text-zinc-400 block font-sans">Date Added</span>
+                          <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] block font-sans">Date Added</span>
                           <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.created_at)} suppressHydrationWarning>
                             {formatDate(client.created_at)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-zinc-400 block font-sans">Last Updated</span>
+                          <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] block font-sans">Last Updated</span>
                           <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.updated_at)} suppressHydrationWarning>
                             {formatDate(client.updated_at)}
                           </span>
@@ -596,7 +624,7 @@ function ClientsContent() {
                     </div>
 
                     {/* Card Actions */}
-                    <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
+                    <div className="pt-2.5 border-t border-zinc-100 dark:border-[#222630] flex items-center gap-2">
                       <Link href={`/clients/${client.id}`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-1.5">
                           <ExternalLink className="h-3.5 w-3.5" />
@@ -607,7 +635,7 @@ function ClientsContent() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 px-2.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                          className="h-8 px-2.5 text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB]"
                           title="Edit Client"
                           aria-label={`Edit ${client.company_name}`}
                         >
@@ -619,7 +647,7 @@ function ClientsContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => setClientToArchive(client)}
-                          className="h-8 px-2.5 text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400"
+                          className="h-8 px-2.5 text-zinc-500 hover:text-rose-600 dark:text-[#9CA3AF] dark:hover:text-rose-400"
                           title="Archive Client"
                           aria-label={`Archive ${client.company_name}`}
                         >
@@ -630,7 +658,7 @@ function ClientsContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleRestore(client)}
-                          className="h-8 px-2.5 text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+                          className="h-8 px-2.5 text-zinc-500 hover:text-emerald-600 dark:text-[#9CA3AF] dark:hover:text-emerald-400"
                           title="Restore Client"
                           aria-label={`Restore ${client.company_name}`}
                         >
@@ -645,7 +673,7 @@ function ClientsContent() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50 dark:bg-zinc-950/60 border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium select-none">
+                <thead className="bg-zinc-50 dark:bg-[#161920] border-b border-zinc-200 dark:border-[#222630] text-zinc-600 dark:text-[#9CA3AF] font-medium select-none font-mono text-[11px] uppercase tracking-wider">
                   <tr>
                     <th className="py-3 px-3 w-10 text-center">
                       <input
@@ -653,7 +681,7 @@ function ClientsContent() {
                         ref={selectAllCheckboxRef}
                         checked={isAllSelected}
                         onChange={toggleSelectAll}
-                        className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-zinc-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                        className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
                         aria-label="Select all clients"
                       />
                     </th>
@@ -667,7 +695,7 @@ function ClientsContent() {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/80">
+                <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
                   {clients.map((client) => {
                     const isSelected = selectedClientIds.includes(client.id);
                     return (
@@ -675,8 +703,8 @@ function ClientsContent() {
                         key={client.id}
                         className={`transition-colors group ${
                           isSelected
-                            ? "bg-brand-500/5 dark:bg-brand-500/10"
-                            : "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                            ? "bg-[#F5C518]/5 dark:bg-[#F5C518]/10"
+                            : "hover:bg-zinc-50 dark:hover:bg-[#161920]/80"
                         }`}
                       >
                         {/* Checkbox */}
@@ -685,22 +713,22 @@ function ClientsContent() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectClient(client.id)}
-                            className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-zinc-700 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                            className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
                             aria-label={`Select ${client.company_name}`}
                           />
                         </td>
 
                         {/* Company Name & Link */}
-                        <td className="py-3 px-4 font-medium text-zinc-900 dark:text-zinc-100">
+                        <td className="py-3 px-4 font-medium text-zinc-900 dark:text-[#F9FAFB]">
                           <Link
                             href={`/clients/${client.id}`}
-                            className="hover:text-brand-600 dark:hover:text-brand-400 font-semibold flex items-center gap-1.5"
+                            className="hover:text-[#B88700] dark:hover:text-[#FFD84D] font-semibold flex items-center gap-1.5"
                           >
                             <span>{client.company_name}</span>
                             <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400" />
                           </Link>
                           {client.industry && (
-                            <span className="text-[11px] text-zinc-400 block font-normal">
+                            <span className="text-[11px] text-zinc-400 dark:text-[#9CA3AF] block font-normal font-mono">
                               {client.industry}
                             </span>
                           )}
@@ -712,7 +740,7 @@ function ClientsContent() {
                         </td>
 
                         {/* Contact Email */}
-                        <td className="py-3 px-4 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+                        <td className="py-3 px-4 font-mono text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
                           {client.primary_contact_email}
                         </td>
 
@@ -724,10 +752,10 @@ function ClientsContent() {
                                 setClientToAssign(client);
                                 setSelectedEmployeeId(client.assigned_employee_id || "");
                               }}
-                              className="text-zinc-400 hover:text-brand-400 underline decoration-dotted flex items-center gap-1"
+                              className="text-zinc-400 dark:text-[#9CA3AF] hover:text-[#FFD84D] underline decoration-dotted flex items-center gap-1"
                               title="Assign or change security engineer"
                             >
-                              <UserCheck className="h-3 w-3 text-brand-500" />
+                              <UserCheck className="h-3 w-3 text-[#F5C518]" />
                               <span>
                                 {employees.find((e) => e.id === client.assigned_employee_id)?.full_name ||
                                   (client.assigned_employee_id ? "Assigned" : "Assign Lead")}
@@ -744,20 +772,20 @@ function ClientsContent() {
                         </td>
 
                         {/* Date Added */}
-                        <td className="py-3 px-4 text-zinc-500 font-mono text-[11px]" title={formatDateTime(client.created_at)}>
-                          <div className="text-zinc-850 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.created_at)}</div>
+                        <td className="py-3 px-4 text-zinc-500 dark:text-[#9CA3AF] font-mono text-[11px]" title={formatDateTime(client.created_at)}>
+                          <div className="text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.created_at)}</div>
                           {formatRelativeTime(client.created_at) && (
-                            <div className="text-[10px] text-zinc-400 font-sans tracking-tight" suppressHydrationWarning>
+                            <div className="text-[10px] text-zinc-400 dark:text-[#6B7280] font-sans tracking-tight" suppressHydrationWarning>
                               {formatRelativeTime(client.created_at)}
                             </div>
                           )}
                         </td>
 
                         {/* Last Updated */}
-                        <td className="py-3 px-4 text-zinc-500 font-mono text-[11px]" title={formatDateTime(client.updated_at)}>
-                          <div className="text-zinc-850 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.updated_at)}</div>
+                        <td className="py-3 px-4 text-zinc-500 dark:text-[#9CA3AF] font-mono text-[11px]" title={formatDateTime(client.updated_at)}>
+                          <div className="text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.updated_at)}</div>
                           {formatRelativeTime(client.updated_at) && (
-                            <div className="text-[10px] text-zinc-400 font-sans tracking-tight" suppressHydrationWarning>
+                            <div className="text-[10px] text-zinc-400 dark:text-[#6B7280] font-sans tracking-tight" suppressHydrationWarning>
                               {formatRelativeTime(client.updated_at)}
                             </div>
                           )}
@@ -768,14 +796,14 @@ function ClientsContent() {
                           <div className="flex items-center justify-end gap-1.5">
                             <Link
                               href={`/clients/${client.id}`}
-                              className="p-1 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                              className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920]"
                               title="Open Profile"
                             >
                               <ExternalLink className="h-3.5 w-3.5" />
                             </Link>
                             <Link
                               href={`/clients/${client.id}/edit`}
-                              className="p-1 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                              className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920]"
                               title="Edit Client"
                             >
                               <Edit2 className="h-3.5 w-3.5" />
@@ -783,7 +811,7 @@ function ClientsContent() {
                             {client.status === "active" ? (
                               <button
                                 onClick={() => setClientToArchive(client)}
-                                className="p-1 rounded text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-[#161920]"
                                 title="Archive Client"
                               >
                                 <Archive className="h-3.5 w-3.5" />
@@ -791,7 +819,7 @@ function ClientsContent() {
                             ) : (
                               <button
                                 onClick={() => handleRestore(client)}
-                                className="p-1 rounded text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-[#161920]"
                                 title="Restore Client"
                               >
                                 <RotateCcw className="h-3.5 w-3.5" />
@@ -809,10 +837,10 @@ function ClientsContent() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
+            <div className="p-4 border-t border-zinc-200 dark:border-[#222630] flex items-center justify-between text-xs text-zinc-500 dark:text-[#9CA3AF]">
               <span>
-                Showing page <strong className="text-zinc-900 dark:text-zinc-100">{page}</strong> of{" "}
-                <strong className="text-zinc-900 dark:text-zinc-100">{totalPages}</strong> ({total} total clients)
+                Showing page <strong className="text-zinc-900 dark:text-[#F9FAFB]">{page}</strong> of{" "}
+                <strong className="text-zinc-900 dark:text-[#F9FAFB]">{totalPages}</strong> ({total} total clients)
               </span>
               <div className="flex items-center gap-1.5">
                 <Button
@@ -843,12 +871,12 @@ function ClientsContent() {
 
       {/* Floating Bulk Action Bar */}
       {selectedClientIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/95 dark:bg-zinc-950/95 text-zinc-100 border border-zinc-800 rounded-xl px-5 py-3 shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 backdrop-blur-md">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/95 dark:bg-[#111318]/95 text-zinc-100 dark:text-[#F9FAFB] border border-zinc-800 dark:border-[#222630] rounded-xl px-5 py-3 shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 backdrop-blur-md">
           <span className="text-xs font-mono">
-            <strong className="text-brand-400">{selectedClientIds.length}</strong> client
+            <strong className="text-[#F5C518]">{selectedClientIds.length}</strong> client
             {selectedClientIds.length > 1 ? "s" : ""} selected
           </span>
-          <div className="h-4 w-px bg-zinc-800" />
+          <div className="h-4 w-px bg-zinc-800 dark:bg-[#222630]" />
           {statusFilter === "active" ? (
             <Button
               size="sm"
@@ -873,7 +901,7 @@ function ClientsContent() {
           )}
           <button
             onClick={() => setSelectedClientIds([])}
-            className="text-xs text-zinc-400 hover:text-zinc-200 underline ml-1"
+            className="text-xs text-zinc-400 hover:text-[#F9FAFB] underline ml-1"
           >
             Clear
           </button>

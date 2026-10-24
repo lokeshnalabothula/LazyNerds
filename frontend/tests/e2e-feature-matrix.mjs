@@ -66,9 +66,7 @@ async function verifyFeatures() {
       // Find all images matching profile or operator avatar
       const imgs = Array.from(document.querySelectorAll('img'));
       const profileImgs = imgs.filter(img =>
-        (img.src && (img.src.includes('profile') || img.src.includes('profile-sm'))) ||
-        img.getAttribute('alt')?.toLowerCase().includes('avatar') ||
-        img.getAttribute('alt')?.toLowerCase().includes('operator')
+        img.src && (img.src.includes('profile') || img.src.includes('profile-sm'))
       );
 
       // Specifically check hero card: should NOT have profile image
@@ -83,8 +81,8 @@ async function verifyFeatures() {
     });
 
     results['C_AVATAR_DEDUP'] = {
-      passed: !overviewAvatars.hasHeroAvatar,
-      evidence: `Hero banner avatar present: ${overviewAvatars.hasHeroAvatar}. Total profile avatars: ${overviewAvatars.totalAvatarImgs} (1 topbar, 1 sidebar profile widget).`,
+      passed: overviewAvatars.totalAvatarImgs === 0 && !overviewAvatars.hasHeroAvatar,
+      evidence: `Hero banner avatar present: ${overviewAvatars.hasHeroAvatar}. Total profile avatars: ${overviewAvatars.totalAvatarImgs} (clean text identity without profile photos).`,
     };
     console.log(`  ✓ Item C: ${results['C_AVATAR_DEDUP'].evidence}`);
 
@@ -133,20 +131,18 @@ async function verifyFeatures() {
     await page.goto(`${BASE_URL}/settings`, { waitUntil: 'networkidle2' });
     await new Promise(r => setTimeout(r, 1000));
     const settingsAssets = await page.evaluate(() => {
-      const imgs = Array.from(document.querySelectorAll('img'));
-      const hasBrandLogo = imgs.some(i => i.src.includes('logo-icon.png'));
-      const hasWordmark = imgs.some(i => i.src.includes('title-sm.png'));
+      const text = document.body.innerText;
+      const hasWordmarkText = text.includes('LAZY NERDS FIXOPS') || text.includes('Lazy Nerds');
       const fileInputs = document.querySelectorAll('input[type="file"]');
       return {
-        hasBrandLogo,
-        hasWordmark,
+        hasWordmarkText,
         fileInputsCount: fileInputs.length,
       };
     });
 
     results['G_SETTINGS_PROFILE'] = {
-      passed: settingsAssets.hasBrandLogo && settingsAssets.hasWordmark && settingsAssets.fileInputsCount === 0,
-      evidence: `Brand logo=${settingsAssets.hasBrandLogo}, Wordmark=${settingsAssets.hasWordmark}, Fake file upload inputs=${settingsAssets.fileInputsCount}.`,
+      passed: settingsAssets.hasWordmarkText && settingsAssets.fileInputsCount === 0,
+      evidence: `WordmarkText=${settingsAssets.hasWordmarkText}, Fake file upload inputs=${settingsAssets.fileInputsCount}.`,
     };
     console.log(`  ✓ Item G: ${results['G_SETTINGS_PROFILE'].evidence}`);
 

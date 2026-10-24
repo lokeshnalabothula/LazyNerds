@@ -177,13 +177,13 @@ export const RuleFormModal: React.FC<RuleFormModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Trigger Event *
             </label>
             <select
               value={triggerEvent}
               onChange={(e) => setTriggerEvent(e.target.value as TriggerEventType)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="on_finding_created">On Finding Discovered</option>
               <option value="on_engagement_created">On Engagement Created</option>
@@ -193,13 +193,13 @@ export const RuleFormModal: React.FC<RuleFormModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Action *
             </label>
             <select
               value={actionType}
               onChange={(e) => setActionType(e.target.value as ActionType)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="send_notification">Send In-App Notification</option>
               <option value="assign_remediation_task">Assign Task & Set 14-Day Deadline</option>
@@ -213,13 +213,13 @@ export const RuleFormModal: React.FC<RuleFormModalProps> = ({
         {/* Condition Filter */}
         {triggerEvent === "on_finding_created" && (
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Trigger Condition: Finding Severity
             </label>
             <select
               value={conditionSeverity}
               onChange={(e) => setConditionSeverity(e.target.value)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="critical">Critical Severity Only</option>
               <option value="high">High Severity Only</option>
@@ -231,7 +231,7 @@ export const RuleFormModal: React.FC<RuleFormModalProps> = ({
 
         {(actionType === "send_notification" || actionType === "assign_remediation_task") && (
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF] mb-1">
               Recipient / Assignee Email
             </label>
             <Input
@@ -244,16 +244,16 @@ export const RuleFormModal: React.FC<RuleFormModalProps> = ({
         )}
 
         {/* Safeguards & Governance */}
-        <div className="pt-2 space-y-2 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="pt-2 space-y-2 border-t border-zinc-100 dark:border-[#222630]">
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="requiresApproval"
               checked={requiresApproval}
               onChange={(e) => setRequiresApproval(e.target.checked)}
-              className="rounded border-zinc-300 dark:border-zinc-700 text-brand-600 focus:ring-brand-500 h-4 w-4"
+              className="rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] h-4 w-4 bg-white dark:bg-[#161920]"
             />
-            <label htmlFor="requiresApproval" className="text-xs text-zinc-700 dark:text-zinc-300 select-none">
+            <label htmlFor="requiresApproval" className="text-xs text-zinc-700 dark:text-[#9CA3AF] select-none">
               <span className="font-semibold text-amber-600 dark:text-amber-400">Human Approval Gate:</span> Require administrator review before executing action
             </label>
           </div>
@@ -264,19 +264,19 @@ export const RuleFormModal: React.FC<RuleFormModalProps> = ({
               id="isActive"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
-              className="rounded border-zinc-300 dark:border-zinc-700 text-brand-600 focus:ring-brand-500 h-4 w-4"
+              className="rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] h-4 w-4 bg-white dark:bg-[#161920]"
             />
-            <label htmlFor="isActive" className="text-xs text-zinc-700 dark:text-zinc-300 select-none">
+            <label htmlFor="isActive" className="text-xs text-zinc-700 dark:text-[#9CA3AF] select-none">
               Workflow rule is enabled and active
             </label>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={saving}>
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-[#222630]">
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={saving} className="border-zinc-200 dark:border-[#222630]">
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={saving}>
+          <Button type="submit" size="sm" disabled={saving} className="btn-glossy-gold font-bold">
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Zap className="h-3.5 w-3.5 mr-1.5" />}
             {ruleToEdit ? "Update Rule" : "Create Workflow"}
           </Button>

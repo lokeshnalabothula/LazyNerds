@@ -115,9 +115,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       {/* Section 1: Organization Details */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-2">
           <Building2 className="h-4 w-4 text-[#F5C518]" />
-          <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider font-mono">
+          <h2 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider font-mono">
             1. Organization Profile
           </h2>
         </div>
@@ -140,25 +140,25 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         </div>
 
         {initialData ? (
-          <div className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-1">
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-zinc-50/50 dark:bg-[#161920]/40 space-y-1">
             <div className="flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-[#F5C518]" />
-              <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+              <span className="text-xs font-semibold text-zinc-800 dark:text-[#F9FAFB]">
                 Onboarding Registration ({activeTzLabel})
               </span>
             </div>
-            <div className="text-xs font-mono text-zinc-600 dark:text-zinc-400 pt-0.5" suppressHydrationWarning>
+            <div className="text-xs font-mono text-zinc-600 dark:text-[#9CA3AF] pt-0.5" suppressHydrationWarning>
               {formatDateTime(initialData.created_at)}
             </div>
-            <p className="text-[10px] text-zinc-400">
+            <p className="text-[10px] text-zinc-400 dark:text-[#6B7280]">
               System registration timestamps are strictly immutable audit records.
             </p>
           </div>
         ) : (
-          <div className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 space-y-2">
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-zinc-50/50 dark:bg-[#161920]/40 space-y-2">
             <div className="flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-[#F5C518]" />
-              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                 Client Addition Timestamp ({activeTzLabel})
               </span>
             </div>
@@ -175,9 +175,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       {/* Section 2: Primary Security Contact */}
       <div className="space-y-4 pt-2">
-        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-2">
           <User className="h-4 w-4 text-[#F5C518]" />
-          <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider font-mono">
+          <h2 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider font-mono">
             2. Primary Security Contact
           </h2>
         </div>
@@ -223,9 +223,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       {/* Section 3: Context & Scoping Notes */}
       <div className="space-y-4 pt-2">
-        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+        <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-2">
           <FileText className="h-4 w-4 text-[#F5C518]" />
-          <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider font-mono">
+          <h2 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider font-mono">
             3. Business Context & Scoping Notes
           </h2>
         </div>
@@ -241,7 +241,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-[#222630]">
         {onCancel && (
           <Button
             type="button"
@@ -256,7 +256,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         <Button
           type="submit"
           isLoading={isSubmitting}
-          className="text-xs bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] font-bold border-none shadow-sm gap-1.5"
+          className="text-xs btn-glossy-gold text-[#111318] font-bold border-none shadow-md gap-1.5"
         >
           <Save className="h-3.5 w-3.5" />
           <span>{submitLabel}</span>

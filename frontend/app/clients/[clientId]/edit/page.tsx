@@ -95,18 +95,18 @@ export default function EditClientPage({ params }: EditClientPageProps) {
         </div>
 
         {/* Edit Card */}
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111318] p-6 shadow-xs space-y-6">
-          <div className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs space-y-6">
+          <div className="border-b border-zinc-100 dark:border-[#222630] pb-4">
             <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-[#F9FAFB]">
                 Edit Organization Details
               </h1>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
                 {client.status.toUpperCase()}
               </span>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Update organization properties and contact designations for <strong className="font-mono text-zinc-700 dark:text-zinc-300">{client.company_name}</strong>.
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1">
+              Update organization properties and contact designations for <strong className="font-mono text-zinc-700 dark:text-[#F9FAFB]">{client.company_name}</strong>.
             </p>
           </div>
 

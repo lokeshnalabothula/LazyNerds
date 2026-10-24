@@ -10,7 +10,6 @@ import { useAuth } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FixOpsAppLoader } from "@/components/ui/loading";
-import Image from "next/image";
 import { Shield, AlertCircle, KeyRound } from "lucide-react";
 
 export default function LoginPage() {
@@ -75,47 +74,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4 sm:p-6">
+    <div className="min-h-screen bg-[#090A0D] flex flex-col justify-center items-center p-4 sm:p-6">
       <div className="w-full max-w-sm space-y-6">
         {/* Official Brand Header */}
-        <div className="text-center space-y-3">
-          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-[#F5C518]/30 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200">
-            <Image
-              src="/profile-sm.png"
-              alt="Lazy Nerds Mascot"
-              width={96}
-              height={96}
-              priority
-              className="object-cover w-full h-full"
-            />
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl font-bold tracking-tight text-[#F9FAFB]">
+              Lazy Nerds
+            </span>
+            <span className="text-xs font-mono uppercase px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#FFD84D] border border-[#F5C518]/30 font-bold shrink-0">
+              FIXOPS
+            </span>
           </div>
-          <div className="space-y-1.5 flex flex-col items-center">
-            <div className="flex items-center justify-center gap-2">
-              <div className="h-8 w-44 relative">
-                <Image
-                  src="/title-sm.png"
-                  alt="Lazy Nerds"
-                  fill
-                  sizes="176px"
-                  priority
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold shrink-0">
-                FIXOPS
-              </span>
-            </div>
-            <p className="text-xs text-zinc-400">
-              Cybersecurity operations & vulnerability management workspace
-            </p>
-          </div>
+          <p className="text-xs text-[#9CA3AF]">
+            Cybersecurity operations & vulnerability management workspace
+          </p>
         </div>
 
         {/* Login Card */}
-        <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-5 sm:p-6 shadow-xl backdrop-blur-sm">
+        <div className="rounded-xl border border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-2xl backdrop-blur-md">
           <form method="POST" action="#" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {serverError && (
-              <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
+              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{serverError}</span>
               </div>
@@ -133,12 +113,12 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-zinc-300">
+                <label className="text-xs font-medium text-zinc-300 dark:text-[#9CA3AF]">
                   Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-[11px] text-brand-400 hover:text-brand-300 transition-colors"
+                  className="text-[11px] text-[#B88700] dark:text-[#FFD84D] hover:underline transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -148,10 +128,10 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
                 placeholder="••••••••••••"
-                className={`w-full rounded bg-zinc-950 border px-3 py-2 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 transition-colors ${
+                className={`w-full rounded-lg bg-[#161920] border px-3 py-2 text-xs text-[#F9FAFB] placeholder-zinc-500 focus:outline-none focus:ring-1 transition-colors ${
                   errors.password?.message
                     ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500"
-                    : "border-zinc-800 focus:border-brand-500 focus:ring-brand-500"
+                    : "border-[#222630] focus:border-[#F5C518] focus:ring-[#F5C518]"
                 }`}
                 {...register("password")}
               />
@@ -162,7 +142,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full mt-2 h-10 text-xs font-semibold"
+              className="w-full mt-2 h-10 text-xs font-bold btn-glossy-gold shadow-md"
               isLoading={isSubmitting}
             >
               <KeyRound className="h-4 w-4 mr-1.5" />
@@ -171,45 +151,45 @@ export default function LoginPage() {
           </form>
 
           {/* Client Self-Registration Option */}
-          <div className="mt-5 pt-4 border-t border-zinc-800/80 space-y-2 text-center">
-            <p className="text-[11px] text-zinc-400">
+          <div className="mt-5 pt-4 border-t border-[#222630] space-y-2 text-center">
+            <p className="text-[11px] text-[#9CA3AF]">
               New client organization looking for security operations?
             </p>
             <div className="flex items-center justify-center gap-3 text-xs">
               <Link
                 href="/register"
-                className="font-medium text-brand-400 hover:text-brand-300 transition-colors underline-offset-4 hover:underline"
+                className="font-semibold text-[#B88700] dark:text-[#FFD84D] transition-colors underline-offset-4 hover:underline"
               >
                 Apply for Onboarding
               </Link>
               <span className="text-zinc-600">•</span>
               <Link
                 href="/register/status"
-                className="text-zinc-400 hover:text-zinc-200 transition-colors underline-offset-4 hover:underline"
+                className="text-[#9CA3AF] hover:text-[#F9FAFB] transition-colors underline-offset-4 hover:underline"
               >
                 Check Application Status
               </Link>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-zinc-800/50 text-[11px] text-zinc-500 text-center flex items-center justify-center gap-1.5 font-mono">
-            <Shield className="h-3 w-3 text-brand-500" />
+          <div className="mt-4 pt-3 border-t border-[#222630]/60 text-[11px] text-[#9CA3AF] text-center flex items-center justify-center gap-1.5 font-mono">
+            <Shield className="h-3 w-3 text-[#F5C518]" />
             <span>Role-Based Access: Founder • Employee • Client</span>
           </div>
         </div>
 
         {/* Public Legal Links */}
-        <div className="flex items-center justify-center gap-4 text-xs text-zinc-500">
+        <div className="flex items-center justify-center gap-4 text-xs text-[#9CA3AF]">
           <Link
             href="/privacy"
-            className="hover:text-zinc-300 transition-colors underline-offset-4 hover:underline"
+            className="hover:text-[#F9FAFB] transition-colors underline-offset-4 hover:underline"
           >
             Privacy Policy
           </Link>
           <span>•</span>
           <Link
             href="/terms"
-            className="hover:text-zinc-300 transition-colors underline-offset-4 hover:underline"
+            className="hover:text-[#F9FAFB] transition-colors underline-offset-4 hover:underline"
           >
             Terms of Service
           </Link>

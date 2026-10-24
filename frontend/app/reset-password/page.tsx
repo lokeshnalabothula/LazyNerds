@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -117,44 +116,25 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4 sm:p-6">
+    <div className="min-h-screen bg-[#090A0D] flex flex-col justify-center items-center p-4 sm:p-6">
       <div className="w-full max-w-sm space-y-6">
         {/* Brand Header */}
-        <div className="text-center space-y-3">
-          <div className="relative mx-auto w-24 h-24 rounded-2xl border border-zinc-800 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200 ring-2 ring-[#F5C518]/30">
-            <Image
-              src="/profile-sm.png"
-              alt="Lazy Nerds FixOps Mascot"
-              width={96}
-              height={96}
-              priority
-              className="object-cover w-full h-full"
-            />
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl font-bold tracking-tight text-[#F9FAFB]">
+              Lazy Nerds
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#FFD84D] border border-[#F5C518]/30 tracking-wider shrink-0">
+              SECURITY
+            </span>
           </div>
-          <div className="space-y-1.5 flex flex-col items-center">
-            <div className="flex items-center justify-center gap-2">
-              <div className="h-8 w-44 relative">
-                <Image
-                  src="/title-sm.png"
-                  alt="Lazy Nerds"
-                  fill
-                  sizes="176px"
-                  priority
-                  className="object-contain"
-                />
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 tracking-wider shrink-0">
-                FIXOPS
-              </span>
-            </div>
-            <p className="text-xs text-zinc-400">
-              Account Security & Password Reset
-            </p>
-          </div>
+          <p className="text-xs text-[#9CA3AF]">
+            Account Security & Password Reset
+          </p>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-5 sm:p-6 shadow-xl backdrop-blur-sm">
+        <div className="rounded-xl border border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-2xl backdrop-blur-md">
           {!tokenValid ? (
             <div className="space-y-4 text-center">
               <div className="mx-auto w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
@@ -164,7 +144,7 @@ function ResetPasswordContent() {
                 <h3 className="text-sm font-semibold text-zinc-100">
                   Invalid or Expired Link
                 </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <p className="text-xs text-[#9CA3AF] leading-relaxed">
                   {validationError ||
                     "This password reset link is invalid or has expired. Recovery links are single-use and expire after 30 minutes."}
                 </p>
@@ -172,14 +152,14 @@ function ResetPasswordContent() {
               <div className="pt-2 flex flex-col gap-2">
                 <Link
                   href="/forgot-password"
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded text-xs font-semibold bg-brand-500 text-zinc-950 hover:bg-brand-400 transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold btn-glossy-gold"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   <span>Request New Reset Link</span>
                 </Link>
                 <Link
                   href="/login"
-                  className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors py-1"
+                  className="text-xs text-[#9CA3AF] hover:text-[#F9FAFB] transition-colors py-1"
                 >
                   Return to Sign In
                 </Link>
@@ -194,14 +174,14 @@ function ResetPasswordContent() {
                 <h3 className="text-sm font-semibold text-zinc-100">
                   Password Reset Complete
                 </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <p className="text-xs text-[#9CA3AF] leading-relaxed">
                   Your new password has been securely stored. You can now access your workspace.
                 </p>
               </div>
               <div className="pt-2">
                 <Button
                   onClick={() => router.push("/login")}
-                  className="w-full h-10 text-xs font-semibold"
+                  className="w-full h-10 text-xs font-bold btn-glossy-gold"
                 >
                   <span>Proceed to Sign In</span>
                   <ArrowRight className="h-4 w-4 ml-1.5" />
@@ -214,7 +194,7 @@ function ResetPasswordContent() {
                 <h2 className="text-sm font-semibold text-zinc-100">
                   Set New Password
                 </h2>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <p className="text-xs text-[#9CA3AF] leading-relaxed">
                   {maskedEmail ? (
                     <>
                       Updating credentials for{" "}
@@ -227,7 +207,7 @@ function ResetPasswordContent() {
               </div>
 
               {submitError && (
-                <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{submitError}</span>
                 </div>
@@ -254,8 +234,8 @@ function ResetPasswordContent() {
               />
 
               {/* Security requirements checklist */}
-              <div className="p-2.5 rounded bg-zinc-950/60 border border-zinc-800/80 text-[11px] text-zinc-400 space-y-1 font-mono">
-                <p className="text-zinc-300 font-medium">Policy Requirements:</p>
+              <div className="p-3 rounded-lg bg-[#161920] border border-[#222630] text-[11px] text-[#9CA3AF] space-y-1 font-mono">
+                <p className="text-zinc-200 font-medium">Policy Requirements:</p>
                 <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
                   <span>• Minimum 10 characters</span>
                   <span>• Uppercase letter [A-Z]</span>
@@ -267,7 +247,7 @@ function ResetPasswordContent() {
 
               <Button
                 type="submit"
-                className="w-full mt-2 h-10 text-xs font-semibold"
+                className="w-full mt-2 h-10 text-xs font-bold btn-glossy-gold shadow-md"
                 isLoading={isSubmitting}
               >
                 <Lock className="h-4 w-4 mr-1.5" />
@@ -276,8 +256,8 @@ function ResetPasswordContent() {
             </form>
           )}
 
-          <div className="mt-4 pt-4 border-t border-zinc-800/80 text-[11px] text-zinc-500 text-center flex items-center justify-center gap-1.5 font-mono">
-            <Shield className="h-3 w-3 text-brand-500" />
+          <div className="mt-4 pt-4 border-t border-[#222630] text-[11px] text-[#9CA3AF] text-center flex items-center justify-center gap-1.5 font-mono">
+            <Shield className="h-3 w-3 text-[#F5C518]" />
             <span>End-to-end encrypted password verification</span>
           </div>
         </div>

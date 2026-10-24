@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -114,45 +113,26 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-10 px-4 sm:px-6 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[#090A0D] py-10 px-4 sm:px-6 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl space-y-8">
         {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="relative mx-auto w-24 h-24 rounded-2xl border border-zinc-800 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200 ring-2 ring-[#F5C518]/30">
-            <Image
-              src="/profile-sm.png"
-              alt="Lazy Nerds FixOps Mascot"
-              width={96}
-              height={96}
-              priority
-              className="object-cover w-full h-full"
-            />
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl font-bold tracking-tight text-[#F9FAFB]">
+              Lazy Nerds
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#FFD84D] border border-[#F5C518]/30 tracking-wider shrink-0">
+              ONBOARDING
+            </span>
           </div>
-          <div className="space-y-1.5 flex flex-col items-center">
-            <div className="flex items-center justify-center gap-2">
-              <div className="h-9 w-48 relative">
-                <Image
-                  src="/title-sm.png"
-                  alt="Lazy Nerds"
-                  fill
-                  sizes="192px"
-                  priority
-                  className="object-contain"
-                />
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 tracking-wider shrink-0">
-                ONBOARDING
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
-              Register your organization to access our automated cybersecurity operations, vulnerability management, and remediation pipeline.
-            </p>
-          </div>
+          <p className="text-xs sm:text-sm text-[#9CA3AF] max-w-md mx-auto">
+            Register your organization to access our automated cybersecurity operations, vulnerability management, and remediation pipeline.
+          </p>
         </div>
 
         {/* Success Card */}
         {successData ? (
-          <div className="rounded-md border border-emerald-500/30 bg-zinc-900/80 p-6 sm:p-8 shadow-2xl backdrop-blur-sm space-y-6 text-center">
+          <div className="rounded-xl border border-emerald-500/30 bg-[#111318]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-6 text-center">
             <div className="mx-auto w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
               <CheckCircle2 className="h-6 w-6" />
             </div>
@@ -162,25 +142,25 @@ export default function RegisterPage() {
               </h2>
               <p className="text-xs sm:text-sm text-zinc-300">
                 Thank you for applying. We have registered{" "}
-                <span className="font-semibold text-brand-400 font-mono">
+                <span className="font-semibold text-[#FFD84D] font-mono">
                   {successData.company_name}
                 </span>{" "}
                 in our onboarding queue.
               </p>
             </div>
 
-            <div className="p-4 rounded bg-zinc-950/80 border border-zinc-800 text-left text-xs text-zinc-400 space-y-2 font-mono">
-              <div className="flex justify-between items-center border-b border-zinc-800/80 pb-2">
+            <div className="p-4 rounded-lg bg-[#161920] border border-[#222630] text-left text-xs text-zinc-400 space-y-2 font-mono">
+              <div className="flex justify-between items-center border-b border-[#222630] pb-2">
                 <span className="text-zinc-500">Contact Email:</span>
                 <span className="text-zinc-200">{successData.email}</span>
               </div>
-              <div className="flex justify-between items-center border-b border-zinc-800/80 pb-2">
+              <div className="flex justify-between items-center border-b border-[#222630] pb-2">
                 <span className="text-zinc-500">Application Status:</span>
-                <span className="text-amber-400 font-semibold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px]">
+                <span className="text-[#FFD84D] font-semibold px-2 py-0.5 rounded bg-[#F5C518]/15 border border-[#F5C518]/30 text-[11px]">
                   Pending Founder Review
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 pt-1">
+              <p className="text-[11px] text-zinc-400 pt-1">
                 For security reasons, access is quarantined until validated by Lazy Nerds leadership. Once verified, you will be able to log in immediately with your chosen credentials.
               </p>
             </div>
@@ -188,14 +168,14 @@ export default function RegisterPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link
                 href={`/register/status?email=${encodeURIComponent(successData.email)}`}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-xs font-semibold bg-brand-500 text-zinc-950 hover:bg-brand-400 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold btn-glossy-gold"
               >
                 <Search className="h-4 w-4" />
                 <span>Track Application Status</span>
               </Link>
               <Link
                 href="/login"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded text-xs font-semibold bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold bg-[#161920] border border-[#222630] text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
               >
                 <span>Return to Sign In</span>
                 <ArrowRight className="h-4 w-4" />
@@ -204,10 +184,10 @@ export default function RegisterPage() {
           </div>
         ) : (
           /* Registration Form Card */
-          <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-6 sm:p-8 shadow-2xl backdrop-blur-sm">
+          <div className="rounded-xl border border-[#222630] bg-[#111318]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-md">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {serverError && (
-                <div className="p-3.5 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
+                <div className="p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{serverError}</span>
                 </div>
@@ -215,8 +195,8 @@ export default function RegisterPage() {
 
               {/* Section 1: Contact Representative */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2 border-b border-zinc-800 pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
-                  <UserCheck className="h-4 w-4 text-brand-400" />
+                <div className="flex items-center gap-2 border-b border-[#222630] pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
+                  <UserCheck className="h-4 w-4 text-[#F5C518]" />
                   <span>1. Primary Contact Information</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -261,8 +241,8 @@ export default function RegisterPage() {
 
               {/* Section 2: Organization Profile */}
               <div className="space-y-3 pt-2">
-                <div className="flex items-center gap-2 border-b border-zinc-800 pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
-                  <Building2 className="h-4 w-4 text-brand-400" />
+                <div className="flex items-center gap-2 border-b border-[#222630] pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
+                  <Building2 className="h-4 w-4 text-[#F5C518]" />
                   <span>2. Organization Profile</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -280,11 +260,11 @@ export default function RegisterPage() {
                     {...register("website")}
                   />
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
                       Industry Sector
                     </label>
                     <select
-                      className="w-full rounded bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
                       {...register("industry")}
                     >
                       <option value="Technology / SaaS">Technology / SaaS</option>
@@ -297,11 +277,11 @@ export default function RegisterPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
                       Company Size
                     </label>
                     <select
-                      className="w-full rounded bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
                       {...register("company_size")}
                     >
                       <option value="1-20 employees">1-20 employees</option>
@@ -321,8 +301,8 @@ export default function RegisterPage() {
 
               {/* Section 3: Scope & Operations Requirements */}
               <div className="space-y-3 pt-2">
-                <div className="flex items-center gap-2 border-b border-zinc-800 pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
-                  <Server className="h-4 w-4 text-brand-400" />
+                <div className="flex items-center gap-2 border-b border-[#222630] pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
+                  <Server className="h-4 w-4 text-[#F5C518]" />
                   <span>3. Scope & Requirements</span>
                 </div>
                 <div className="space-y-3">
@@ -333,11 +313,11 @@ export default function RegisterPage() {
                     {...register("primary_domains")}
                   />
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
                       Requested FixOps Automation Services
                     </label>
                     <select
-                      className="w-full rounded bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
                       {...register("requested_services")}
                     >
                       <option value="Automated FixOps & Vulnerability Management">
@@ -355,40 +335,40 @@ export default function RegisterPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
                       Brief Scope Description or Security Goals
                     </label>
                     <textarea
                       rows={3}
                       placeholder="Outline target assets, tech stack, compliance deadlines, or specific remediation requirements..."
-                      className="w-full rounded bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] placeholder-zinc-500 focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
                       {...register("scope_description")}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-zinc-800 space-y-3">
+              <div className="pt-2 border-t border-[#222630] space-y-3">
                 <Button
                   type="submit"
-                  className="w-full h-11 text-xs font-semibold tracking-wide uppercase"
+                  className="w-full h-11 text-xs font-bold tracking-wide uppercase btn-glossy-gold shadow-md"
                   isLoading={isSubmitting}
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   <span>Submit Client Application</span>
                 </Button>
 
-                <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
+                <div className="flex items-center justify-between text-xs text-[#9CA3AF] pt-1">
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-1.5 hover:text-zinc-300 transition-colors"
+                    className="inline-flex items-center gap-1.5 hover:text-[#F9FAFB] transition-colors"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     <span>Back to Sign In</span>
                   </Link>
                   <Link
                     href="/register/status"
-                    className="hover:text-brand-400 transition-colors"
+                    className="hover:text-[#FFD84D] transition-colors font-medium"
                   >
                     Already applied? Track status
                   </Link>

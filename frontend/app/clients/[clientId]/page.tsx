@@ -154,35 +154,35 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
         </div>
 
         {/* Profile Header */}
-        <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-sans">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
                 {client.company_name}
               </h1>
               <Badge variant={client.status === "active" ? "active" : "archived"}>
                 {client.status === "active" ? "Active Client" : "Archived Client"}
               </Badge>
               {client.industry && (
-                <span className="text-xs text-zinc-500 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 font-mono">
+                <span className="text-xs text-zinc-500 dark:text-[#9CA3AF] px-2 py-0.5 rounded border border-zinc-200 dark:border-[#222630] font-mono">
                   {client.industry}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 flex-wrap">
+            <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-[#9CA3AF] flex-wrap">
               <div className="flex items-center gap-1.5">
-                <span className="text-zinc-400">Primary Contact:</span>
+                <span className="text-zinc-400 dark:text-[#6B7280]">Primary Contact:</span>
                 <span className="font-medium text-zinc-800 dark:text-zinc-200">
                   {client.primary_contact_name}
                 </span>
               </div>
               <span>•</span>
               <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                <Mail className="h-3.5 w-3.5 text-zinc-400" />
+                <Mail className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280]" />
                 <a
                   href={`mailto:${client.primary_contact_email}`}
-                  className="hover:text-brand-500 underline-offset-2 hover:underline"
+                  className="hover:text-[#F5C518] underline-offset-2 hover:underline"
                 >
                   {client.primary_contact_email}
                 </a>
@@ -191,12 +191,12 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                 <>
                   <span>•</span>
                   <div className="flex items-center gap-1 font-mono text-[11px]">
-                    <Globe className="h-3.5 w-3.5 text-zinc-400" />
+                    <Globe className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280]" />
                     <a
                       href={client.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-brand-500 underline-offset-2 hover:underline flex items-center gap-0.5"
+                      className="hover:text-[#F5C518] underline-offset-2 hover:underline flex items-center gap-0.5"
                     >
                       <span>Website</span>
                       <ExternalLink className="h-2.5 w-2.5" />
@@ -211,7 +211,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             {client.status === "active" && (
               <Link href={`/engagements/new?client_id=${client.id}`}>
-                <Button size="sm" className="gap-1.5 text-xs bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] font-bold border-none shadow-xs">
+                <Button size="sm" className="gap-1.5 text-xs btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
                   <Shield className="h-3.5 w-3.5" />
                   <span>New Engagement</span>
                 </Button>
@@ -230,7 +230,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsArchiveDialogOpen(true)}
-                className="gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
+                className="gap-1.5 text-xs text-zinc-600 dark:text-[#9CA3AF] hover:text-rose-600 dark:hover:text-rose-400"
               >
                 <Archive className="h-3.5 w-3.5" />
                 <span>Archive</span>
@@ -250,13 +250,13 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
         </div>
 
         {/* Workspace Navigation Tabs */}
-        <div className="border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-4 sm:gap-6 text-xs font-medium select-none overflow-x-auto pb-px">
+        <div className="border-b border-zinc-200 dark:border-[#222630] flex items-center gap-4 sm:gap-6 text-xs font-medium select-none overflow-x-auto pb-px">
           <button
             onClick={() => setActiveTab("overview")}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "overview"
-                ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
-                : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                ? "border-[#F5C518] text-zinc-900 dark:text-[#F9FAFB] font-semibold"
+                : "border-transparent text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
             }`}
           >
             <Building2 className="h-3.5 w-3.5" />
@@ -267,8 +267,8 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
             onClick={() => setActiveTab("contacts")}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "contacts"
-                ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
-                : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                ? "border-[#F5C518] text-zinc-900 dark:text-[#F9FAFB] font-semibold"
+                : "border-transparent text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
             }`}
           >
             <Mail className="h-3.5 w-3.5" />
@@ -279,8 +279,8 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
             onClick={() => setActiveTab("engagements")}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "engagements"
-                ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
-                : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                ? "border-[#F5C518] text-zinc-900 dark:text-[#F9FAFB] font-semibold"
+                : "border-transparent text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
             }`}
           >
             <Layers className="h-3.5 w-3.5" />
@@ -291,8 +291,8 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
             onClick={() => setActiveTab("assets")}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "assets"
-                ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
-                : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                ? "border-[#F5C518] text-zinc-900 dark:text-[#F9FAFB] font-semibold"
+                : "border-transparent text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
             }`}
           >
             <Shield className="h-3.5 w-3.5" />
@@ -303,8 +303,8 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
             onClick={() => setActiveTab("findings")}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "findings"
-                ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
-                : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                ? "border-[#F5C518] text-zinc-900 dark:text-[#F9FAFB] font-semibold"
+                : "border-transparent text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
             }`}
           >
             <Bug className="h-3.5 w-3.5" />
@@ -315,8 +315,8 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
             onClick={() => setActiveTab("reports")}
             className={`pb-3 border-b-2 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap min-h-[38px] ${
               activeTab === "reports"
-                ? "border-brand-500 text-zinc-900 dark:text-zinc-100 font-semibold"
-                : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                ? "border-[#F5C518] text-zinc-900 dark:text-[#F9FAFB] font-semibold"
+                : "border-transparent text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
             }`}
           >
             <FileText className="h-3.5 w-3.5" />
@@ -330,77 +330,77 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
             {/* Left 2 cols: Organization Details */}
             <div className="lg:col-span-2 space-y-6">
               {/* Profile Card */}
-              <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 font-mono">
+              <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#9CA3AF] font-mono">
                   Organization Summary
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Official Entity Name</span>
-                    <span className="font-medium text-zinc-800 dark:text-zinc-200 text-sm">
+                    <span className="text-zinc-400 dark:text-[#6B7280] block text-[11px]">Official Entity Name</span>
+                    <span className="font-medium text-zinc-800 dark:text-[#F9FAFB] text-sm">
                       {client.company_name}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Industry Sector</span>
-                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                    <span className="text-zinc-400 dark:text-[#6B7280] block text-[11px]">Industry Sector</span>
+                    <span className="font-medium text-zinc-800 dark:text-[#F9FAFB]">
                       {client.industry || "Not specified"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Primary Contact Person</span>
-                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                    <span className="text-zinc-400 dark:text-[#6B7280] block text-[11px]">Primary Contact Person</span>
+                    <span className="font-medium text-zinc-800 dark:text-[#F9FAFB]">
                       {client.primary_contact_name}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Contact Email Address</span>
-                    <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                    <span className="text-zinc-400 dark:text-[#6B7280] block text-[11px]">Contact Email Address</span>
+                    <span className="font-mono text-zinc-800 dark:text-[#F9FAFB]">
                       {client.primary_contact_email}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Telephone</span>
-                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                    <span className="text-zinc-400 dark:text-[#6B7280] block text-[11px]">Telephone</span>
+                    <span className="font-medium text-zinc-800 dark:text-[#F9FAFB]">
                       {client.phone || "Not specified"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-zinc-400 block text-[11px]">Official Web Address</span>
+                    <span className="text-zinc-400 dark:text-[#6B7280] block text-[11px]">Official Web Address</span>
                     {client.website ? (
                       <a
                         href={client.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 font-mono"
+                        className="text-[#F5C518] hover:underline flex items-center gap-1 font-mono"
                       >
                         <span>{client.website}</span>
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     ) : (
-                      <span className="text-zinc-400 font-mono">Not specified</span>
+                      <span className="text-zinc-400 dark:text-[#6B7280] font-mono">Not specified</span>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Internal Notes Card */}
-              <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 font-mono">
+              <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#9CA3AF] font-mono">
                   Internal Engagement Notes
                 </h3>
                 {client.notes ? (
-                  <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed font-sans bg-zinc-50 dark:bg-zinc-950 p-4 rounded border border-zinc-100 dark:border-zinc-800/60">
+                  <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed font-sans bg-zinc-50 dark:bg-[#161920]/60 p-4 rounded-lg border border-zinc-100 dark:border-[#222630]">
                     {client.notes}
                   </p>
                 ) : (
-                  <p className="text-xs text-zinc-400 italic">
+                  <p className="text-xs text-zinc-400 dark:text-[#6B7280] italic">
                     No internal engagement notes recorded for this organization.
                   </p>
                 )}
@@ -409,8 +409,8 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
             {/* Right 1 col: System Metadata & Future Readiness */}
             <div className="space-y-6">
-              <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 font-mono">
+              <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#9CA3AF] font-mono">
                   Audit & Record Metadata
                 </h3>
 

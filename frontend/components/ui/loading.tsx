@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle, RefreshCw, LogIn, ShieldAlert } from "lucide-react";
 import { Button } from "./button";
@@ -26,7 +25,6 @@ export const FixOpsAppLoader: React.FC<AppLoaderProps> = ({
   onRetry,
 }) => {
   const [isDelayed, setIsDelayed] = useState(false);
-  const [profileImgError, setProfileImgError] = useState(false);
 
   useEffect(() => {
     // Safety watchdog: If loading screen remains mounted > 7 seconds, display recovery controls
@@ -55,39 +53,23 @@ export const FixOpsAppLoader: React.FC<AppLoaderProps> = ({
       }
     >
       <div className="flex flex-col items-center max-w-sm mx-auto space-y-6">
-        {/* Operator Profile Picture with Glossy Amber/Yellow Cyber Scanner Ring */}
+        {/* Monogram Cyber Node */}
         <div className="relative group">
           <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-[#F5C518]/30 via-[#FFD84D]/40 to-[#F5C518]/30 blur-md opacity-80 animate-pulse motion-reduce:animate-none" />
-          <div className="relative h-24 w-24 rounded-2xl border-2 border-[#F5C518]/50 bg-[#111318] shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)] flex items-center justify-center overflow-hidden">
-            {!profileImgError ? (
-              <Image
-                src="/profile.png"
-                alt="Lazy Nerds FixOps Operator Profile"
-                width={96}
-                height={96}
-                priority
-                onError={() => setProfileImgError(true)}
-                className="object-cover w-full h-full"
-              />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center bg-[#1B1E24] text-[#FFD84D] font-mono text-xl font-bold">
-                LN
-              </div>
-            )}
+          <div className="relative h-20 w-20 rounded-2xl border-2 border-[#F5C518]/50 bg-[#111318] shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)] flex items-center justify-center overflow-hidden">
+            <span className="font-mono font-bold text-xl text-[#FFD84D]">LN</span>
           </div>
         </div>
 
         {/* Branding Wordmark & Operational Status */}
         <div className="space-y-2">
-          <div className="h-6 w-36 relative mx-auto opacity-95">
-            <Image
-              src="/title-sm.png"
-              alt="Lazy Nerds"
-              fill
-              sizes="144px"
-              priority
-              className="object-contain"
-            />
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-xl font-bold tracking-tight text-[#F9FAFB]">
+              Lazy Nerds
+            </span>
+            <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#F5C518]/15 text-[#FFD84D] border border-[#F5C518]/30 font-bold shrink-0">
+              FIXOPS
+            </span>
           </div>
           <h2 className="text-xs font-mono font-bold tracking-widest text-zinc-100 uppercase">
             {label}
@@ -143,15 +125,8 @@ export const FixOpsInlineLoader: React.FC<{ label?: string }> = ({
       aria-live="polite"
       className="py-12 flex flex-col items-center justify-center gap-3 text-zinc-400"
     >
-      <div className="relative h-10 w-10 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs overflow-hidden">
-        <Image
-          src="/brand/logo-icon.png"
-          alt="FixOps"
-          width={40}
-          height={40}
-          className="object-cover w-full h-full"
-        />
-        <div className="absolute -inset-0.5 rounded-lg border border-[#F5C518]/40 animate-ping opacity-25 motion-reduce:animate-none" />
+      <div className="relative h-10 w-10 rounded-lg border border-[#F5C518]/30 bg-[#111318] flex items-center justify-center shadow-xs">
+        <RefreshCw className="h-4 w-4 text-[#F5C518] animate-spin" />
       </div>
       <span className="text-xs font-mono text-zinc-400">{label}</span>
     </div>

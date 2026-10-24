@@ -11,10 +11,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/brand/logo-icon.png", sizes: "256x256", type: "image/png" },
-      { url: "/brand/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/brand/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/brand/logo.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
     ],
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -28,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#090A0D",
 };
 
 export default function RootLayout({
@@ -38,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans antialiased text-zinc-900 dark:text-zinc-100">
+      <body className="min-h-screen bg-zinc-50 dark:bg-[#090A0D] font-sans antialiased text-zinc-900 dark:text-[#F9FAFB] selection:bg-[#F5C518]/20 selection:text-[#F5C518]">
         <AuthProvider>
           <ToastProvider>{children}</ToastProvider>
         </AuthProvider>

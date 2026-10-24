@@ -34,27 +34,27 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <div className="flex items-start gap-3">
           <div className="shrink-0 mt-0.5">
             {variant === "destructive" && (
-              <div className="h-8 w-8 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center">
                 <AlertCircle className="h-4 w-4" />
               </div>
             )}
             {variant === "warning" && (
-              <div className="h-8 w-8 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
                 <AlertTriangle className="h-4 w-4" />
               </div>
             )}
             {variant === "primary" && (
-              <div className="h-8 w-8 rounded-full bg-[#F5C518]/15 border border-[#F5C518]/30 text-[#DDAA07] dark:text-[#FFD84D] flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-[#F5C518]/15 border border-[#F5C518]/30 text-[#DDAA07] dark:text-[#FFD84D] flex items-center justify-center">
                 <Info className="h-4 w-4" />
               </div>
             )}
           </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed pt-1">
+          <p className="text-xs text-zinc-600 dark:text-[#9CA3AF] leading-relaxed pt-1">
             {description}
           </p>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-[#222630]">
           <Button
             type="button"
             variant="outline"

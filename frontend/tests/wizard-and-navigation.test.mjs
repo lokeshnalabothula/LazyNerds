@@ -9,33 +9,48 @@ describe("Brand Assets & Navigation Integrity", () => {
   const cwd = process.cwd();
   const frontendDir = cwd.endsWith("frontend") ? cwd : path.join(cwd, "frontend");
 
-  test("master brand assets exist and are properly synchronized", () => {
-    const profilePath = path.join(frontendDir, "public", "profile.png");
-    const brandProfilePath = path.join(frontendDir, "public", "brand", "profile.png");
-    const titlePath = path.join(frontendDir, "public", "title.png");
-    const brandTitlePath = path.join(frontendDir, "public", "brand", "title.png");
+  test("essential web assets exist and no profile or title images remain in frontend UI", () => {
+    const faviconPath = path.join(frontendDir, "public", "favicon.ico");
+    const appleTouchPath = path.join(frontendDir, "public", "apple-touch-icon.png");
 
-    assert.ok(fs.existsSync(profilePath), "frontend/public/profile.png must exist");
-    assert.ok(fs.existsSync(brandProfilePath), "frontend/public/brand/profile.png must exist");
-    assert.ok(fs.existsSync(titlePath), "frontend/public/title.png must exist");
-    assert.ok(fs.existsSync(brandTitlePath), "frontend/public/brand/title.png must exist");
+    assert.ok(fs.existsSync(faviconPath), "frontend/public/favicon.ico must exist");
+    assert.ok(fs.existsSync(appleTouchPath), "frontend/public/apple-touch-icon.png must exist");
 
-    // Check MD5 synchronization between master and brand copies
-    const profileHash = crypto.createHash("md5").update(fs.readFileSync(profilePath)).digest("hex");
-    const brandProfileHash = crypto.createHash("md5").update(fs.readFileSync(brandProfilePath)).digest("hex");
-    assert.strictEqual(profileHash, brandProfileHash, "Profile master and brand copy must be identical");
+    // Scan frontend app and components to verify no image-based profile or title references remain
+    const scanDir = (dir) => {
+      let files = [];
+      for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, item.name);
+        if (item.isDirectory() && !['node_modules', '.next', '.git'].includes(item.name)) {
+          files = files.concat(scanDir(fullPath));
+        } else if (item.isFile() && (item.name.endsWith('.tsx') || item.name.endsWith('.ts'))) {
+          files.push(fullPath);
+        }
+      }
+      return files;
+    };
 
-    const titleHash = crypto.createHash("md5").update(fs.readFileSync(titlePath)).digest("hex");
-    const brandTitleHash = crypto.createHash("md5").update(fs.readFileSync(brandTitlePath)).digest("hex");
-    assert.strictEqual(titleHash, brandTitleHash, "Title master and brand copy must be identical");
+    const sourceFiles = [
+      ...scanDir(path.join(frontendDir, "app")),
+      ...scanDir(path.join(frontendDir, "components")),
+    ];
 
-    // Optimized derivatives exist
-    const profileSmPath = path.join(frontendDir, "public", "profile-sm.png");
-    const titleSmPath = path.join(frontendDir, "public", "title-sm.png");
-    assert.ok(fs.existsSync(profileSmPath), "profile-sm.png derivative must exist");
-    assert.ok(fs.existsSync(titleSmPath), "title-sm.png derivative must exist");
-    assert.ok(fs.statSync(profileSmPath).size < 500 * 1024, "profile-sm.png must be optimized (<500KB)");
-    assert.ok(fs.statSync(titleSmPath).size < 800 * 1024, "title-sm.png must be optimized (<800KB)");
+    const forbiddenTerms = [
+      ["pro", "file.png"].join(""),
+      ["pro", "file-sm.png"].join(""),
+      ["ti", "tle.png"].join(""),
+      ["ti", "tle-sm.png"].join(""),
+    ];
+
+    for (const filePath of sourceFiles) {
+      const content = fs.readFileSync(filePath, "utf8");
+      for (const term of forbiddenTerms) {
+        assert.ok(
+          !content.includes(term),
+          `Found forbidden image reference ${term} in ${path.relative(frontendDir, filePath)}`
+        );
+      }
+    }
   });
 
   test("exactly ONE desktop sidebar collapse button exists in the application header", () => {
@@ -64,16 +79,23 @@ describe("Brand Assets & Navigation Integrity", () => {
     );
   });
 
-  test("official brand wordmark title-sm.png is rendered in key application surfaces", () => {
+  test("clean text brand wordmark Lazy Nerds and FIXOPS is rendered without image wordmarks", () => {
     const sidebarCode = fs.readFileSync(path.join(frontendDir, "components", "layout", "sidebar.tsx"), "utf8");
     const loginCode = fs.readFileSync(path.join(frontendDir, "app", "login", "page.tsx"), "utf8");
     const registerCode = fs.readFileSync(path.join(frontendDir, "app", "register", "page.tsx"), "utf8");
     const settingsCode = fs.readFileSync(path.join(frontendDir, "app", "settings", "page.tsx"), "utf8");
 
-    assert.ok(sidebarCode.includes("title-sm.png"), "Sidebar header must display title-sm.png wordmark");
-    assert.ok(loginCode.includes("title-sm.png"), "Login page must display title-sm.png wordmark");
-    assert.ok(registerCode.includes("title-sm.png"), "Register page must display title-sm.png wordmark");
-    assert.ok(settingsCode.includes("title-sm.png"), "Settings page must display title-sm.png wordmark");
+    assert.ok(sidebarCode.includes("Lazy Nerds") && sidebarCode.includes("FIXOPS"), "Sidebar header must display text wordmark");
+    assert.ok(loginCode.includes("Lazy Nerds") && loginCode.includes("FIXOPS"), "Login page must display text wordmark");
+    assert.ok(registerCode.includes("Lazy Nerds"), "Register page must display text wordmark");
+    assert.ok(settingsCode.includes("LAZY NERDS FIXOPS") || settingsCode.includes("Lazy Nerds"), "Settings page must display text wordmark");
+
+    // Ensure none of the image wordmarks remain in these surfaces
+    const imageWordmarkName = ["title", "-sm.png"].join("");
+    assert.ok(!sidebarCode.includes(imageWordmarkName), "Sidebar header must not contain image wordmark");
+    assert.ok(!loginCode.includes(imageWordmarkName), "Login page must not contain image wordmark");
+    assert.ok(!registerCode.includes(imageWordmarkName), "Register page must not contain image wordmark");
+    assert.ok(!settingsCode.includes(imageWordmarkName), "Settings page must not contain image wordmark");
   });
 
   test("client and engagement edit forms provide structured, sectioned layout with icons", () => {

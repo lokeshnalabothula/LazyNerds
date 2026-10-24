@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -48,44 +47,25 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center p-4 sm:p-6">
+    <div className="min-h-screen bg-[#090A0D] flex flex-col justify-center items-center p-4 sm:p-6">
       <div className="w-full max-w-sm space-y-6">
         {/* Brand Header */}
-        <div className="text-center space-y-3">
-          <div className="relative mx-auto w-24 h-24 rounded-2xl border border-zinc-800 bg-[#111318] shadow-2xl flex items-center justify-center overflow-hidden transition-transform hover:scale-105 duration-200 ring-2 ring-[#F5C518]/30">
-            <Image
-              src="/profile-sm.png"
-              alt="Lazy Nerds FixOps Mascot"
-              width={96}
-              height={96}
-              priority
-              className="object-cover w-full h-full"
-            />
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl font-bold tracking-tight text-[#F9FAFB]">
+              Lazy Nerds
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#FFD84D] border border-[#F5C518]/30 tracking-wider shrink-0">
+              RECOVERY
+            </span>
           </div>
-          <div className="space-y-1.5 flex flex-col items-center">
-            <div className="flex items-center justify-center gap-2">
-              <div className="h-8 w-44 relative">
-                <Image
-                  src="/title-sm.png"
-                  alt="Lazy Nerds"
-                  fill
-                  sizes="176px"
-                  priority
-                  className="object-contain"
-                />
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 tracking-wider shrink-0">
-                FIXOPS
-              </span>
-            </div>
-            <p className="text-xs text-zinc-400">
-              Account Recovery & Security Verification
-            </p>
-          </div>
+          <p className="text-xs text-[#9CA3AF]">
+            Account Recovery & Security Verification
+          </p>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-5 sm:p-6 shadow-xl backdrop-blur-sm">
+        <div className="rounded-xl border border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-2xl backdrop-blur-md">
           {isSubmitted ? (
             <div className="space-y-4 text-center">
               <div className="mx-auto w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -95,15 +75,15 @@ export default function ForgotPasswordPage() {
                 <h3 className="text-sm font-semibold text-zinc-100">
                   Recovery Request Received
                 </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <p className="text-xs text-[#9CA3AF] leading-relaxed">
                   If an authorized account matches{" "}
                   <span className="font-mono text-zinc-200">{getValues("email")}</span>, recovery
                   instructions have been dispatched.
                 </p>
               </div>
-              <div className="p-3 rounded bg-zinc-950/60 border border-zinc-800/80 text-[11px] text-zinc-400 text-left space-y-1">
+              <div className="p-3.5 rounded-lg bg-[#161920] border border-[#222630] text-[11px] text-[#9CA3AF] text-left space-y-1 font-mono">
                 <p className="font-semibold text-zinc-300">Security Notes:</p>
-                <ul className="list-disc pl-4 space-y-0.5 text-zinc-400">
+                <ul className="list-disc pl-4 space-y-0.5 text-[#9CA3AF]">
                   <li>Tokens are single-use and expire in 30 minutes.</li>
                   <li>Check your spam or junk folder if not received.</li>
                   <li>Unrecognized accounts are silently ignored to prevent enumeration.</li>
@@ -112,7 +92,7 @@ export default function ForgotPasswordPage() {
               <div className="pt-2">
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition-colors font-medium"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#B88700] dark:text-[#FFD84D] hover:underline font-semibold"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   <span>Return to Sign In</span>
@@ -125,13 +105,13 @@ export default function ForgotPasswordPage() {
                 <h2 className="text-sm font-semibold text-zinc-100">
                   Forgot your password?
                 </h2>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <p className="text-xs text-[#9CA3AF] leading-relaxed">
                   Enter your verified account email to request a secure password reset link.
                 </p>
               </div>
 
               {serverError && (
-                <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{serverError}</span>
                 </div>
@@ -149,7 +129,7 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full mt-2 h-10 text-xs font-semibold"
+                className="w-full mt-2 h-10 text-xs font-bold btn-glossy-gold shadow-md"
                 isLoading={isSubmitting}
               >
                 <Mail className="h-4 w-4 mr-1.5" />
@@ -159,7 +139,7 @@ export default function ForgotPasswordPage() {
               <div className="pt-2 text-center">
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-[#F9FAFB] transition-colors"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   <span>Back to Sign In</span>
@@ -168,8 +148,8 @@ export default function ForgotPasswordPage() {
             </form>
           )}
 
-          <div className="mt-4 pt-4 border-t border-zinc-800/80 text-[11px] text-zinc-500 text-center flex items-center justify-center gap-1.5 font-mono">
-            <Shield className="h-3 w-3 text-brand-500" />
+          <div className="mt-4 pt-4 border-t border-[#222630] text-[11px] text-[#9CA3AF] text-center flex items-center justify-center gap-1.5 font-mono">
+            <Shield className="h-3 w-3 text-[#F5C518]" />
             <span>Restricted to authorized Lazy Nerds personnel</span>
           </div>
         </div>

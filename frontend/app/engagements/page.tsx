@@ -163,18 +163,18 @@ function EngagementsContent() {
     <AppShell title="Engagements">
       <div className="space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-[#222630] pb-5">
           <div className="space-y-1">
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB]">
               Engagements
             </h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Manage cybersecurity assessments, penetration tests, and operational delivery.
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
+              Penetration Testing & Security Audits — Configure scoping parameters, rules of engagement, and assessor assignments.
             </p>
           </div>
           <div className="flex items-center gap-2.5">
             <Link href="/engagements/new">
-              <Button variant="primary" size="sm" className="gap-1.5">
+              <Button size="sm" className="gap-1.5 text-xs font-bold btn-glossy-gold text-[#111318] border-none shadow-md">
                 <Plus className="h-4 w-4" />
                 <span>Create Engagement</span>
               </Button>
@@ -182,11 +182,11 @@ function EngagementsContent() {
           </div>
         </div>
         {/* Search, Filter, Sort and Layout Controls */}
-        <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 p-4 shadow-xs">
+        <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-4 shadow-xs">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-[#6B7280]" />
               <Input
                 value={search}
                 onChange={handleSearchChange}
@@ -197,7 +197,7 @@ function EngagementsContent() {
 
             {/* View Mode Toggle */}
             <div
-              className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-md border border-zinc-200 dark:border-zinc-700/60 self-start sm:self-auto shrink-0"
+              className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-[#161920] rounded-lg border border-zinc-200 dark:border-[#222630] self-start sm:self-auto shrink-0"
               role="group"
               aria-label="View layout toggle"
             >
@@ -207,10 +207,10 @@ function EngagementsContent() {
                 aria-pressed={viewMode === "cards"}
                 title="Switch to Card View"
                 aria-label="Switch to card view"
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
                   viewMode === "cards"
-                    ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
+                    : "text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
                 }`}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -222,10 +222,10 @@ function EngagementsContent() {
                 aria-pressed={viewMode === "table"}
                 title="Switch to List View"
                 aria-label="Switch to list view"
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
+                    : "text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
                 }`}
               >
                 <LayoutList className="h-3.5 w-3.5" />
@@ -313,18 +313,18 @@ function EngagementsContent() {
           viewMode === "cards" ? (
             <CardGridSkeleton count={6} />
           ) : (
-            <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
+            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] overflow-hidden shadow-xs">
               <TableSkeleton rows={5} cols={6} />
             </div>
           )
         ) : engagements.length === 0 ? (
-          <div className="py-16 px-4 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg space-y-3">
+          <div className="py-16 px-4 text-center border border-dashed border-zinc-200 dark:border-[#222630] rounded-xl space-y-3">
             <Layers className="h-8 w-8 mx-auto text-zinc-400 opacity-60" />
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                 {isFiltered ? "No matching engagements found" : "No engagements registered yet"}
               </p>
-              <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+              <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] max-w-sm mx-auto">
                 {isFiltered
                   ? "Try adjusting your search criteria or resetting the applied filters."
                   : "Launch a penetration test or security assessment by linking an active client."}
@@ -336,7 +336,7 @@ function EngagementsContent() {
               </Button>
             ) : (
               <Link href="/engagements/new">
-                <Button variant="primary" size="sm">
+                <Button size="sm" className="btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
                   <Plus className="h-4 w-4 mr-1.5" />
                   Create First Engagement
                 </Button>
@@ -357,7 +357,7 @@ function EngagementsContent() {
               return (
                 <div
                   key={eng.id}
-                  className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between gap-4"
+                  className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs hover:border-zinc-300 dark:hover:border-[#F5C518]/30 transition-all flex flex-col justify-between gap-4"
                 >
                   <div className="space-y-3">
                     {/* Top Row: Client & Status Badge */}
@@ -445,13 +445,13 @@ function EngagementsContent() {
           </div>
         ) : (
           /* Table View */
-          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
+          <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 font-medium">
+                <thead className="bg-zinc-50 dark:bg-[#161920] text-zinc-600 dark:text-[#9CA3AF] border-b border-zinc-200 dark:border-[#222630] font-mono text-[11px] uppercase tracking-wider">
                   <tr>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("name")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -460,7 +460,7 @@ function EngagementsContent() {
                       </div>
                     </th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("client_company_name")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -470,7 +470,7 @@ function EngagementsContent() {
                     </th>
                     <th className="py-3 px-4">Assessment Type</th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("status")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -480,7 +480,7 @@ function EngagementsContent() {
                     </th>
                     <th className="py-3 px-4">Written Authorization</th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("start_date")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -491,7 +491,7 @@ function EngagementsContent() {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
                   {engagements.map((eng) => {
                     const statusCfg =
                       ENGAGEMENT_STATUS_CONFIG[eng.status as EngagementStatus] ||

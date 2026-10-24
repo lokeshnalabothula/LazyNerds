@@ -99,16 +99,21 @@ export default function AssetsPage() {
     }
   };
 
+  // Calculate stats
+  const inScopeCount = assets.filter((a) => a.in_scope).length;
+  const criticalCount = assets.filter((a) => a.criticality === "critical" || a.criticality === "high").length;
+  const outOfScopeCount = assets.filter((a) => !a.in_scope).length;
+
   return (
     <AppShell title="Asset & Scope Management">
       <div className="space-y-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
               Target Assets & Scope Boundaries
             </h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 leading-relaxed">
               Authorized digital infrastructure, web applications, APIs, and scope enforcement rules.
             </p>
           </div>
@@ -118,23 +123,59 @@ export default function AssetsPage() {
               setAssetToEdit(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs shrink-0 min-h-[36px]"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg btn-glossy-gold text-xs font-bold transition-all shadow-md shrink-0 min-h-[36px]"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
             <span>Register Asset</span>
           </button>
         </div>
 
+        {/* KPI Stat Chips */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF]">
+              Total Assets
+            </div>
+            <div className="text-xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] mt-1">
+              {total}
+            </div>
+          </div>
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              In-Scope (Approved)
+            </div>
+            <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+              {inScopeCount}
+            </div>
+          </div>
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-rose-500 dark:text-[#F43F5E]">
+              Critical & High Impact
+            </div>
+            <div className="text-xl font-bold font-mono text-rose-500 dark:text-[#F43F5E] mt-1">
+              {criticalCount}
+            </div>
+          </div>
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-amber-500 dark:text-[#FBBF24]">
+              Out-of-Scope (Restricted)
+            </div>
+            <div className="text-xl font-bold font-mono text-amber-500 dark:text-[#FBBF24] mt-1">
+              {outOfScopeCount}
+            </div>
+          </div>
+        </div>
+
         {/* Filter Toolbar */}
-        <div className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-xs">
+        <div className="p-3 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-xs">
           <div className="flex-1 min-w-[200px] relative">
-            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-[#9CA3AF]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search assets by name or target URL/IP..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 min-h-[36px] focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#9CA3AF]/60 min-h-[36px] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
             />
           </div>
 
@@ -142,7 +183,7 @@ export default function AssetsPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 min-h-[36px]"
+              className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               aria-label="Filter by asset type"
             >
               <option value="">All Types</option>
@@ -156,7 +197,7 @@ export default function AssetsPage() {
             <select
               value={scopeFilter}
               onChange={(e) => setScopeFilter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 min-h-[36px]"
+              className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               aria-label="Filter by scope status"
             >
               <option value="">All Scopes</option>
@@ -167,7 +208,7 @@ export default function AssetsPage() {
             <select
               value={criticalityFilter}
               onChange={(e) => setCriticalityFilter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 min-h-[36px]"
+              className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               aria-label="Filter by asset criticality"
             >
               <option value="">All Criticalities</option>
@@ -181,17 +222,17 @@ export default function AssetsPage() {
             <div
               role="group"
               aria-label="Asset directory view mode"
-              className="inline-flex rounded-md border border-zinc-200 dark:border-zinc-800 p-0.5 bg-zinc-100 dark:bg-zinc-900 text-xs shrink-0"
+              className="inline-flex rounded-lg border border-zinc-200 dark:border-[#222630] p-0.5 bg-zinc-100 dark:bg-[#161920] text-xs shrink-0"
             >
               <button
                 type="button"
                 onClick={() => setViewMode("cards")}
                 aria-label="Switch to card view"
                 aria-pressed={viewMode === "cards"}
-                className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
                   viewMode === "cards"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#F9FAFB] shadow-xs font-semibold"
+                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-zinc-200"
                 }`}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -202,10 +243,10 @@ export default function AssetsPage() {
                 onClick={() => setViewMode("table")}
                 aria-label="Switch to list view"
                 aria-pressed={viewMode === "table"}
-                className={`px-2.5 py-1.5 rounded font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                    ? "bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#F9FAFB] shadow-xs font-semibold"
+                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-zinc-200"
                 }`}
               >
                 <LayoutList className="h-3.5 w-3.5" />
@@ -236,9 +277,9 @@ export default function AssetsPage() {
                 setAssetToEdit(null);
                 setIsModalOpen(true);
               }}
-              className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold min-h-[36px]"
+              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg btn-glossy-gold text-xs font-bold min-h-[36px]"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
               <span>Register First Asset</span>
             </button>
           </div>
@@ -248,15 +289,15 @@ export default function AssetsPage() {
             {assets.map((asset) => (
               <div
                 key={asset.id}
-                className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors flex flex-col justify-between gap-4"
+                className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs hover:border-[#F5C518]/40 dark:hover:border-[#F5C518]/40 transition-all flex flex-col justify-between gap-4"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm truncate">
+                      <div className="font-semibold text-zinc-900 dark:text-[#F9FAFB] text-sm truncate">
                         {asset.name}
                       </div>
-                      <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 break-all mt-0.5">
+                      <div className="font-mono text-xs text-zinc-500 dark:text-[#9CA3AF] break-all mt-0.5">
                         {asset.target}
                       </div>
                     </div>
@@ -269,23 +310,23 @@ export default function AssetsPage() {
                     </span>
                   </div>
 
-                  <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
-                      <span className="text-[11px] text-zinc-400">Organization:</span>
+                  <div className="pt-2 border-t border-zinc-100 dark:border-[#222630] space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between text-zinc-600 dark:text-[#9CA3AF]">
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">Organization:</span>
                       <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate max-w-[180px]">
                         {asset.client_company_name || "—"}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
-                      <span className="text-[11px] text-zinc-400">Engagement:</span>
+                    <div className="flex items-center justify-between text-zinc-600 dark:text-[#9CA3AF]">
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">Engagement:</span>
                       <span className="truncate max-w-[180px]">
                         {asset.engagement_name || "Unassigned"}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
-                      <span className="text-[11px] text-zinc-400">Type:</span>
+                    <div className="flex items-center justify-between text-zinc-600 dark:text-[#9CA3AF]">
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500">Type:</span>
                       <span className="capitalize font-mono text-[11px]">
                         {asset.asset_type.replace("_", " ")}
                       </span>
@@ -293,7 +334,7 @@ export default function AssetsPage() {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2">
+                <div className="pt-3 border-t border-zinc-100 dark:border-[#222630] flex items-center justify-between gap-2">
                   <div>
                     {asset.in_scope ? (
                       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
@@ -314,7 +355,7 @@ export default function AssetsPage() {
                         setAssetToEdit(asset);
                         setIsModalOpen(true);
                       }}
-                      className="p-1.5 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[34px] min-w-[34px] flex items-center justify-center"
+                      className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center transition-colors"
                       title="Edit Asset"
                       aria-label={`Edit asset ${asset.name}`}
                     >
@@ -322,7 +363,7 @@ export default function AssetsPage() {
                     </button>
                     <button
                       onClick={() => setAssetToDelete({ id: asset.id, name: asset.name })}
-                      className="p-1.5 rounded text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[34px] min-w-[34px] flex items-center justify-center"
+                      className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center transition-colors"
                       title="Delete Asset"
                       aria-label={`Delete asset ${asset.name}`}
                     >
@@ -335,11 +376,11 @@ export default function AssetsPage() {
           </div>
         ) : (
           /* Table View (Default on Desktop) */
-          <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-900/60 shadow-xs">
+          <div className="border border-zinc-200 dark:border-[#222630] rounded-xl overflow-hidden bg-white dark:bg-[#111318] shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-500">
+                  <tr className="border-b border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920] text-zinc-500 dark:text-[#9CA3AF]">
                     <th className="py-2.5 px-3 font-semibold">Asset Name & Target</th>
                     <th className="py-2.5 px-3 font-semibold">Client & Engagement</th>
                     <th className="py-2.5 px-3 font-semibold">Type</th>
@@ -348,14 +389,14 @@ export default function AssetsPage() {
                     <th className="py-2.5 px-3 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
                   {assets.map((asset) => (
-                    <tr key={asset.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                    <tr key={asset.id} className="hover:bg-zinc-50 dark:hover:bg-[#161920]/60 transition-colors">
                       <td className="py-2.5 px-3">
-                        <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                           {asset.name}
                         </div>
-                        <div className="font-mono text-[11px] text-zinc-500 truncate max-w-xs">
+                        <div className="font-mono text-[11px] text-zinc-500 dark:text-[#9CA3AF] truncate max-w-xs">
                           {asset.target}
                         </div>
                       </td>
@@ -363,12 +404,12 @@ export default function AssetsPage() {
                         <div className="text-zinc-800 dark:text-zinc-200">
                           {asset.client_company_name || "Client"}
                         </div>
-                        <div className="text-[10px] text-zinc-400">
+                        <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
                           {asset.engagement_name || "No engagement linked"}
                         </div>
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className="capitalize text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
+                        <span className="capitalize text-zinc-600 dark:text-[#9CA3AF] font-mono text-[11px]">
                           {asset.asset_type.replace("_", " ")}
                         </span>
                       </td>
@@ -401,7 +442,7 @@ export default function AssetsPage() {
                               setAssetToEdit(asset);
                               setIsModalOpen(true);
                             }}
-                            className="p-1.5 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[34px] min-w-[34px] flex items-center justify-center"
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center transition-colors"
                             title="Edit Asset"
                             aria-label={`Edit asset ${asset.name}`}
                           >
@@ -409,7 +450,7 @@ export default function AssetsPage() {
                           </button>
                           <button
                             onClick={() => setAssetToDelete({ id: asset.id, name: asset.name })}
-                            className="p-1.5 rounded text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[34px] min-w-[34px] flex items-center justify-center"
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center transition-colors"
                             title="Delete Asset"
                             aria-label={`Delete asset ${asset.name}`}
                           >

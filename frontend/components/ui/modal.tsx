@@ -67,17 +67,17 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         ref={modalRef}
         className={cn(
-          "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl overflow-hidden transition-all flex flex-col max-h-[90vh]",
+          "w-full rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-2xl overflow-hidden transition-all flex flex-col max-h-[90vh]",
           widthClasses[maxWidth]
         )}
       >
-        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-4 sm:px-5 py-3.5 shrink-0">
+        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-[#222630] px-4 sm:px-6 py-4 shrink-0">
           <div className="min-w-0 pr-2">
-            <h2 id="modal-title" className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+            <h2 id="modal-title" className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-[#F9FAFB] truncate tracking-tight">
               {title}
             </h2>
             {description && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 break-words">
+              <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-0.5 break-words">
                 {description}
               </p>
             )}
@@ -85,18 +85,18 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="rounded-lg p-2 text-zinc-400 hover:text-zinc-700 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="px-4 sm:px-5 py-4 overflow-y-auto flex-1 text-xs">
+        <div className="px-4 sm:px-6 py-5 overflow-y-auto flex-1 text-xs">
           {children}
         </div>
 
         {footer && (
-          <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-4 sm:px-5 py-3 shrink-0">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/80 px-4 sm:px-6 py-3.5 shrink-0">
             {footer}
           </div>
         )}

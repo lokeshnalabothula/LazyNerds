@@ -127,7 +127,7 @@ export const ScanImportModal: React.FC<ScanImportModalProps> = ({
             <select
               value={engagementId}
               onChange={(e) => setEngagementId(e.target.value)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#111318] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
               required
             >
               <option value="">Select engagement...</option>
@@ -146,7 +146,7 @@ export const ScanImportModal: React.FC<ScanImportModalProps> = ({
             <select
               value={toolName}
               onChange={(e) => setToolName(e.target.value)}
-              className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#111318] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
             >
               <option value="nuclei">Nuclei (Vulnerability Scanner JSON/NDJSON)</option>
               <option value="nmap">Nmap (Service & Port Enumeration)</option>
@@ -164,7 +164,7 @@ export const ScanImportModal: React.FC<ScanImportModalProps> = ({
           <select
             value={targetAssetId}
             onChange={(e) => setTargetAssetId(e.target.value)}
-            className="w-full px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100"
+            className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-[#222630] bg-white dark:bg-[#111318] text-xs text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
           >
             <option value="">None / General Engagement Target</option>
             {assets.map((a) => (
@@ -250,11 +250,11 @@ export const ScanImportModal: React.FC<ScanImportModalProps> = ({
           </label>
         </div>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-[#222630]">
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={importing}>
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={importing}>
+          <Button type="submit" size="sm" disabled={importing} className="btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
             {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Terminal className="h-3.5 w-3.5 mr-1.5" />}
             <span>Process & Import Scan</span>
           </Button>

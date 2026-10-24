@@ -152,12 +152,12 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
 
       {/* Section A: Basic Information */}
       <div className="space-y-4">
-        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-          <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 uppercase tracking-wider font-mono">
+        <div className="border-b border-zinc-200 dark:border-[#222630] pb-2">
+          <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] flex items-center gap-2 uppercase tracking-wider font-mono">
             <Building2 className="h-4 w-4 text-[#F5C518]" />
             1. Client & Methodology
           </h3>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
             Define the target client, engagement title, and security assessment type.
           </p>
         </div>
@@ -165,16 +165,16 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
         <div className="space-y-4">
           {/* Client Selection / Read-Only Display */}
           {initialData ? (
-            <div className="p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/40 flex items-center justify-between">
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-zinc-50/50 dark:bg-[#161920]/40 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-md bg-[#1B1E24] border border-[#F5C518]/30 flex items-center justify-center text-[#F5C518]">
+                <div className="h-9 w-9 rounded-lg bg-[#111318] border border-[#F5C518]/30 flex items-center justify-center text-[#F5C518]">
                   <Building2 className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB]">
                     {initialData.client_company_name || "Associated Client Organization"}
                   </div>
-                  <div className="text-[11px] text-zinc-500">
+                  <div className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
                     Client association is locked to maintain audit trail integrity.
                   </div>
                 </div>
@@ -182,7 +182,7 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
               <Link
                 href={`/clients/${initialData.client_id}`}
                 target="_blank"
-                className="text-xs font-mono text-[#B88700] dark:text-[#FFD84D] hover:underline"
+                className="text-xs font-mono text-[#F5C518] hover:underline"
               >
                 View Client &rarr;
               </Link>
@@ -201,7 +201,7 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
               {clients.length === 0 && !isLoadingClients && (
                 <p className="mt-1.5 text-xs text-zinc-500">
                   No active clients found. You must{" "}
-                  <Link href="/clients/new" className="text-[#B88700] dark:text-[#FFD84D] underline font-medium">
+                  <Link href="/clients/new" className="text-[#F5C518] underline font-medium">
                     create an active client
                   </Link>{" "}
                   first.
@@ -244,12 +244,12 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
 
       {/* Section B: Scheduling & Lifecycle */}
       <div className="space-y-4">
-        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-          <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 uppercase tracking-wider font-mono">
+        <div className="border-b border-zinc-200 dark:border-[#222630] pb-2">
+          <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] flex items-center gap-2 uppercase tracking-wider font-mono">
             <Calendar className="h-4 w-4 text-[#F5C518]" />
             2. Scheduling & Operational Lifecycle
           </h3>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
             Manage assessment execution dates and operational status progression.
           </p>
         </div>
@@ -289,12 +289,12 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
 
       {/* Section C: Scope & Authorization */}
       <div className="space-y-4">
-        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-          <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 uppercase tracking-wider font-mono">
+        <div className="border-b border-zinc-200 dark:border-[#222630] pb-2">
+          <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] flex items-center gap-2 uppercase tracking-wider font-mono">
             <Shield className="h-4 w-4 text-[#F5C518]" />
             3. Scope & Rules of Engagement (RoE)
           </h3>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
             Track authorized target assets and verify written legal authorization.
           </p>
         </div>
@@ -320,12 +320,12 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
 
       {/* Section D: Assignment */}
       <div className="space-y-4">
-        <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2">
-          <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 uppercase tracking-wider font-mono">
+        <div className="border-b border-zinc-200 dark:border-[#222630] pb-2">
+          <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] flex items-center gap-2 uppercase tracking-wider font-mono">
             <User className="h-4 w-4 text-[#F5C518]" />
             4. Assessor Assignment
           </h3>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
             Designate the lead penetration tester or security analyst responsible for delivery.
           </p>
         </div>
@@ -340,7 +340,7 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-[#222630]">
         {onCancel && (
           <Button
             type="button"
@@ -356,7 +356,7 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
           type="submit"
           isLoading={isSubmitting}
           disabled={isSubmitting || (clients.length === 0 && !initialData)}
-          className="text-xs bg-[#F5C518] hover:bg-[#FFD84D] text-[#111318] font-bold border-none shadow-sm gap-1.5"
+          className="text-xs btn-glossy-gold text-[#111318] font-bold border-none shadow-md gap-1.5"
         >
           {submitLabel}
         </Button>

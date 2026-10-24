@@ -49,19 +49,19 @@ export default function ReportsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
               Assessment Reports & Deliverables
             </h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1">
               Client-facing assessment reports, executive summaries, and downloadable deliverables derived from real assessment data.
             </p>
           </div>
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs min-h-[36px]"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg btn-glossy-gold text-xs font-bold transition-all shadow-md shrink-0 min-h-[36px]"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
             <span>Generate Report</span>
           </button>
         </div>
@@ -70,17 +70,17 @@ export default function ReportsPage() {
         {loading && reports.length === 0 ? (
           <CardGridSkeleton count={6} />
         ) : reports.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
+          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-[#222630] rounded-xl bg-zinc-50/50 dark:bg-[#111318]">
             <PieChart className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No assessment reports generated</p>
-            <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
+            <p className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">No assessment reports generated</p>
+            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 max-w-sm mx-auto leading-relaxed">
               Generate executive and technical assessment reports summarizing real findings, scoping boundaries, and remediation progress.
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold min-h-[36px]"
+              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg btn-glossy-gold text-xs font-bold min-h-[36px]"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
               <span>Generate First Report</span>
             </button>
           </div>
@@ -89,35 +89,35 @@ export default function ReportsPage() {
             {reports.map((report) => (
               <div
                 key={report.id}
-                className="p-4 sm:p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs flex flex-col justify-between space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors min-w-0"
+                className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs flex flex-col justify-between space-y-4 hover:border-[#F5C518]/40 dark:hover:border-[#F5C518]/40 transition-all min-w-0"
               >
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 font-semibold">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-semibold">
                       {report.report_type.replace("_", " ")}
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-mono" suppressHydrationWarning>
+                    <span className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] font-mono" suppressHydrationWarning>
                       {formatDateTime(report.created_at)}
                     </span>
                   </div>
 
                   <Link
                     href={`/reports/${report.id}`}
-                    className="block font-bold text-sm text-zinc-900 dark:text-zinc-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors font-mono truncate"
+                    className="block font-bold text-sm text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] transition-colors font-mono truncate"
                   >
                     {report.title}
                   </Link>
 
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                  <div className="text-xs text-zinc-500 dark:text-[#9CA3AF] truncate">
                     <span>Engagement: </span>
-                    <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    <span className="font-semibold text-zinc-700 dark:text-zinc-200">
                       {report.engagement_name || "Linked Engagement"}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <div className="text-[10px] text-zinc-400">
+                <div className="pt-3 border-t border-zinc-100 dark:border-[#222630] flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
                     By {report.generated_by || "System"}
                   </div>
 
@@ -126,14 +126,14 @@ export default function ReportsPage() {
                       href={`/api/v1/reports/${report.id}/download?format=html`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                      className="inline-flex items-center gap-1 text-[11px] text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] font-mono"
                     >
                       <Download className="h-3 w-3" />
                       <span>Print/HTML</span>
                     </a>
                     <Link
                       href={`/reports/${report.id}`}
-                      className="inline-flex items-center gap-1 text-[11px] text-brand-600 dark:text-brand-400 hover:underline font-medium"
+                      className="inline-flex items-center gap-1 text-[11px] text-[#B88700] dark:text-[#FFD84D] hover:underline font-semibold font-mono"
                     >
                       <span>View</span>
                       <ExternalLink className="h-3 w-3" />

@@ -493,6 +493,14 @@ def execute_scan_worker_job(
                     if "127.0.0.1" in docker_target or "localhost" in docker_target:
                         docker_target = docker_target.replace("127.0.0.1", "host.docker.internal").replace("localhost", "host.docker.internal")
 
+                    # Ensure isolated bridge network exists prior to container launch
+                    try:
+                        net_check = subprocess.run([docker_bin, "network", "inspect", "shannon-net"], capture_output=True, timeout=5)
+                        if net_check.returncode != 0:
+                            subprocess.run([docker_bin, "network", "create", "--driver", "bridge", "shannon-net"], capture_output=True, timeout=5)
+                    except Exception:
+                        pass
+
                     cmd = [
                         docker_bin, "run", "--rm",
                         "--name", f"fixops-worker-{assessment_id[:8]}",

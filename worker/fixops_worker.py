@@ -227,12 +227,26 @@ def parse_nuclei_json_output(output_text: str) -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 # Scan Execution Engines
 # ---------------------------------------------------------------------------
+def ensure_docker_network(network_name: str = "shannon-net") -> None:
+    """Verifies that the isolated Docker bridge network exists, creating it if needed."""
+    try:
+        check = subprocess.run(["docker", "network", "inspect", network_name], capture_output=True, timeout=5)
+        if check.returncode != 0:
+            subprocess.run(["docker", "network", "create", "--driver", "bridge", network_name], capture_output=True, timeout=5)
+            logger.info(f"Created isolated Docker network '{network_name}'.")
+    except Exception as e:
+        logger.warning(f"Could not verify/create Docker network '{network_name}': {e}")
+
+
 def run_nuclei_scan(job: Dict[str, Any], workspace: str) -> Tuple[List[Dict[str, Any]], Any]:
     global ACTIVE_CONTAINER
     target_url = job["target_url"]
     assessment_id = job.get("assessment_id") or job.get("id")
     container_name = f"fixops-nuclei-{assessment_id[:8]}"
     output_file = os.path.join(workspace, "nuclei_output.json")
+
+    # Ensure isolated network exists prior to container launch
+    ensure_docker_network("shannon-net")
 
     # Docker target resolution for local loopback
     docker_target = target_url
@@ -256,6 +270,7 @@ def run_nuclei_scan(job: Dict[str, Any], workspace: str) -> Tuple[List[Dict[str,
     cmd = [
         "docker", "run", "--rm",
         "--name", container_name,
+        "--network", "shannon-net",
         "--cpus", str(MAX_CPUS),
         "--memory", MAX_MEMORY,
         "--pids-limit", "128",
@@ -445,6 +460,7 @@ def main():
             res = subprocess.run(["docker", "info"], capture_output=True, text=True, timeout=5)
             if res.returncode == 0:
                 logger.info("Docker daemon verified and responsive.")
+                ensure_docker_network("shannon-net")
             else:
                 logger.warning(f"Docker daemon check returned non-zero code {res.returncode}")
         except Exception as e:

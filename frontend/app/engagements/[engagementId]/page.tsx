@@ -28,12 +28,17 @@ import {
   ExternalLink,
   Shield,
   ShieldCheck,
+  ShieldAlert,
   User,
   Layers,
   FileText,
   Archive,
   RotateCcw,
+  Terminal,
 } from "lucide-react";
+import { ScanLauncherModal } from "@/components/findings/scan-launcher-modal";
+import { ScanTelemetryModal } from "@/components/findings/scan-telemetry-modal";
+import { Assessment } from "@/types/finding";
 
 interface EngagementPageProps {
   params: Promise<{ engagementId: string }>;
@@ -50,6 +55,9 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [isLauncherOpen, setIsLauncherOpen] = useState(false);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
+  const [telemetryAssessmentId, setTelemetryAssessmentId] = useState<string | null>(null);
 
   const fetchEngagement = async () => {
     setIsLoading(true);
@@ -157,8 +165,16 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           </Link>
 
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => setIsLauncherOpen(true)}
+              className="gap-1.5 btn-glossy-gold text-[#111318] text-xs font-bold shadow-xs border-none"
+            >
+              <Terminal className="h-3.5 w-3.5" />
+              <span>Launch Scan</span>
+            </Button>
             <Link href={`/engagements/${engagement.id}/edit`}>
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                 <Edit2 className="h-3.5 w-3.5" />
                 <span>Edit Engagement</span>
               </Button>
@@ -297,7 +313,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
                 <Layers className="h-4 w-4 text-[#F5C518]" />
                 Associated Security Operations
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Link
                   href={`/assets?clientId=${engagement.client_id}`}
                   className="p-3.5 rounded-lg border border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-[#161920] transition-colors group block"
@@ -336,6 +352,20 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
                     Generated compliance, summary, and technical reports.
                   </p>
                 </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setIsLauncherOpen(true)}
+                  className="p-3.5 rounded-lg border border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50 hover:bg-zinc-50 dark:hover:bg-[#161920] transition-colors group block text-left w-full cursor-pointer"
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] mb-1">
+                    <span>Autonomous Scans</span>
+                    <Terminal className="h-3 w-3 text-zinc-400 group-hover:text-[#F5C518]" />
+                  </div>
+                  <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
+                    Launch Shannon AI pentest or blackbox vulnerability scan.
+                  </p>
+                </button>
               </div>
             </div>
           </div>
@@ -397,6 +427,29 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           </div>
         </div>
       </div>
+
+      <ScanLauncherModal
+        isOpen={isLauncherOpen}
+        onClose={() => setIsLauncherOpen(false)}
+        defaultEngagementId={engagement.id}
+        onScanLaunched={(assessment) => {
+          setTelemetryAssessmentId(assessment.id);
+          setIsTelemetryOpen(true);
+        }}
+      />
+
+      <ScanTelemetryModal
+        isOpen={isTelemetryOpen}
+        onClose={() => {
+          setIsTelemetryOpen(false);
+          fetchEngagement();
+        }}
+        assessmentId={telemetryAssessmentId}
+        onViewFindings={(id) => {
+          setIsTelemetryOpen(false);
+          router.push(`/findings?engagementId=${engagement.id}`);
+        }}
+      />
 
       <ConfirmDialog
         isOpen={isCancelConfirmOpen}

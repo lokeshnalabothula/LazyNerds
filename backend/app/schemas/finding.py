@@ -176,3 +176,13 @@ class ScanImportRequest(BaseModel):
     target_asset_id: Optional[str] = None
     scan_data: Any = Field(..., description="Raw output text or parsed JSON structure from scan tool")
     auto_create_findings: bool = True
+
+
+# 5. Live Scan Launcher Schema
+class ScanLaunchRequest(BaseModel):
+    engagement_id: str = Field(..., min_length=36, max_length=36)
+    target_asset_id: str = Field(..., min_length=36, max_length=36)
+    scan_mode: Literal["source_assisted", "blackbox"] = "source_assisted"
+    source_repo: Optional[str] = Field(None, max_length=1000)
+    is_mock_run: bool = False
+

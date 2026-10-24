@@ -16,10 +16,11 @@ from app.schemas.finding import (
     VerificationCreate,
     VerificationOut,
     ScanImportRequest,
+    ScanLaunchRequest,
     AssessmentOut,
     AssessmentListResponse,
 )
-from app.services import finding_service, scan_adapters
+from app.services import finding_service, scan_adapters, scanner_service
 
 router = APIRouter()
 
@@ -152,6 +153,42 @@ def import_scan(
             scan_data=req.scan_data,
             target_asset_id=req.target_asset_id,
             auto_create_findings=req.auto_create_findings,
+            current_user_email=current_user.email,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/launch-scan", response_model=AssessmentOut, status_code=status.HTTP_201_CREATED)
+def launch_scan(
+    req: ScanLaunchRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_employee_or_founder),
+):
+    try:
+        return scanner_service.launch_scan(
+            db=db,
+            engagement_id=req.engagement_id,
+            target_asset_id=req.target_asset_id,
+            scan_mode=req.scan_mode,
+            source_repo=req.source_repo,
+            current_user=current_user,
+            is_mock_run=req.is_mock_run,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/assessments/{assessment_id}/cancel", response_model=AssessmentOut)
+def cancel_scan(
+    assessment_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_employee_or_founder),
+):
+    try:
+        return scanner_service.cancel_scan(
+            db=db,
+            assessment_id=assessment_id,
             current_user_email=current_user.email,
         )
     except ValueError as e:

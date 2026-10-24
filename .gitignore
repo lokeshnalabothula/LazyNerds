@@ -29,6 +29,8 @@ wheels/
 .coverage
 htmlcov/
 *.db
+*.db-journal
+*.db-wal
 *.sqlite
 *.sqlite3
 
@@ -73,4 +75,10 @@ Icon
 *.local.txt
 .credentials*
 frontend/title.PNG
+
+# External Integration Repositories & Scans
+integrations/
+scans/
+lab/
+
 

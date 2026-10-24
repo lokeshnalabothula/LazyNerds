@@ -126,3 +126,12 @@ export interface ScanImportInput {
   scan_data: any;
   auto_create_findings?: boolean;
 }
+
+export interface ScanLaunchInput {
+  engagement_id: string;
+  target_asset_id: string;
+  scan_mode: "source_assisted" | "blackbox";
+  source_repo?: string;
+  is_mock_run?: boolean;
+}
+

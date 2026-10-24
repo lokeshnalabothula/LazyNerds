@@ -27,7 +27,10 @@ def normalize_severity(raw_severity: str) -> str:
 
 
 def parse_nuclei_records(scan_data: Any) -> List[Dict[str, Any]]:
-    """Parses Nuclei JSON array or newline-delimited JSON output."""
+    """
+    Parses Nuclei JSON array or newline-delimited JSON output.
+    Performs deduplication based on (title, matched_at, cve_id/cwe_id) to eliminate duplicate matches.
+    """
     items = []
     if isinstance(scan_data, str):
         lines = [line.strip() for line in scan_data.strip().splitlines() if line.strip()]
@@ -44,6 +47,8 @@ def parse_nuclei_records(scan_data: Any) -> List[Dict[str, Any]]:
         items = [scan_data]
 
     findings = []
+    seen_dedup_keys = set()
+
     for item in items:
         info = item.get("info", {})
         title = info.get("name") or item.get("template-id") or "Unclassified Vulnerability"
@@ -51,10 +56,17 @@ def parse_nuclei_records(scan_data: Any) -> List[Dict[str, Any]]:
         
         classification = info.get("classification", {})
         cve_id = None
+        cwe_id = None
         if isinstance(classification, dict):
             cve_id = classification.get("cve-id")
             if isinstance(cve_id, list) and cve_id:
                 cve_id = cve_id[0]
+            
+            cwe_id = classification.get("cwe-id")
+            if isinstance(cwe_id, list) and cwe_id:
+                cwe_id = cwe_id[0]
+
+        ref_id = cve_id or cwe_id
 
         cvss_score = None
         if isinstance(classification, dict) and "cvss-score" in classification:
@@ -63,7 +75,7 @@ def parse_nuclei_records(scan_data: Any) -> List[Dict[str, Any]]:
             except (ValueError, TypeError):
                 pass
 
-        matched_at = item.get("matched-at") or item.get("host")
+        matched_at = item.get("matched-at") or item.get("host") or ""
         curl_cmd = item.get("curl-command")
         evidence = f"Matched Target: {matched_at}"
         if curl_cmd:
@@ -76,18 +88,240 @@ def parse_nuclei_records(scan_data: Any) -> List[Dict[str, Any]]:
         elif isinstance(refs, str):
             ref_url = refs
 
+        # Deduplication key based on title, matched target/URL, and CVE/CWE
+        dedup_key = (str(title).strip().lower(), str(matched_at).strip().lower(), str(ref_id or "").strip().lower())
+        if dedup_key in seen_dedup_keys:
+            continue
+        seen_dedup_keys.add(dedup_key)
+
         findings.append({
             "title": str(title)[:255],
             "severity": severity,
             "cvss_score": cvss_score,
-            "cve_id": str(cve_id)[:100] if cve_id else None,
+            "cve_id": str(ref_id)[:100] if ref_id else None,
             "description": info.get("description"),
             "impact": f"Allows attackers to exploit {title} against {matched_at or 'target'}",
             "remediation_guidance": info.get("remediation"),
             "evidence": evidence,
             "references_url": ref_url,
+            "remediation_notes": "[Source: Nuclei Black-Box Scanner]",
         })
     return findings
+
+
+def parse_shannon_sarif(scan_data: Any) -> List[Dict[str, Any]]:
+    """
+    Parses Shannon SARIF 2.1.0 output into FixOps findings.
+    Extracts proof-of-concept evidence, impacted code locations, CWE/OWASP taxonomy,
+    and remediation instructions.
+    """
+    if isinstance(scan_data, str):
+        try:
+            scan_data = json.loads(scan_data)
+        except Exception:
+            return []
+
+    if not isinstance(scan_data, dict):
+        return []
+
+    runs = scan_data.get("runs", [])
+    if not runs or not isinstance(runs, list):
+        return []
+
+    run = runs[0]
+    rules_map = {}
+    driver = run.get("tool", {}).get("driver", {})
+    for rule in driver.get("rules", []):
+        r_id = rule.get("id")
+        if r_id:
+            rules_map[r_id] = rule
+
+    findings = []
+    for item in run.get("results", []):
+        rule_id = item.get("ruleId", "shannon/vulnerability")
+        rule_info = rules_map.get(rule_id, {})
+        props = item.get("properties", {})
+        msg_obj = item.get("message", {})
+        markdown_msg = msg_obj.get("markdown", "")
+        text_msg = msg_obj.get("text", "")
+
+        # Extract title from markdown heading or rule name
+        title = None
+        if markdown_msg and markdown_msg.startswith("**"):
+            end_idx = markdown_msg.find("**", 2)
+            if end_idx != -1:
+                title = markdown_msg[2:end_idx].strip()
+        if not title:
+            title = rule_info.get("name") or props.get("findingId") or f"Shannon finding ({rule_id})"
+
+        # Severity mapping
+        level = item.get("level", "error")
+        rule_lower = rule_id.lower()
+        if level == "error":
+            severity = "critical" if ("injection" in rule_lower or "ssrf" in rule_lower) else "high"
+        elif level == "warning":
+            severity = "medium"
+        else:
+            severity = "low"
+
+        # Extract Impact & Remediation sections from markdown if present
+        impact = None
+        remediation = None
+        if markdown_msg:
+            if "**Impact**" in markdown_msg:
+                parts = markdown_msg.split("**Impact**", 1)
+                after_impact = parts[1]
+                if "**Remediation**" in after_impact:
+                    impact_text, rem_text = after_impact.split("**Remediation**", 1)
+                    impact = impact_text.strip().lstrip("\n")
+                    remediation = rem_text.split("\n\nFull exploitation evidence:")[0].strip().lstrip("\n")
+                else:
+                    impact = after_impact.strip()
+            elif "**Remediation**" in markdown_msg:
+                remediation = markdown_msg.split("**Remediation**", 1)[1].split("\n\nFull exploitation evidence:")[0].strip()
+
+        if not remediation and "help" in rule_info:
+            remediation = rule_info["help"].get("text")
+        if not impact:
+            impact = f"Exploitation of {title} compromises application integrity and confidentiality."
+
+        # Locations and WebRequest evidence
+        evidence_lines = []
+        status = props.get("status")
+        if status:
+            evidence_lines.append(f"Status: {status.upper()}")
+        finding_id = props.get("findingId")
+        if finding_id:
+            evidence_lines.append(f"Finding Identifier: {finding_id}")
+
+        locations = item.get("locations", [])
+        if locations:
+            loc = locations[0].get("physicalLocation", {})
+            uri = loc.get("artifactLocation", {}).get("uri")
+            line = loc.get("region", {}).get("startLine")
+            if uri:
+                loc_str = f"Source Code Location: {uri}"
+                if line:
+                    loc_str += f":{line}"
+                evidence_lines.append(loc_str)
+
+        web_req = item.get("webRequest", {})
+        if web_req:
+            method = web_req.get("method", "GET")
+            target = web_req.get("target", "")
+            evidence_lines.append(f"HTTP Probe: {method} {target}")
+
+        cwe = props.get("sastRuleId")
+        cve_id = cwe if cwe else None
+
+        evidence = "\n".join(evidence_lines)
+        if text_msg and not markdown_msg:
+            description = text_msg
+        else:
+            description = markdown_msg or text_msg
+
+        findings.append({
+            "title": str(title)[:255],
+            "severity": severity,
+            "cvss_score": 9.0 if severity == "critical" else (7.5 if severity == "high" else 5.0),
+            "cve_id": str(cve_id)[:100] if cve_id else None,
+            "description": description[:3000] if description else None,
+            "impact": impact[:2000] if impact else None,
+            "remediation_guidance": remediation[:2000] if remediation else None,
+            "evidence": evidence[:4000] if evidence else None,
+            "references_url": "https://github.com/KeygraphHQ/shannon",
+            "remediation_notes": "[Source: Shannon AI Pentest (source-assisted)]",
+        })
+
+    return findings
+
+
+def parse_shannon_json(scan_data: Any) -> List[Dict[str, Any]]:
+    """
+    Parses Shannon structured Typst report JSON (exploitFindings) into FixOps findings.
+    """
+    if isinstance(scan_data, str):
+        try:
+            scan_data = json.loads(scan_data)
+        except Exception:
+            return []
+
+    if not isinstance(scan_data, dict):
+        return []
+
+    exploit_findings = scan_data.get("exploitFindings", [])
+    if not exploit_findings:
+        exploit_findings = scan_data.get("findings", [])
+
+    findings = []
+    for item in exploit_findings:
+        title = item.get("title") or item.get("id") or "Exploited Vulnerability"
+        raw_sev = (item.get("severity") or "medium").lower()
+        severity = normalize_severity(raw_sev)
+        
+        summary = item.get("summary", {})
+        if isinstance(summary, dict):
+            overview = summary.get("overview", "")
+            impact = summary.get("impact", "")
+            vuln_loc = summary.get("vulnerableLocation", "")
+        else:
+            overview = str(summary)
+            impact = item.get("impact", "")
+            vuln_loc = ""
+
+        remediation = item.get("remediation")
+        steps = item.get("exploitationSteps", [])
+        evidence_lines = []
+        if vuln_loc:
+            evidence_lines.append(f"Vulnerable Location: {vuln_loc}")
+
+        for s in steps:
+            step_no = s.get("number", "")
+            step_title = s.get("title", "")
+            evidence_lines.append(f"Step {step_no}: {step_title}")
+            for itm in s.get("items", []):
+                if itm.get("kind") == "code" and "block" in itm:
+                    blk = itm["block"]
+                    evidence_lines.append(f"```{blk.get('language', '')}\n{blk.get('content', '')}\n```")
+                elif itm.get("kind") == "prose":
+                    evidence_lines.append(itm.get("text", ""))
+
+        cve_id = item.get("owaspCategory")
+
+        findings.append({
+            "title": str(title)[:255],
+            "severity": severity,
+            "cvss_score": 9.5 if severity == "critical" else (8.0 if severity == "high" else 5.5),
+            "cve_id": str(cve_id)[:100] if cve_id else None,
+            "description": overview[:3000] if overview else None,
+            "impact": impact[:2000] if impact else None,
+            "remediation_guidance": remediation[:2000] if remediation else None,
+            "evidence": "\n".join(evidence_lines)[:4000] if evidence_lines else None,
+            "references_url": "https://github.com/KeygraphHQ/shannon",
+            "remediation_notes": "[Source: Shannon AI Pentest (source-assisted)]",
+        })
+
+    return findings
+
+
+def parse_shannon_records(scan_data: Any) -> List[Dict[str, Any]]:
+    """
+    Intelligently routes Shannon output: SARIF 2.1.0 or structured JSON report.
+    """
+    if isinstance(scan_data, str):
+        try:
+            parsed = json.loads(scan_data)
+            scan_data = parsed
+        except Exception:
+            return parse_generic_records(scan_data)
+
+    if isinstance(scan_data, dict):
+        if "runs" in scan_data:
+            return parse_shannon_sarif(scan_data)
+        if "exploitFindings" in scan_data or "findings" in scan_data:
+            return parse_shannon_json(scan_data)
+
+    return parse_generic_records(scan_data)
 
 
 def parse_nmap_records(scan_data: Any) -> List[Dict[str, Any]]:
@@ -185,7 +419,9 @@ def run_or_import_scan(
             )
 
     tool_lower = tool_name.strip().lower()
-    if "nuclei" in tool_lower:
+    if "shannon" in tool_lower:
+        parsed_findings = parse_shannon_records(scan_data)
+    elif "nuclei" in tool_lower:
         parsed_findings = parse_nuclei_records(scan_data)
     elif "nmap" in tool_lower:
         parsed_findings = parse_nmap_records(scan_data)

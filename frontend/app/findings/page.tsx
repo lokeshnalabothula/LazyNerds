@@ -7,6 +7,8 @@ import { api } from "@/lib/api";
 import { Finding } from "@/types/finding";
 import { FindingFormModal } from "@/components/findings/finding-form-modal";
 import { ScanImportModal } from "@/components/findings/scan-import-modal";
+import { ScanLauncherModal } from "@/components/findings/scan-launcher-modal";
+import { ScanTelemetryModal } from "@/components/findings/scan-telemetry-modal";
 import { VerificationModal } from "@/components/findings/verification-modal";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
 import { useViewMode } from "@/lib/use-view-mode";
@@ -35,6 +37,9 @@ export default function FindingsPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isScanOpen, setIsScanOpen] = useState(false);
+  const [isLauncherOpen, setIsLauncherOpen] = useState(false);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
+  const [telemetryAssessmentId, setTelemetryAssessmentId] = useState<string | null>(null);
   const [isVerifyOpen, setIsVerifyOpen] = useState(false);
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
 
@@ -98,6 +103,13 @@ export default function FindingsPage() {
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
+              onClick={() => setIsLauncherOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg btn-glossy-gold text-[#111318] text-xs font-bold transition-all shadow-md min-h-[36px] border-none"
+            >
+              <ShieldAlert className="h-3.5 w-3.5 text-[#111318]" />
+              <span>Launch Security Scan</span>
+            </button>
+            <button
               onClick={() => setIsScanOpen(true)}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] text-xs font-semibold text-zinc-700 dark:text-[#F9FAFB] bg-white dark:bg-[#161920] hover:bg-zinc-100 dark:hover:bg-[#222630] transition-colors min-h-[36px] shadow-xs"
             >
@@ -109,7 +121,7 @@ export default function FindingsPage() {
                 setSelectedFinding(null);
                 setIsFormOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg btn-glossy-gold text-[#111318] text-xs font-bold transition-all shadow-md min-h-[36px] border-none"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] text-xs font-semibold text-zinc-700 dark:text-[#F9FAFB] bg-white dark:bg-[#161920] hover:bg-zinc-100 dark:hover:bg-[#222630] transition-colors min-h-[36px] shadow-xs"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Record Finding</span>
@@ -499,6 +511,28 @@ export default function FindingsPage() {
           isOpen={isScanOpen}
           onClose={() => setIsScanOpen(false)}
           onImported={fetchFindings}
+        />
+
+        <ScanLauncherModal
+          isOpen={isLauncherOpen}
+          onClose={() => setIsLauncherOpen(false)}
+          onScanLaunched={(assessment) => {
+            setTelemetryAssessmentId(assessment.id);
+            setIsTelemetryOpen(true);
+          }}
+        />
+
+        <ScanTelemetryModal
+          isOpen={isTelemetryOpen}
+          onClose={() => {
+            setIsTelemetryOpen(false);
+            fetchFindings();
+          }}
+          assessmentId={telemetryAssessmentId}
+          onViewFindings={(id) => {
+            setIsTelemetryOpen(false);
+            fetchFindings();
+          }}
         />
 
         <VerificationModal

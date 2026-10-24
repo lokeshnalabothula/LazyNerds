@@ -37,6 +37,7 @@ import {
   Assessment,
   AssessmentListResponse,
   ScanImportInput,
+  ScanLaunchInput,
 } from "@/types/finding";
 import {
   AutomationRule,
@@ -463,6 +464,23 @@ export const api = {
       method: "POST",
       body: JSON.stringify(input),
     });
+  },
+
+  async launchScan(input: ScanLaunchInput): Promise<Assessment> {
+    return request<Assessment>("/findings/launch-scan", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async cancelScan(assessmentId: string): Promise<Assessment> {
+    return request<Assessment>(`/findings/assessments/${encodeURIComponent(assessmentId)}/cancel`, {
+      method: "POST",
+    });
+  },
+
+  async getAssessmentById(assessmentId: string): Promise<Assessment> {
+    return request<Assessment>(`/findings/assessments/${encodeURIComponent(assessmentId)}`);
   },
 
   async getAssessments(engagementId?: string): Promise<AssessmentListResponse> {

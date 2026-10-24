@@ -1,8 +1,133 @@
+import ipaddress
+import socket
+from urllib.parse import urlparse
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 import bcrypt
 import jwt
 from app.core.config import settings
+
+# Disallowed IP networks for SSRF prevention
+BLOCKED_IP_NETWORKS = [
+    ipaddress.ip_network("127.0.0.0/8"),      # IPv4 Loopback
+    ipaddress.ip_network("10.0.0.0/8"),       # RFC1918 Private
+    ipaddress.ip_network("172.16.0.0/12"),    # RFC1918 Private
+    ipaddress.ip_network("192.168.0.0/16"),   # RFC1918 Private
+    ipaddress.ip_network("169.254.0.0/16"),   # Link-Local / Cloud Metadata (169.254.169.254)
+    ipaddress.ip_network("0.0.0.0/8"),        # Current network
+    ipaddress.ip_network("224.0.0.0/4"),      # Multicast
+    ipaddress.ip_network("240.0.0.0/4"),      # Reserved
+    ipaddress.ip_network("::1/128"),          # IPv6 Loopback
+    ipaddress.ip_network("fc00::/7"),         # IPv6 Unique Local
+    ipaddress.ip_network("fe80::/10"),        # IPv6 Link-Local
+]
+
+CLOUD_METADATA_IPS = {
+    ipaddress.ip_address("169.254.169.254"),
+    ipaddress.ip_address("169.254.170.2"),
+    ipaddress.ip_address("100.100.100.200"),       # Alibaba Cloud metadata
+    ipaddress.ip_address("fd00:ec2::254"),         # AWS IPv6 metadata
+}
+
+BLOCKED_METADATA_HOSTNAMES = {
+    "metadata.google.internal",
+    "metadata",
+    "instance-data",
+    "metadata.internal",
+}
+
+BLOCKED_INFRASTRUCTURE_PORTS = {
+    22,    # SSH
+    25,    # SMTP
+    53,    # DNS
+    111,   # RPCbind
+    2049,  # NFS
+    2375,  # Docker unencrypted
+    2376,  # Docker TLS
+    3306,  # MySQL
+    5432,  # PostgreSQL
+    6379,  # Redis
+    7233,  # Temporal gRPC
+    8233,  # Temporal Web
+    11211, # Memcached
+    27017, # MongoDB
+}
+
+
+def validate_target_url_ssrf(url: str, allow_lab_testing: bool = False) -> tuple[bool, str]:
+    """
+    Strict SSRF and destination validation for automated scanner targets.
+    Ensures targets use http/https, valid web ports, cannot reach internal infrastructure,
+    and unconditionally blocks cloud metadata services.
+    """
+    if not url or not isinstance(url, str):
+        return False, "Target URL must be a non-empty string."
+
+    parsed = urlparse(url.strip())
+    if parsed.scheme not in ("http", "https"):
+        return False, f"Invalid scheme '{parsed.scheme}'. Only http and https URLs are authorized."
+
+    hostname = parsed.hostname
+    if not hostname:
+        return False, "Target URL lacks a valid hostname."
+
+    clean_hostname = hostname.lower().strip(".")
+    if clean_hostname in BLOCKED_METADATA_HOSTNAMES:
+        return False, f"SSRF violation: Access to metadata service hostname '{hostname}' is blocked."
+
+    # Validate destination port: block internal infrastructure/database ports
+    if parsed.port:
+        if parsed.port in BLOCKED_INFRASTRUCTURE_PORTS:
+            return False, f"SSRF violation: Target specifies sensitive infrastructure port {parsed.port}. Only standard web services are permitted."
+        if parsed.port < 1 or parsed.port > 65535:
+            return False, f"Invalid target port {parsed.port}."
+
+    # Check for direct numeric IP representations or hex/octal bypass attempts
+    try:
+        resolved_ips = []
+        try:
+            # Check if hostname itself is directly an IP
+            ip_obj = ipaddress.ip_address(hostname)
+            resolved_ips.append(ip_obj)
+        except ValueError:
+            # Resolves DNS hostname to IPs
+            addr_info = socket.getaddrinfo(hostname, None)
+            for item in addr_info:
+                sockaddr = item[4]
+                ip_str = sockaddr[0]
+                try:
+                    resolved_ips.append(ipaddress.ip_address(ip_str))
+                except ValueError:
+                    pass
+    except socket.gaierror:
+        # If hostname cannot be resolved in production, reject
+        if not allow_lab_testing:
+            return False, f"Target hostname '{hostname}' could not be resolved."
+        # In lab testing, might be mock or container hostname
+        return True, ""
+
+    if not resolved_ips:
+        return False, f"Unable to resolve IP address for target '{hostname}'."
+
+    for ip in resolved_ips:
+        # Normalize IPv4-mapped IPv6 addresses (e.g. ::ffff:169.254.169.254 -> 169.254.169.254)
+        if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
+            ip = ip.ipv4_mapped
+
+        # Cloud metadata is strictly forbidden unconditionally (even in lab mode)
+        if ip in CLOUD_METADATA_IPS:
+            return False, f"SSRF violation: Target resolves to cloud metadata endpoint ({ip})."
+
+        # Check blocked networks
+        for net in BLOCKED_IP_NETWORKS:
+            if ip in net:
+                if allow_lab_testing and (ip.is_loopback or hostname.lower() in ("localhost", "127.0.0.1", "host.docker.internal") or hostname.lower().endswith(".internal") or hostname.lower().endswith(".local")):
+                    # Permitted in explicit lab environment
+                    continue
+                return False, f"SSRF violation: Target resolves to disallowed internal/private IP ({ip})."
+
+    return True, ""
+
 
 
 def hash_password(password: str) -> str:

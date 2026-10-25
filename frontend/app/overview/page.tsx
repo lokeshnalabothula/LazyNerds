@@ -69,7 +69,7 @@ export default function OverviewPage() {
 
   return (
     <AppShell title="Dashboard">
-      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      <div className="space-y-6 max-w-7xl mx-auto pb-16" data-loading-state={loading && !metrics ? "loading" : "complete"}>
         {/* Top Operations Header with Operational Telemetry Badge */}
         <div className="cockpit-card specular-top border-[#F5C518]/30 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all">
           <div className="flex items-center gap-4 min-w-0">
@@ -82,10 +82,10 @@ export default function OverviewPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFD84D] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F5C518]"></span>
                 </span>
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
                   {isClient
-                    ? "ORGANIZATION SECURITY POSTURE"
-                    : "CYBERSECURITY OPERATIONS DASHBOARD"}
+                    ? "Organization Security Posture"
+                    : "Cybersecurity Operations Dashboard"}
                 </h1>
                 <span className="badge-cyber bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border-[#F5C518]/35 shrink-0">
                   {user?.role || "Active"} Mode
@@ -255,15 +255,15 @@ export default function OverviewPage() {
                   className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Clients</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Clients</span>
                       <Users className="h-4 w-4 text-[#F5C518]" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
+                    <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
                       {metrics.clients_total}
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                  <div className="text-[10px] text-zinc-400 dark:text-[#94A3B8] mt-2.5 truncate font-sans flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                     <span>{metrics.clients_active} active</span>
                   </div>
@@ -271,15 +271,15 @@ export default function OverviewPage() {
               ) : (
                 <div className="telemetry-card specular-top p-4 flex flex-col justify-between shadow-md">
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Security State</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Security State</span>
                       <Shield className="h-4 w-4 text-[#34D399]" />
                     </div>
-                    <div className="text-xl font-bold font-mono text-[#34D399] tracking-tight">
+                    <div className="text-xl font-bold font-sans text-[#34D399] tracking-tight">
                       PROTECTED
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono">
+                  <div className="text-[10px] text-zinc-400 dark:text-[#94A3B8] mt-2.5 truncate font-sans">
                     FixOps Agent Active
                   </div>
                 </div>
@@ -291,15 +291,15 @@ export default function OverviewPage() {
                 className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Engagements</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Engagements</span>
                     <Layers className="h-4 w-4 text-indigo-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
+                  <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
                     {metrics.engagements_total}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                <div className="text-[10px] text-zinc-400 dark:text-[#94A3B8] mt-2.5 truncate font-sans flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
                   <span>{metrics.engagements_active} ongoing</span>
                 </div>
@@ -311,15 +311,15 @@ export default function OverviewPage() {
                 className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">In-Scope</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">In-Scope</span>
                     <Shield className="h-4 w-4 text-emerald-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
+                  <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
                     {metrics.assets_in_scope}
                   </div>
                 </div>
-                <div className="text-[10px] text-emerald-600 dark:text-[#34D399] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                <div className="text-[10px] text-emerald-600 dark:text-[#34D399] mt-2.5 truncate font-sans flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   <span>{metrics.assets_total} total</span>
                 </div>
@@ -331,15 +331,15 @@ export default function OverviewPage() {
                 className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Open Findings</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Open Findings</span>
                     <FileCheck2 className="h-4 w-4 text-amber-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
+                  <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
                     {metrics.findings_open}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                <div className="text-[10px] text-zinc-400 dark:text-[#94A3B8] mt-2.5 truncate font-sans flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
                   <span>{metrics.findings_total} identified</span>
                 </div>
@@ -351,15 +351,15 @@ export default function OverviewPage() {
                 className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Remediated</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Remediated</span>
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-[#34D399] tracking-tight">
+                  <div className="text-2xl font-bold font-sans text-emerald-600 dark:text-[#34D399] tracking-tight tabular-nums">
                     {metrics.findings_verified_fixed}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                <div className="text-[10px] text-zinc-400 dark:text-[#94A3B8] mt-2.5 truncate font-sans flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   <span>{metrics.findings_in_remediation} in progress</span>
                 </div>
@@ -372,15 +372,15 @@ export default function OverviewPage() {
                   className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Automations</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Automations</span>
                       <Zap className="h-4 w-4 text-amber-400" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
+                    <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
                       {metrics.automation_executions_total}
                     </div>
                   </div>
-                  <div className="text-[10px] text-amber-600 dark:text-[#FFD84D] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                  <div className="text-[10px] text-amber-600 dark:text-[#FFD84D] mt-2.5 truncate font-sans flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#F5C518]" />
                     <span>{metrics.automation_rules_active} rules active</span>
                   </div>
@@ -391,16 +391,16 @@ export default function OverviewPage() {
                   className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
-                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Reports</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
+                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Reports</span>
                       <FileText className="h-4 w-4 text-blue-400" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
+                    <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                       Available
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono">
-                    Verified Deliverables
+                  <div className="text-[10px] text-zinc-400 dark:text-[#94A3B8] mt-2.5 truncate font-sans">
+                    FixOps Deliverables
                   </div>
                 </Link>
               )}

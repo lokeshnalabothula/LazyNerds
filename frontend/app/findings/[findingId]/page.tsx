@@ -75,7 +75,7 @@ export default function FindingDetailPage() {
             {error || "Finding not found."}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div data-loading-state="complete" className="space-y-6">
             {/* Header Card */}
             <div className="cockpit-card specular-top p-6 shadow-md space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

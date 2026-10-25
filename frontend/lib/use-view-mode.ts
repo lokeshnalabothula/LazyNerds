@@ -36,6 +36,19 @@ export function useViewMode(storageKey: string, desktopBreakpoint: number = 1024
     } finally {
       setIsLoaded(true);
     }
+
+    const handleResize = () => {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) {
+          const isDesktop = window.innerWidth >= desktopBreakpoint;
+          setViewModeState(isDesktop ? "table" : "cards");
+        }
+      } catch (_) {}
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [storageKey, desktopBreakpoint]);
 
   const setViewMode = useCallback((mode: ViewMode) => {

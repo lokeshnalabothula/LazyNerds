@@ -160,7 +160,7 @@ export default function AutomationPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
               Cybersecurity Workflow Automation
             </h1>
             <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1">
@@ -192,7 +192,7 @@ export default function AutomationPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-bold text-zinc-900 dark:text-[#F9FAFB] font-mono">
+                  <h2 className="text-sm font-bold text-zinc-900 dark:text-[#F9FAFB] font-sans">
                     Flagship Automation: Remediation Follow-up Reminder
                   </h2>
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase">
@@ -306,7 +306,7 @@ export default function AutomationPage() {
         )}
 
         {/* Workflow Rules List */}
-        <div className="space-y-3">
+        <div data-loading-state={loading && rules.length === 0 ? "loading" : "complete"} className="space-y-3">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF]">
             Active Automation Rules ({rules.length})
           </h2>
@@ -314,10 +314,10 @@ export default function AutomationPage() {
           {loading && rules.length === 0 ? (
             <div className="h-32 flex flex-col items-center justify-center gap-2 text-zinc-400">
               <Loader2 className="h-5 w-5 animate-spin text-[#F5C518]" />
-              <span className="text-xs font-mono">Loading automation policies…</span>
+              <span className="text-xs font-sans">Loading automation policies…</span>
             </div>
           ) : rules.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-zinc-300 dark:border-[#222630] rounded-xl bg-zinc-50/50 dark:bg-[#111318]">
+            <div data-empty="true" className="p-8 text-center border border-dashed border-zinc-300 dark:border-[#222630] rounded-xl bg-zinc-50/50 dark:bg-[#111318]">
               <Zap className="h-6 w-6 text-zinc-400 mx-auto mb-2 opacity-60" />
               <p className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB]">No automation rules configured</p>
               <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] mt-1 max-w-sm mx-auto leading-relaxed">
@@ -338,7 +338,7 @@ export default function AutomationPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs text-zinc-900 dark:text-[#F9FAFB] font-mono">
+                        <span className="font-semibold text-xs text-zinc-900 dark:text-[#F9FAFB] font-sans">
                           {rule.name}
                         </span>
                         {rule.requires_approval && (
@@ -425,14 +425,14 @@ export default function AutomationPage() {
 
           <div className="cockpit-card specular-top overflow-hidden shadow-md">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full min-w-[760px] text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920] text-zinc-500 dark:text-[#9CA3AF]">
-                    <th className="py-2.5 px-3 font-semibold">Status</th>
-                    <th className="py-2.5 px-3 font-semibold">Rule Name</th>
-                    <th className="py-2.5 px-3 font-semibold">Trigger Source</th>
-                    <th className="py-2.5 px-3 font-semibold">Result / Notes</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Timestamp</th>
+                  <tr className="border-b border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-white/[0.04] backdrop-blur-md text-zinc-500 dark:text-slate-300 font-sans text-[11px] font-semibold uppercase tracking-wider">
+                    <th className="py-2.5 px-3 min-w-[130px]">Status</th>
+                    <th className="py-2.5 px-3 min-w-[180px]">Rule Name</th>
+                    <th className="py-2.5 px-3 min-w-[140px]">Trigger Source</th>
+                    <th className="py-2.5 px-3 min-w-[160px]">Result / Notes</th>
+                    <th className="py-2.5 pl-3 pr-6 text-right min-w-[140px] whitespace-nowrap">Timestamp</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
@@ -469,7 +469,7 @@ export default function AutomationPage() {
                         <td className="py-2.5 px-3 text-zinc-600 dark:text-zinc-300 font-mono text-[10px] truncate max-w-xs">
                           {exec.output_result || exec.error_message || "—"}
                         </td>
-                        <td className="py-2.5 px-3 text-right text-zinc-400 dark:text-[#9CA3AF] font-mono text-[10px] shrink-0" suppressHydrationWarning>
+                        <td className="py-2.5 pl-3 pr-6 text-right text-zinc-400 dark:text-[#9CA3AF] font-mono text-[10px] min-w-[140px] whitespace-nowrap" suppressHydrationWarning>
                           {formatDateTime(exec.executed_at)}
                         </td>
                       </tr>

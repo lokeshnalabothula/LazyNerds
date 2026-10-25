@@ -27,25 +27,25 @@
   }
 
   .dark {
-    /* Obsidian Cyber Precision exact tokens */
-    --background: 225 26% 4%;        /* #090A0D deep technical canvas */
+    /* Liquid Glass Obsidian Precision tokens */
+    --background: 222 30% 5%;        /* #080A0F deep obsidian bedrock */
     --foreground: 210 20% 98%;        /* #F9FAFB pure readable text */
-    --card: 223 17% 8%;               /* #111318 dark charcoal surface */
+    --card: 222 25% 10%;              /* #101622 liquid glass panel base */
     --card-foreground: 210 20% 98%;   /* #F9FAFB */
-    --popover: 223 18% 10%;           /* #161920 elevated popover */
+    --popover: 222 26% 12%;           /* #141B2A elevated popover */
     --popover-foreground: 210 20% 98%;/* #F9FAFB */
-    --primary: 47 92% 53%;            /* #F5C518 glossy yellow accent */
-    --primary-foreground: 225 26% 4%; /* #090A0D */
-    --secondary: 223 18% 10%;         /* #161920 raised surface */
+    --primary: 47 92% 53%;            /* #F5C518 tactile yellow gold */
+    --primary-foreground: 222 30% 5%; /* #080A0F */
+    --secondary: 222 22% 14%;         /* #182030 raised secondary */
     --secondary-foreground: 210 20% 98%;
-    --muted: 222 17% 12%;             /* #14161E */
-    --muted-foreground: 217 10% 65%;  /* #9CA3AF secondary text */
+    --muted: 222 20% 15%;             /* #161D2B */
+    --muted-foreground: 215 16% 70%;  /* #94A3B8 readable secondary text */
     --accent: 47 92% 53%;             /* #F5C518 */
-    --accent-foreground: 225 26% 4%;
-    --destructive: 350 89% 60%;       /* #F43F5E critical security rose */
+    --accent-foreground: 222 30% 5%;
+    --destructive: 350 89% 60%;       /* #F43F5E critical rose */
     --destructive-foreground: 0 0% 98%;
-    --border: 222 17% 16%;            /* #222630 subtle technical border */
-    --input: 222 17% 16%;             /* #222630 */
+    --border: 222 20% 18%;            /* #202738 subtle glass border */
+    --input: 222 20% 18%;             /* #202738 */
     --ring: 47 92% 53%;               /* #F5C518 */
   }
 
@@ -108,23 +108,48 @@
 
   /* Secondary Glass Button */
   .btn-glass-secondary {
-    background-color: rgba(22, 25, 32, 0.75);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 6px rgba(0, 0, 0, 0.25);
     color: #F9FAFB;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .btn-glass-secondary:hover {
-    background-color: rgba(30, 35, 46, 0.9);
-    border-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.35);
   }
 
-  /* Glass Panels with Specular Top Highlights (Obsidian Precision) */
+  /* Liquid Glass Panels with Specular Highlights & Restrained Gloss */
   .gloss-card,
-  .glass-panel {
-    background-color: #111318;
+  .glass-panel,
+  .liquid-glass,
+  .cockpit-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(16, 22, 34, 0.65);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.875rem;
+    box-shadow:
+      0 16px 36px -4px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  }
+
+  .liquid-glass-elevated {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(22, 30, 48, 0.78);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 0.875rem;
+    box-shadow:
+      0 24px 52px -8px rgba(0, 0, 0, 0.65),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   }
 
   /* Subtle Top Rim Highlight for Cards */
@@ -150,27 +175,29 @@
     box-shadow: 0 0 16px rgba(244, 63, 94, 0.25);
   }
 
-  /* Cockpit Layout & Composition Utilities (Obsidian Precision) */
-  .cyber-grid {
-    background-size: 32px 32px;
+  /* Atmospheric Liquid Glass Depth & Backdrop */
+  .cyber-grid,
+  .liquid-mesh,
+  .glass-canvas {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  }
-
-  .cockpit-card {
-    background-color: #111318;
-    border: 1px solid #222630;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      radial-gradient(1000px 500px at 50% -80px, rgba(245, 197, 24, 0.08) 0%, transparent 70%),
+      radial-gradient(800px 500px at 90% 15%, rgba(56, 189, 248, 0.045) 0%, transparent 60%),
+      radial-gradient(700px 600px at 10% 75%, rgba(99, 102, 241, 0.035) 0%, transparent 60%);
+    background-attachment: fixed;
   }
 
   .cockpit-card-interactive {
-    transition: border-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+    transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
   }
   .cockpit-card-interactive:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%), rgba(26, 36, 56, 0.78);
     border-color: rgba(245, 197, 24, 0.35);
-    box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.6), 0 0 16px -2px rgba(245, 197, 24, 0.08);
+    border-top-color: rgba(245, 197, 24, 0.6);
+    transform: translateY(-2px);
+    box-shadow:
+      0 20px 48px -4px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 20px -2px rgba(245, 197, 24, 0.12);
   }
 
   .specular-top {
@@ -180,31 +207,39 @@
     content: "";
     position: absolute;
     top: 0;
-    left: 8%;
-    right: 8%;
+    left: 5%;
+    right: 5%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(245, 197, 24, 0.5), transparent);
+    background: linear-gradient(90deg, transparent 5%, rgba(255, 255, 255, 0.15) 30%, rgba(245, 197, 24, 0.35) 50%, rgba(255, 255, 255, 0.15) 70%, transparent 95%);
     pointer-events: none;
   }
 
   .telemetry-card {
-    background: linear-gradient(180deg, #141720 0%, #101217 100%);
-    border: 1px solid #222630;
-    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(22, 30, 48, 0.72) 0%, rgba(14, 19, 32, 0.65) 100%);
+    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.875rem;
     position: relative;
     overflow: hidden;
+    box-shadow:
+      0 12px 32px -4px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
 
   .badge-cyber {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 10px;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    padding: 2px 7px;
-    border-radius: 4px;
+    letter-spacing: 0.01em;
+    padding: 2.5px 8.5px;
+    border-radius: 6px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 4.5px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 }
 

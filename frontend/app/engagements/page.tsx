@@ -309,6 +309,7 @@ function EngagementsContent() {
         )}
 
         {/* Content Body */}
+        <div data-loading-state={isLoading ? "loading" : "complete"}>
         {isLoading ? (
           viewMode === "cards" ? (
             <CardGridSkeleton count={6} />
@@ -361,20 +362,20 @@ function EngagementsContent() {
                 >
                   <div className="space-y-3">
                     {/* Top Row: Client & Status Badge */}
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2.5 min-w-0 w-full">
                       <Link
                         href={`/clients/${eng.client_id}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline truncate max-w-[65%]"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B88700] dark:text-[#FFD84D] hover:underline min-w-0 flex-1"
                         title={eng.client_company_name || "Client Profile"}
                       >
-                        <Building2 className="h-3.5 w-3.5 shrink-0" />
+                        <Building2 className="h-3.5 w-3.5 shrink-0 text-[#F5C518]" />
                         <span className="truncate">{eng.client_company_name || "Unknown Client"}</span>
                       </Link>
                       <span
-                        className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${statusCfg.badgeClass}`}
+                        className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-0.5 rounded-full border shrink-0 ${statusCfg.badgeClass}`}
                       >
                         <span className={`h-1.5 w-1.5 rounded-full ${statusCfg.dotClass}`} />
-                        {statusCfg.label}
+                        <span>{statusCfg.label}</span>
                       </span>
                     </div>
 
@@ -448,10 +449,10 @@ function EngagementsContent() {
           <div className="cockpit-card specular-top overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50 dark:bg-[#161920] text-zinc-600 dark:text-[#9CA3AF] border-b border-zinc-200 dark:border-[#222630] font-mono text-[11px] uppercase tracking-wider">
+                <thead className="bg-white/[0.04] backdrop-blur-md border-b border-white/[0.08] font-sans text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
                   <tr>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
+                      className="py-3 px-4 min-w-[160px] cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("name")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -460,7 +461,7 @@ function EngagementsContent() {
                       </div>
                     </th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
+                      className="py-3 px-4 min-w-[140px] cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("client_company_name")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -468,9 +469,9 @@ function EngagementsContent() {
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </th>
-                    <th className="py-3 px-4">Assessment Type</th>
+                    <th className="py-3 px-4 min-w-[120px]">Assessment Type</th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
+                      className="py-3 px-4 min-w-[110px] cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("status")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -478,9 +479,9 @@ function EngagementsContent() {
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </th>
-                    <th className="py-3 px-4">Written Authorization</th>
+                    <th className="py-3 px-4 min-w-[130px]">Written Authorization</th>
                     <th
-                      className="py-3 px-4 cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
+                      className="py-3 px-4 min-w-[140px] cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"
                       onClick={() => handleSortChange("start_date")}
                     >
                       <div className="flex items-center gap-1.5">
@@ -488,10 +489,10 @@ function EngagementsContent() {
                         <ArrowUpDown className="h-3 w-3" />
                       </div>
                     </th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 pl-4 pr-6 text-right min-w-[120px] whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
+                <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]/60">
                   {engagements.map((eng) => {
                     const statusCfg =
                       ENGAGEMENT_STATUS_CONFIG[eng.status as EngagementStatus] ||
@@ -503,7 +504,7 @@ function EngagementsContent() {
                     return (
                       <tr
                         key={eng.id}
-                        className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition-colors"
+                        className="hover:bg-zinc-50/60 dark:hover:bg-white/[0.04] transition-colors"
                       >
                         <td className="py-3 px-4 font-semibold text-zinc-900 dark:text-zinc-100">
                           <Link
@@ -517,9 +518,9 @@ function EngagementsContent() {
                         <td className="py-3 px-4">
                           <Link
                             href={`/clients/${eng.client_id}`}
-                            className="text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 max-w-[180px] truncate"
+                            className="text-[#B88700] dark:text-[#FFD84D] hover:underline flex items-center gap-1 max-w-[180px] truncate"
                           >
-                            <Building2 className="h-3 w-3 shrink-0" />
+                            <Building2 className="h-3 w-3 shrink-0 text-[#F5C518]" />
                             <span className="truncate">{eng.client_company_name || "Unknown"}</span>
                           </Link>
                         </td>
@@ -546,16 +547,16 @@ function EngagementsContent() {
                           {eng.start_date ? formatDate(eng.start_date) : "—"} →{" "}
                           {eng.due_date ? formatDate(eng.due_date) : "—"}
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="py-3 pl-4 pr-6 text-right min-w-[120px] whitespace-nowrap">
+                          <div className="inline-flex items-center justify-end gap-2 pr-1">
                             <Link href={`/engagements/${eng.id}`}>
-                              <Button variant="ghost" size="sm" className="h-7 px-2">
+                              <Button variant="ghost" size="sm" className="h-7 px-2.5 text-xs">
                                 Details
                               </Button>
                             </Link>
                             <Link href={`/engagements/${eng.id}/edit`}>
-                              <Button variant="ghost" size="sm" className="h-7 px-2">
-                                <Edit2 className="h-3 w-3" />
+                              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                                <Edit2 className="h-3.5 w-3.5" />
                               </Button>
                             </Link>
                           </div>
@@ -568,6 +569,7 @@ function EngagementsContent() {
             </div>
           </div>
         )}
+        </div>
 
         {/* Pagination Bar */}
         {!isLoading && totalPages > 1 && (

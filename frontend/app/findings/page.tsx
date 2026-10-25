@@ -139,32 +139,32 @@ export default function FindingsPage() {
         {/* 5 Severity KPI Stat Chips (Obsidian Precision) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-semibold">Total Pipeline</span>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-mono tracking-tight">
+            <span className="text-[10px] font-sans uppercase text-zinc-500 dark:text-[#94A3B8] block font-semibold">Total Pipeline</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-sans tracking-tight tabular-nums">
               {total}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#F43F5E]">
-            <span className="text-[10px] font-mono uppercase text-[#F43F5E] block font-semibold">Critical</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#F43F5E] mt-1 font-mono tracking-tight">
+            <span className="text-[10px] font-sans uppercase text-[#F43F5E] block font-semibold">Critical</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#F43F5E] mt-1 font-sans tracking-tight tabular-nums">
               {criticalCount}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#FB923C]">
-            <span className="text-[10px] font-mono uppercase text-[#FB923C] block font-semibold">High</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#FB923C] mt-1 font-mono tracking-tight">
+            <span className="text-[10px] font-sans uppercase text-[#FB923C] block font-semibold">High</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#FB923C] mt-1 font-sans tracking-tight tabular-nums">
               {highCount}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#FBBF24]">
-            <span className="text-[10px] font-mono uppercase text-[#FBBF24] block font-semibold">In Remediation</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#FBBF24] mt-1 font-mono tracking-tight">
+            <span className="text-[10px] font-sans uppercase text-[#FBBF24] block font-semibold">In Remediation</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#FBBF24] mt-1 font-sans tracking-tight tabular-nums">
               {inRemediationCount}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#34D399]">
-            <span className="text-[10px] font-mono uppercase text-[#34D399] block font-semibold">Verified Fixed</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#34D399] mt-1 font-mono tracking-tight">
+            <span className="text-[10px] font-sans uppercase text-[#34D399] block font-semibold">Verified Fixed</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#34D399] mt-1 font-sans tracking-tight tabular-nums">
               {fixedCount}
             </div>
           </div>
@@ -251,6 +251,7 @@ export default function FindingsPage() {
         </div>
 
         {/* Findings Content */}
+        <div data-loading-state={loading && findings.length === 0 ? "loading" : "complete"}>
         {loading && findings.length === 0 ? (
           viewMode === "cards" ? (
             <CardGridSkeleton count={6} />
@@ -260,7 +261,7 @@ export default function FindingsPage() {
             </div>
           )
         ) : findings.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
+          <div data-empty="true" className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
             <FileCheck2 className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No security findings recorded</p>
             <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
@@ -399,20 +400,20 @@ export default function FindingsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920] text-zinc-600 dark:text-[#9CA3AF] font-mono text-[11px] uppercase tracking-wider">
-                    <th className="py-3 px-4 font-semibold">Severity</th>
-                    <th className="py-3 px-4 font-semibold">Vulnerability Title</th>
-                    <th className="py-3 px-4 font-semibold">Target Asset</th>
-                    <th className="py-3 px-4 font-semibold">CVE / CVSS</th>
-                    <th className="py-3 px-4 font-semibold">Remediation Status</th>
-                    <th className="py-3 px-4 font-semibold text-right">Actions</th>
+                  <tr className="border-b border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-white/[0.04] backdrop-blur-md text-zinc-600 dark:text-slate-300 font-sans text-[11px] font-semibold uppercase tracking-wider">
+                    <th className="py-3 px-4 min-w-[100px]">Severity</th>
+                    <th className="py-3 px-4 min-w-[240px]">Vulnerability Title</th>
+                    <th className="py-3 px-4 min-w-[140px]">Target Asset</th>
+                    <th className="py-3 px-4 min-w-[120px]">CVE / CVSS</th>
+                    <th className="py-3 px-4 min-w-[140px]">Remediation Status</th>
+                    <th className="py-3 px-4 text-right min-w-[120px] whitespace-nowrap sticky right-0 bg-white dark:bg-[#0F1420]/95 backdrop-blur-md">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
+                <tbody className="divide-y divide-zinc-200 dark:divide-white/[0.06]">
                   {findings.map((finding) => (
                     <tr
                       key={finding.id}
-                      className={`hover:bg-zinc-50 dark:hover:bg-[#161920]/80 transition-colors border-l-4 ${
+                      className={`hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors border-l-4 ${
                         finding.severity === "critical"
                           ? "border-l-[#F43F5E]"
                           : finding.severity === "high"
@@ -473,8 +474,8 @@ export default function FindingsPage() {
                           <span className="capitalize">{finding.status.replace("_", " ")}</span>
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="py-3 px-4 text-right min-w-[120px] whitespace-nowrap sticky right-0 bg-white dark:bg-[#0F1420]/95 backdrop-blur-md">
+                        <div className="inline-flex items-center justify-end gap-2 pr-1">
                           <button
                             onClick={() => {
                               setSelectedFinding(finding);
@@ -506,6 +507,7 @@ export default function FindingsPage() {
             </div>
           </div>
         )}
+        </div>
 
         <FindingFormModal
           isOpen={isFormOpen}

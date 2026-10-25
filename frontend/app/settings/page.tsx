@@ -134,10 +134,10 @@ export default function SettingsPage() {
 
   return (
     <AppShell title="Settings & Administration">
-      <div className="max-w-4xl space-y-6 mx-auto">
+      <div data-loading-state="complete" className="max-w-4xl space-y-6 mx-auto">
         {/* Header */}
         <div className="border-b border-zinc-200 dark:border-[#222630] pb-4">
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
             Platform Settings & Administration
           </h1>
           <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 leading-relaxed">
@@ -146,14 +146,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Brand & Platform Identity Card */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="cockpit-card specular-top p-4 sm:p-5 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="h-10 w-10 rounded-xl border border-[#F5C518]/30 bg-[#161920] flex items-center justify-center shrink-0 shadow-xs font-mono font-bold text-sm text-[#FFD84D]">
               LN
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
+                <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
                   LAZY NERDS FIXOPS
                 </span>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
@@ -173,7 +173,7 @@ export default function SettingsPage() {
         </div>
 
         {/* User Account Card */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="cockpit-card specular-top p-5 sm:p-6 shadow-md space-y-4">
           <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
             <User className="h-4 w-4 text-[#F5C518]" />
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
@@ -253,7 +253,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Localization & Time Zone Preferences Card */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="cockpit-card specular-top p-5 sm:p-6 shadow-md space-y-4">
           <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
             <Globe className="h-4 w-4 text-[#F5C518]" />
             <div>
@@ -310,7 +310,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Password Management Card */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="cockpit-card specular-top p-5 sm:p-6 shadow-md space-y-4">
           <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
             <Lock className="h-4 w-4 text-[#F5C518]" />
             <div>
@@ -396,7 +396,7 @@ export default function SettingsPage() {
         </div>
 
         {/* System & Database Diagnostics */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="cockpit-card specular-top p-5 sm:p-6 shadow-md space-y-4">
           <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-[#222630] pb-3">
             <Database className="h-4 w-4 text-[#F5C518]" />
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">
@@ -437,7 +437,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Audit Log Trail */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="cockpit-card specular-top p-5 sm:p-6 shadow-md space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-200 dark:border-[#222630] pb-3">
             <div className="flex items-center gap-2">
               <History className="h-4 w-4 text-[#F5C518]" />

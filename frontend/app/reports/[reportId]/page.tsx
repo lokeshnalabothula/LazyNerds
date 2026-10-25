@@ -124,7 +124,7 @@ export default function ReportDetailPage() {
             {error || "Report deliverable not found."}
           </div>
         ) : (
-          <article className="cockpit-card specular-top p-8 space-y-6 shadow-md">
+          <article data-loading-state="complete" className="cockpit-card specular-top p-8 space-y-6 shadow-md">
             {/* Header Metadata */}
             <div className="border-b border-zinc-200 dark:border-[#222630] pb-6 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -136,7 +136,7 @@ export default function ReportDetailPage() {
                 </span>
               </div>
 
-              <h1 className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
+              <h1 className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                 {report.title}
               </h1>
 

@@ -1,14 +1,87 @@
 [
   {
+    "route": "/login",
+    "title": "Sign In & Authentication",
+    "totalButtons": 1,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Sign In to Workspace"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/register",
+    "title": "Client Registration Portal",
+    "totalButtons": 1,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Submit Client Application"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/register/status",
+    "title": "Registration Status Tracker",
+    "totalButtons": 1,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Search"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/forgot-password",
+    "title": "Account Recovery Dispatch",
+    "totalButtons": 1,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Send Recovery Instructions"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/reset-password",
+    "title": "Security Password Reset",
+    "totalButtons": 1,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Request New Reset Link"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
     "route": "/overview",
     "title": "Dashboard Telemetry",
-    "totalButtons": 9,
+    "totalButtons": 10,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "New Engagement"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 1
+    "glassPanelCount": 10,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   },
   {
     "route": "/clients",
@@ -19,7 +92,52 @@
       "Add Client"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 6
+    "glassPanelCount": 6,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/clients/68e1f028-a7a4-42b8-81a7-6c99c11b6f51",
+    "title": "Client Organization Detail",
+    "totalButtons": 14,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "New Engagement"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 4,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/clients/new",
+    "title": "Register New Client",
+    "totalButtons": 11,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Continue to Stage 2"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 0,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/clients/68e1f028-a7a4-42b8-81a7-6c99c11b6f51/edit",
+    "title": "Edit Client Organization",
+    "totalButtons": 7,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Save Changes"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   },
   {
     "route": "/engagements",
@@ -30,40 +148,108 @@
       "Create Engagement"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 2
+    "glassPanelCount": 2,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/engagements/91ea4d99-6c1d-4e7f-8d72-d997edd043bd",
+    "title": "Engagement Scope & Operations",
+    "totalButtons": 9,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Launch Scan"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 5,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/engagements/new",
+    "title": "Create New Engagement",
+    "totalButtons": 11,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Continue"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 0,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/engagements/91ea4d99-6c1d-4e7f-8d72-d997edd043bd/edit",
+    "title": "Edit Security Engagement",
+    "totalButtons": 7,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Save Changes"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   },
   {
     "route": "/assets",
     "title": "Target Assets Inventory",
-    "totalButtons": 8,
+    "totalButtons": 22,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Register Asset"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 5
+    "glassPanelCount": 6,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   },
   {
     "route": "/findings",
     "title": "Vulnerabilities & Triage",
-    "totalButtons": 10,
+    "totalButtons": 40,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Launch Security Scan"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 6
+    "glassPanelCount": 7,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/findings/9505a4f5-95b3-40c9-91e4-7cf125496081",
+    "title": "Vulnerability Technical Detail",
+    "totalButtons": 9,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Record Verification"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 6,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   },
   {
     "route": "/automation",
     "title": "Workflow Automation",
-    "totalButtons": 11,
+    "totalButtons": 7,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "New Workflow"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 3
+    "glassPanelCount": 2,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   },
   {
     "route": "/reports",
@@ -74,7 +260,24 @@
       "Generate Report"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 0
+    "glassPanelCount": 6,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/reports/b475e8f4-664a-4116-b860-28e7badb7635",
+    "title": "Rendered Deliverable Document",
+    "totalButtons": 7,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Print / HTML Deliverable"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   },
   {
     "route": "/registrations",
@@ -83,6 +286,23 @@
     "primaryButtonCount": 0,
     "primaryButtonTexts": [],
     "bodyBackground": "rgb(9, 10, 13)",
-    "cockpitCardCount": 0
+    "glassPanelCount": 1,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
+    "route": "/settings",
+    "title": "Settings & Administration",
+    "totalButtons": 7,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Update Password"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 6,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
   }
 ]

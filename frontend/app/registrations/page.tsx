@@ -264,7 +264,7 @@ function RegistrationsContent() {
             subtext="Retrieving isolated onboarding requests…"
           />
         ) : filteredItems.length === 0 ? (
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/40 p-12 text-center space-y-3">
+          <div data-empty="true" className="cockpit-card specular-top rounded-xl border border-zinc-200 dark:border-white/[0.08] p-12 text-center space-y-3">
             <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mx-auto">
               <UserCheck className="h-6 w-6" />
             </div>

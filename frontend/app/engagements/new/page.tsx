@@ -21,7 +21,7 @@ function CreateEngagementContent() {
 
   return (
     <AppShell title="New Engagement">
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div data-loading-state="complete" className="max-w-4xl mx-auto space-y-5">
         {/* Navigation Breadcrumb & Back Action */}
         <div className="flex items-center justify-between">
           <Link

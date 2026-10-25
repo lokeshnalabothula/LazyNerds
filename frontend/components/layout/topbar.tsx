@@ -126,7 +126,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   };
 
   return (
-    <header className="h-14 border-b border-zinc-200 dark:border-[#222630] bg-white/80 dark:bg-[#090A0D]/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between sticky top-0 z-30 transition-colors">
+    <header className="h-14 border-b border-zinc-200/60 dark:border-white/[0.08] bg-white/70 dark:bg-[#080B11]/80 backdrop-blur-2xl px-3 sm:px-4 flex items-center justify-between sticky top-0 z-30 transition-colors">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={onToggleMobileNav}

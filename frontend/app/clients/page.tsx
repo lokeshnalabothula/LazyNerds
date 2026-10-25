@@ -429,7 +429,7 @@ function ClientsContent() {
         </div>
 
         {/* Directory Content Table / Cards */}
-        <div className="cockpit-card specular-top overflow-hidden shadow-md">
+        <div className="cockpit-card specular-top overflow-hidden shadow-md" data-loading-state={isLoading ? "loading" : "complete"}>
           {isLoading ? (
             viewMode === "cards" ? (
               <div className="p-4">
@@ -674,9 +674,9 @@ function ClientsContent() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50 dark:bg-[#161920] border-b border-zinc-200 dark:border-[#222630] text-zinc-600 dark:text-[#9CA3AF] font-medium select-none font-mono text-[11px] uppercase tracking-wider">
+                <thead className="bg-white/[0.04] backdrop-blur-md border-b border-white/[0.08] text-slate-300 font-semibold select-none font-sans text-[11px] uppercase tracking-wider">
                   <tr>
-                    <th className="py-3 px-3 w-10 text-center">
+                    <th className="py-3.5 px-3 w-10 text-center">
                       <input
                         type="checkbox"
                         ref={selectAllCheckboxRef}
@@ -686,14 +686,14 @@ function ClientsContent() {
                         aria-label="Select all clients"
                       />
                     </th>
-                    <th className="py-3 px-4">Company</th>
-                    <th className="py-3 px-4">Primary Contact</th>
-                    <th className="py-3 px-4">Contact Email</th>
-                    {isFounder && <th className="py-3 px-4">Security Lead</th>}
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Date Added</th>
-                    <th className="py-3 px-4">Last Updated</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3.5 px-4 min-w-[150px]">Company</th>
+                    <th className="py-3.5 px-4 min-w-[120px]">Primary Contact</th>
+                    <th className="py-3.5 px-4 min-w-[140px]">Contact Email</th>
+                    {isFounder && <th className="py-3.5 px-4 min-w-[110px]">Security Lead</th>}
+                    <th className="py-3.5 px-4 w-24">Status</th>
+                    <th className="py-3.5 px-4 w-28">Date Added</th>
+                    <th className="py-3.5 px-4 w-28 hidden xl:table-cell">Last Updated</th>
+                    <th className="py-3.5 px-4 text-right w-28 whitespace-nowrap sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
@@ -729,7 +729,7 @@ function ClientsContent() {
                             <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400" />
                           </Link>
                           {client.industry && (
-                            <span className="text-[11px] text-zinc-400 dark:text-[#9CA3AF] block font-normal font-mono">
+                            <span className="text-[11px] text-zinc-400 dark:text-[#94A3B8] block font-normal font-sans">
                               {client.industry}
                             </span>
                           )}
@@ -783,28 +783,28 @@ function ClientsContent() {
                         </td>
 
                         {/* Last Updated */}
-                        <td className="py-3 px-4 text-zinc-500 dark:text-[#9CA3AF] font-mono text-[11px]" title={formatDateTime(client.updated_at)}>
+                        <td className="py-3 px-4 text-zinc-500 dark:text-[#94A3B8] font-sans text-[11px] hidden xl:table-cell" title={formatDateTime(client.updated_at)}>
                           <div className="text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.updated_at)}</div>
                           {formatRelativeTime(client.updated_at) && (
-                            <div className="text-[10px] text-zinc-400 dark:text-[#6B7280] font-sans tracking-tight" suppressHydrationWarning>
+                            <div className="text-[10px] text-zinc-400 dark:text-[#64748B] tracking-tight" suppressHydrationWarning>
                               {formatRelativeTime(client.updated_at)}
                             </div>
                           )}
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
+                        <td className="py-3 px-4 text-right w-28 whitespace-nowrap sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">
+                          <div className="inline-flex items-center justify-end gap-2">
                             <Link
                               href={`/clients/${client.id}`}
-                              className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920]"
+                              className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
                               title="Open Profile"
                             >
                               <ExternalLink className="h-3.5 w-3.5" />
                             </Link>
                             <Link
                               href={`/clients/${client.id}/edit`}
-                              className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920]"
+                              className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
                               title="Edit Client"
                             >
                               <Edit2 className="h-3.5 w-3.5" />
@@ -812,7 +812,7 @@ function ClientsContent() {
                             {client.status === "active" ? (
                               <button
                                 onClick={() => setClientToArchive(client)}
-                                className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-[#161920]"
+                                className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
                                 title="Archive Client"
                               >
                                 <Archive className="h-3.5 w-3.5" />
@@ -820,7 +820,7 @@ function ClientsContent() {
                             ) : (
                               <button
                                 onClick={() => handleRestore(client)}
-                                className="p-1 rounded text-zinc-400 dark:text-[#9CA3AF] hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-[#161920]"
+                                className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
                                 title="Restore Client"
                               >
                                 <RotateCcw className="h-3.5 w-3.5" />

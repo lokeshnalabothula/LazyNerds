@@ -50,7 +50,7 @@ export default function ReportsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
               Assessment Reports & Deliverables
             </h1>
             <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1">
@@ -70,10 +70,11 @@ export default function ReportsPage() {
         </div>
 
         {/* Reports List */}
+        <div data-loading-state={loading && reports.length === 0 ? "loading" : "complete"}>
         {loading && reports.length === 0 ? (
           <CardGridSkeleton count={6} />
         ) : reports.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-[#222630] rounded-xl bg-zinc-50/50 dark:bg-[#111318]">
+          <div data-empty="true" className="p-12 text-center border border-dashed border-zinc-300 dark:border-[#222630] rounded-xl bg-zinc-50/50 dark:bg-[#111318]">
             <PieChart className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />
             <p className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB]">No assessment reports generated</p>
             <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 max-w-sm mx-auto leading-relaxed">
@@ -108,7 +109,7 @@ export default function ReportsPage() {
 
                   <Link
                     href={`/reports/${report.id}`}
-                    className="block font-bold text-sm text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] transition-colors font-mono truncate"
+                    className="block font-bold text-sm text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] transition-colors font-sans truncate"
                   >
                     {report.title}
                   </Link>
@@ -131,14 +132,14 @@ export default function ReportsPage() {
                       href={`/api/v1/reports/${report.id}/download?format=html`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] font-mono"
+                      className="inline-flex items-center gap-1 text-[11px] text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] font-sans"
                     >
                       <Download className="h-3 w-3" />
                       <span>Print/HTML</span>
                     </a>
                     <Link
                       href={`/reports/${report.id}`}
-                      className="inline-flex items-center gap-1 text-[11px] text-[#B88700] dark:text-[#FFD84D] hover:underline font-semibold font-mono"
+                      className="inline-flex items-center gap-1 text-[11px] text-[#B88700] dark:text-[#FFD84D] hover:underline font-semibold font-sans"
                     >
                       <span>View</span>
                       <ExternalLink className="h-3 w-3" />
@@ -149,6 +150,7 @@ export default function ReportsPage() {
             ))}
           </div>
         )}
+        </div>
 
         <ReportFormModal
           isOpen={isModalOpen}

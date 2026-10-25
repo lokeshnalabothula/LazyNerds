@@ -153,7 +153,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
 
   return (
     <AppShell title={`${engagement.name} — Workspace`}>
-      <div className="space-y-6 max-w-5xl">
+      <div data-loading-state="complete" className="space-y-6 max-w-5xl">
         {/* Navigation Breadcrumb and Actions Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <Link

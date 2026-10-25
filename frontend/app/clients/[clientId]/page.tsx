@@ -141,7 +141,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
   return (
     <AppShell title={`${client.company_name} — Workspace`}>
-      <div className="space-y-6">
+      <div data-loading-state="complete" className="space-y-6">
         {/* Navigation Breadcrumb */}
         <div>
           <Link

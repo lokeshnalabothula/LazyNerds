@@ -140,7 +140,7 @@ function ResetPasswordContent() {
         </div>
 
         {/* Form Card */}
-        <div className="cockpit-card specular-top p-6 sm:p-7 shadow-2xl">
+        <div data-loading-state="complete" className="cockpit-card specular-top p-6 sm:p-7 shadow-2xl">
           {!tokenValid ? (
             <div className="space-y-4 text-center">
               <div className="mx-auto w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">

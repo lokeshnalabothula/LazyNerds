@@ -111,7 +111,7 @@ export default function AssetsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
               Target Assets & Scope Boundaries
             </h1>
             <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 leading-relaxed">
@@ -136,34 +136,34 @@ export default function AssetsPage() {
         {/* KPI Stat Chips */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-semibold">
+            <div className="text-[11px] font-sans uppercase tracking-wider text-zinc-500 dark:text-[#94A3B8] font-semibold">
               Total Assets
             </div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] mt-1 tracking-tight">
+            <div className="text-xl sm:text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] mt-1 tracking-tight tabular-nums">
               {total}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-semibold">
+            <div className="text-[11px] font-sans uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-semibold">
               In-Scope (Approved)
             </div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 tracking-tight">
+            <div className="text-xl sm:text-2xl font-bold font-sans text-emerald-600 dark:text-emerald-400 mt-1 tracking-tight tabular-nums">
               {inScopeCount}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-rose-500 dark:text-[#F43F5E] font-semibold">
+            <div className="text-[11px] font-sans uppercase tracking-wider text-rose-500 dark:text-[#F43F5E] font-semibold">
               Critical & High Impact
             </div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-rose-500 dark:text-[#F43F5E] mt-1 tracking-tight">
+            <div className="text-xl sm:text-2xl font-bold font-sans text-rose-500 dark:text-[#F43F5E] mt-1 tracking-tight tabular-nums">
               {criticalCount}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-amber-500 dark:text-[#FBBF24] font-semibold">
+            <div className="text-[11px] font-sans uppercase tracking-wider text-amber-500 dark:text-[#FBBF24] font-semibold">
               Out-of-Scope (Restricted)
             </div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-amber-500 dark:text-[#FBBF24] mt-1 tracking-tight">
+            <div className="text-xl sm:text-2xl font-bold font-sans text-amber-500 dark:text-[#FBBF24] mt-1 tracking-tight tabular-nums">
               {outOfScopeCount}
             </div>
           </div>
@@ -260,6 +260,7 @@ export default function AssetsPage() {
         </div>
 
         {/* Assets List */}
+        <div data-loading-state={loading && assets.length === 0 ? "loading" : "complete"}>
         {loading && assets.length === 0 ? (
           viewMode === "cards" ? (
             <CardGridSkeleton count={6} />
@@ -269,7 +270,7 @@ export default function AssetsPage() {
             </div>
           )
         ) : assets.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
+          <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30" data-empty="true">
             <Shield className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No assets registered yet</p>
             <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
@@ -381,15 +382,15 @@ export default function AssetsPage() {
           /* Table View (Default on Desktop) */
           <div className="cockpit-card specular-top rounded-xl overflow-hidden shadow-md">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full min-w-[850px] text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920] text-zinc-500 dark:text-[#9CA3AF]">
-                    <th className="py-2.5 px-3 font-semibold">Asset Name & Target</th>
-                    <th className="py-2.5 px-3 font-semibold">Client & Engagement</th>
-                    <th className="py-2.5 px-3 font-semibold">Type</th>
-                    <th className="py-2.5 px-3 font-semibold">Criticality</th>
-                    <th className="py-2.5 px-3 font-semibold">Scope Status</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Actions</th>
+                  <tr className="border-b border-white/[0.08] bg-white/[0.04] backdrop-blur-md text-slate-300 font-sans text-[11px] uppercase tracking-wider">
+                    <th className="py-2.5 px-3 min-w-[200px] font-semibold">Asset Name & Target</th>
+                    <th className="py-2.5 px-3 min-w-[180px] font-semibold">Client & Engagement</th>
+                    <th className="py-2.5 px-3 min-w-[110px] font-semibold">Type</th>
+                    <th className="py-2.5 px-3 min-w-[100px] font-semibold">Criticality</th>
+                    <th className="py-2.5 px-3 min-w-[120px] font-semibold">Scope Status</th>
+                    <th className="py-2.5 pl-3 pr-6 font-semibold text-right min-w-[110px] whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
@@ -438,8 +439,8 @@ export default function AssetsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="py-2.5 pl-3 pr-6 text-right min-w-[110px] whitespace-nowrap">
+                        <div className="inline-flex items-center justify-end gap-2 pr-1">
                           <button
                             onClick={() => {
                               setAssetToEdit(asset);
@@ -468,6 +469,7 @@ export default function AssetsPage() {
             </div>
           </div>
         )}
+        </div>
 
         <AssetFormModal
           isOpen={isModalOpen}

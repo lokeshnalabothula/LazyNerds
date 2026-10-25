@@ -84,7 +84,7 @@ function RegistrationStatusContent() {
         </div>
 
         {/* Card */}
-        <div className="cockpit-card specular-top p-6 shadow-2xl space-y-5">
+        <div data-loading-state="complete" className="cockpit-card specular-top p-6 shadow-2xl space-y-5">
           <form onSubmit={handleSubmit} className="space-y-3">
             <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF]">
               Lookup by Corporate Email

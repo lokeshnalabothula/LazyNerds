@@ -86,7 +86,7 @@ export default function EditEngagementPage({ params }: EditEngagementPageProps) 
 
   return (
     <AppShell title={`Edit: ${engagement.name}`}>
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div data-loading-state="complete" className="max-w-3xl mx-auto space-y-6">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <Link
@@ -102,10 +102,10 @@ export default function EditEngagementPage({ params }: EditEngagementPageProps) 
         </div>
 
         {/* Card Header & Form */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs space-y-6">
+        <div className="cockpit-card specular-top p-6 shadow-md space-y-6">
           <div className="border-b border-zinc-100 dark:border-[#222630] pb-4">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base font-bold text-zinc-900 dark:text-[#F9FAFB]">
+              <h1 className="text-base font-bold text-zinc-900 dark:text-[#F9FAFB] font-sans">
                 Edit Security Engagement
               </h1>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">

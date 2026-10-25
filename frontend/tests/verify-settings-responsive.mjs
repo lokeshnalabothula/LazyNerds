@@ -97,8 +97,47 @@ async function runSettingsResponsiveAudit() {
           selectOptionsCount = mobileNav.querySelectorAll('option').length;
         }
 
+        // Dedicated Topbar Header Collision and Boundary Check
+        const header = document.querySelector('header');
+        const headerCollisions = [];
+        if (header) {
+          // Specifically check brand element vs notification button on mobile
+          const brandSpans = Array.from(header.querySelectorAll('div.md\\:hidden span'));
+          const notifBtn = header.querySelector('button[aria-label="Security notifications"]');
+          if (brandSpans.length > 0 && notifBtn) {
+            const notifRect = notifBtn.getBoundingClientRect();
+            for (const sp of brandSpans) {
+              const spRect = sp.getBoundingClientRect();
+              if (spRect.width > 0 && spRect.right > notifRect.left) {
+                headerCollisions.push({
+                  issue: `Brand element "${sp.textContent.trim()}" (right: ${spRect.right.toFixed(1)}) collides with notification control (left: ${notifRect.left.toFixed(1)})`,
+                });
+              }
+            }
+          }
+
+          // Check general header item overlap
+          const interactiveHeaderItems = Array.from(header.querySelectorAll('button, a, div.md\\:hidden'));
+          for (let i = 0; i < interactiveHeaderItems.length; i++) {
+            const r1 = interactiveHeaderItems[i].getBoundingClientRect();
+            if (r1.width === 0 || r1.height === 0) continue;
+            for (let j = i + 1; j < interactiveHeaderItems.length; j++) {
+              const r2 = interactiveHeaderItems[j].getBoundingClientRect();
+              if (r2.width === 0 || r2.height === 0) continue;
+              if (interactiveHeaderItems[i].contains(interactiveHeaderItems[j]) || interactiveHeaderItems[j].contains(interactiveHeaderItems[i])) continue;
+              const xOverlap = Math.max(0, Math.min(r1.right, r2.right) - Math.max(r1.left, r2.left));
+              const yOverlap = Math.max(0, Math.min(r1.bottom, r2.bottom) - Math.max(r1.top, r2.top));
+              if (xOverlap > 1 && yOverlap > 1) {
+                headerCollisions.push({
+                  issue: `Header items overlap: [${interactiveHeaderItems[i].getAttribute('aria-label') || interactiveHeaderItems[i].textContent.trim().slice(0, 15)}] and [${interactiveHeaderItems[j].getAttribute('aria-label') || interactiveHeaderItems[j].textContent.trim().slice(0, 15)}]`,
+                });
+              }
+            }
+          }
+        }
+
         // Check for any text overlapping inside main
-        const allHeadings = Array.from(document.querySelectorAll('h1, h2, h3, button, span.font-semibold'));
+        const allHeadings = Array.from(document.querySelectorAll('h1, h2, h3, button, span.font-semibold, span.font-bold'));
         const overlaps = [];
         for (let i = 0; i < allHeadings.length; i++) {
           const r1 = allHeadings[i].getBoundingClientRect();
@@ -131,6 +170,7 @@ async function runSettingsResponsiveAudit() {
           mobileNavVisible,
           selectOptionsCount,
           overlaps,
+          headerCollisions,
         };
       });
 
@@ -145,9 +185,13 @@ async function runSettingsResponsiveAudit() {
       } else {
         console.log(`  - Mobile Select Nav: VISIBLE (${audit.selectOptionsCount} options, 100% discoverable)`);
       }
-      console.log(`  - Text Overlaps: ${audit.overlaps.length}`);
+      console.log(`  - Header Collisions: ${audit.headerCollisions.length}`);
+      if (audit.headerCollisions.length > 0) {
+        console.log(`    ⚠ Header Collisions:`, JSON.stringify(audit.headerCollisions));
+      }
+      console.log(`  - Content Overlaps: ${audit.overlaps.length}`);
       if (audit.overlaps.length > 0) {
-        console.log(`    ⚠ Overlaps:`, JSON.stringify(audit.overlaps));
+        console.log(`    ⚠ Content Overlaps:`, JSON.stringify(audit.overlaps));
       }
       console.log(`  - Captured: settings-${vp.name}.png`);
 
@@ -155,7 +199,7 @@ async function runSettingsResponsiveAudit() {
         viewport: `${vp.width}x${vp.height} (${vp.name})`,
         overflow: audit.hasHorizontalOverflow ? 'FAIL' : 'PASS',
         navMode: audit.sidebarVisible ? `Sidebar (${audit.sidebarItemsCount} items)` : `Select (${audit.selectOptionsCount} opts)`,
-        collisions: audit.sidebarCollisions.length + audit.overlaps.length,
+        collisions: audit.sidebarCollisions.length + audit.overlaps.length + audit.headerCollisions.length,
       });
     }
 

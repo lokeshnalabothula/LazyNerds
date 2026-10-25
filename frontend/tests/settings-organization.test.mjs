@@ -63,4 +63,15 @@ test.describe("Settings Page Organization & Telemetry Integrity (LNA-14)", () =>
     assert.match(settingsSource, /setTimezonePreference/);
     assert.match(settingsSource, /formatDateTime\(new Date\(\)\.toISOString\(\), effectiveTz\)/);
   });
+
+  test("Topbar header prevents brand and action control overlap on 320px narrow screens", () => {
+    const topbarPath = path.join(path.dirname(settingsPath), "../../components/layout/topbar.tsx");
+    const topbarSource = fs.readFileSync(topbarPath, "utf-8");
+    // Fullscreen toggle is hidden on mobile screens to preserve brand clearance
+    assert.match(topbarSource, /hidden sm:flex[^"]*min-h-\[34px\][^"]*items-center justify-center/);
+    // Title is hidden below lg to avoid partial glyph truncation
+    assert.match(topbarSource, /hidden lg:flex items-center gap-2 min-w-0 truncate/);
+    // Compact brand spacing for narrow screens
+    assert.match(topbarSource, /md:hidden flex items-center gap-1 shrink-0/);
+  });
 });

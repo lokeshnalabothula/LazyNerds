@@ -126,11 +126,11 @@ export const Topbar: React.FC<TopbarProps> = ({
   };
 
   return (
-    <header className="h-14 border-b border-zinc-200/60 dark:border-white/[0.08] bg-white/70 dark:bg-[#07090E]/85 backdrop-blur-2xl px-3 sm:px-4 flex items-center justify-between sticky top-0 z-30 transition-colors shadow-[0_16px_32px_-10px_rgba(0,0,0,0.5)]">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+    <header className="h-14 border-b border-zinc-200/60 dark:border-white/[0.08] bg-white/70 dark:bg-[#07090E]/85 backdrop-blur-2xl px-2 sm:px-4 flex items-center justify-between sticky top-0 z-30 transition-colors shadow-[0_16px_32px_-10px_rgba(0,0,0,0.5)]">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
         <button
           onClick={onToggleMobileNav}
-          className="md:hidden p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
+          className="md:hidden p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
           aria-label="Toggle navigation menu"
         >
           <Menu className="h-5 w-5" />
@@ -152,9 +152,9 @@ export const Topbar: React.FC<TopbarProps> = ({
           </button>
         )}
 
-        <div className="md:hidden flex items-center gap-1.5 shrink-0">
-          <span className="font-bold text-xs tracking-tight text-zinc-900 dark:text-[#F9FAFB]">Lazy Nerds</span>
-          <span className="text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold font-mono">
+        <div className="md:hidden flex items-center gap-1 shrink-0">
+          <span className="font-bold text-[11px] sm:text-xs tracking-tight text-zinc-900 dark:text-[#F9FAFB]">Lazy Nerds</span>
+          <span className="text-[8px] sm:text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold font-mono">
             FIXOPS
           </span>
         </div>
@@ -174,7 +174,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {/* Notifications Bell */}
         {user && (
           <div className="relative" ref={notifRef}>
@@ -183,7 +183,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                 setIsNotifOpen(!isNotifOpen);
                 if (!isNotifOpen) fetchNotifications();
               }}
-              className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] relative transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
+              className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] relative transition-colors min-h-[34px] min-w-[34px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
               aria-label="Security notifications"
             >
               <Bell className="h-4 w-4" />
@@ -276,12 +276,12 @@ export const Topbar: React.FC<TopbarProps> = ({
           </div>
         )}
 
-        {/* Fullscreen Toggle */}
+        {/* Fullscreen Toggle (Hidden on narrow mobile screens to preserve brand clearance) */}
         <button
           onClick={toggleFullscreen}
           aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           title={isFullscreen ? "Exit fullscreen mode" : "Enter fullscreen mode (F11)"}
-          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
+          className="hidden sm:flex p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors min-h-[34px] min-w-[34px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
         >
           {isFullscreen ? (
             <Minimize2 className="h-4 w-4" />
@@ -294,7 +294,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         <button
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-          className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
+          className="p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors min-h-[34px] min-w-[34px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
         >
           {theme === "dark" ? (
             <Sun className="h-4 w-4" />
@@ -305,10 +305,10 @@ export const Topbar: React.FC<TopbarProps> = ({
 
         {/* User Identity & Profile Avatar */}
         {user ? (
-          <div className="flex items-center gap-2 sm:gap-3 pl-1.5 sm:pl-2 border-l border-zinc-200 dark:border-[#222630]">
+          <div className="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 border-l border-zinc-200 dark:border-[#222630]">
             <Link
               href="/settings"
-              className="flex items-center gap-2 group p-1 -m-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors"
+              className="flex items-center gap-1.5 group p-0.5 sm:p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors"
               title="View profile & platform settings"
             >
               <Avatar
@@ -337,7 +337,7 @@ export const Topbar: React.FC<TopbarProps> = ({
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-zinc-500 hover:text-rose-600 dark:text-[#9CA3AF] dark:hover:text-rose-400 gap-1.5 min-h-[36px]"
+              className="text-zinc-500 hover:text-rose-600 dark:text-[#9CA3AF] dark:hover:text-rose-400 gap-1.5 min-h-[34px] px-1.5 sm:px-2.5"
               aria-label="Sign out of workspace"
             >
               <LogOut className="h-3.5 w-3.5" />

@@ -35,6 +35,7 @@ const FINDING_ID = '9505a4f5-95b3-40c9-91e4-7cf125496081';
 const REPORT_ID = 'b475e8f4-664a-4116-b860-28e7badb7635';
 
 const PUBLIC_ROUTES_TO_INSPECT = [
+  { path: '/', name: 'homepage', title: 'Lazy Nerds Public Marketing Homepage' },
   { path: '/login', name: 'login', title: 'Sign In & Authentication' },
   { path: '/register', name: 'register', title: 'Client Registration Portal' },
   { path: '/register/status', name: 'register-status', title: 'Registration Status Tracker' },

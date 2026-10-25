@@ -6,12 +6,14 @@ import subprocess
 import threading
 import uuid
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 
 from app.core.config import settings
 from app.core.security import validate_target_url_ssrf, is_lab_testing_authorized
+import app.db.session as db_session
 from app.db.session import SessionLocal
 from app.models.asset import Asset
 from app.models.engagement import Engagement
@@ -33,6 +35,33 @@ MAX_CONCURRENT_SCANS = 3
 # In-memory tracking of active scan background processes
 ACTIVE_SCAN_THREADS: Dict[str, threading.Thread] = {}
 SCAN_PROCESS_PIDS: Dict[str, Optional[int]] = {}
+
+
+def get_repository_root() -> Path:
+    """Returns the absolute Path to the repository root directory."""
+    # backend/app/services/scanner_service.py -> parents[3] is repository root
+    return Path(__file__).resolve().parents[3]
+
+
+def resolve_source_repo_path(source_repo: Optional[str]) -> Optional[str]:
+    """
+    Resolves local source repository path.
+    Supports absolute paths, paths relative to current working directory,
+    and paths relative to repository root (for working-directory independence).
+    """
+    if not source_repo:
+        return None
+    if os.path.isabs(source_repo):
+        return source_repo
+    # Check relative to current working directory
+    if os.path.exists(source_repo) and os.path.isdir(source_repo):
+        return source_repo
+    # Check relative to repository root
+    repo_root = get_repository_root()
+    repo_rel = repo_root / source_repo
+    if repo_rel.exists() and repo_rel.is_dir():
+        return str(repo_rel.resolve())
+    return source_repo
 
 
 def get_scan_workspace_dir(assessment_id: str) -> str:
@@ -65,7 +94,7 @@ def update_assessment_progress(
     """Updates real-time progress state in the Assessment record."""
     session_created = False
     if db is None:
-        db = SessionLocal()
+        db = getattr(db_session, "SessionLocal", SessionLocal)()
         session_created = True
 
     try:
@@ -500,7 +529,7 @@ def execute_scan_worker_job(
     """
     session_created = False
     if db is None:
-        db = SessionLocal()
+        db = getattr(db_session, "SessionLocal", SessionLocal)()
         session_created = True
 
     try:
@@ -692,7 +721,7 @@ def execute_scan_worker_job(
                 output_dir = os.path.join(workspace_dir, "output")
                 os.makedirs(output_dir, exist_ok=True)
 
-                repo_mount_path = os.path.abspath(source_repo) if source_repo else workspace_dir
+                repo_mount_path = os.path.abspath(resolve_source_repo_path(source_repo)) if source_repo else workspace_dir
                 cmd = [
                     "docker", "run", "--rm",
                     "--name", f"fixops-worker-{assessment_id[:8]}",
@@ -856,7 +885,8 @@ def launch_scan(
                 f"Direct Git repository URLs ('{source_repo}') cannot be directly mounted as host volumes. "
                 "Remote git cloning is not currently supported; please specify an accessible local directory path on the worker host (e.g. 'lab/vulnerable_app')."
             )
-        if not os.path.exists(source_repo) or not os.path.isdir(source_repo):
+        resolved_repo = resolve_source_repo_path(source_repo)
+        if not os.path.exists(resolved_repo) or not os.path.isdir(resolved_repo):
             raise ValueError(f"Specified source repository path '{source_repo}' is not an accessible directory on this host.")
 
     # 5. Create Assessment record in "queued" state

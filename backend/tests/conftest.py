@@ -1,18 +1,37 @@
 import os
+import sys
+import tempfile
 import pytest
+from pathlib import Path
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+# Setup an isolated temporary directory and SQLite database file per test run.
+# Store the path in os.environ so any secondary imports (e.g. 'tests.conftest' vs 'conftest')
+# resolve to the exact same isolated temporary database instance within this process.
+_test_db_url = os.environ.get("TEST_DB_URL")
+if not _test_db_url:
+    _test_dir = tempfile.mkdtemp(prefix="fixops_test_db_")
+    _test_db_path = os.path.join(_test_dir, "isolated_fixops.db")
+    _test_db_url = f"sqlite:///{_test_db_path}"
+    os.environ["TEST_DB_URL"] = _test_db_url
+    os.environ["TEST_TEMP_DIR"] = _test_dir
+
+TEST_DB_URL = _test_db_url
+
 # Ensure test environment
 os.environ["ENVIRONMENT"] = "testing"
 os.environ["ALLOW_LAB_TESTING"] = "true"
-os.environ["DATABASE_URL"] = "sqlite:///./test_fixops.db"
+os.environ["DATABASE_URL"] = TEST_DB_URL
 os.environ["SECRET_KEY"] = "test-secret-key-lazy-nerds-fixops-super-secure-2026"
 
 from app.core.config import settings
 from app.core.security import create_access_token
+import app.db.session as session_module
 from app.db.session import Base, get_db
+import app.main as main_module
+import app.models as _all_models  # Ensures all model tables are registered in Base.metadata
 from app.main import app
 from app.models.client import Client
 from app.models.engagement import Engagement
@@ -20,9 +39,18 @@ from app.models.user import User
 from app.schemas.auth import UserCreate
 from app.services.auth_service import create_user
 
-TEST_DB_URL = "sqlite:///./test_fixops.db"
+# Bind settings and database session modules to the isolated test database
+settings.DATABASE_URL = TEST_DB_URL
+
 test_engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+
+# Patch session and main module singletons so lifespan, dependencies, and background tasks
+# unconditionally use the test engine and cannot connect to host PostgreSQL or disk files.
+session_module.engine = test_engine
+session_module.SessionLocal = TestingSessionLocal
+main_module.engine = test_engine
+main_module.SessionLocal = TestingSessionLocal
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -32,8 +60,14 @@ def setup_test_database():
     Base.metadata.create_all(bind=test_engine)
     yield
     Base.metadata.drop_all(bind=test_engine)
-    if os.path.exists("./test_fixops.db"):
-        os.remove("./test_fixops.db")
+    test_engine.dispose()
+    test_temp_dir = os.environ.get("TEST_TEMP_DIR")
+    if test_temp_dir and os.path.exists(test_temp_dir):
+        try:
+            import shutil
+            shutil.rmtree(test_temp_dir, ignore_errors=True)
+        except Exception:
+            pass
 
 
 @pytest.fixture

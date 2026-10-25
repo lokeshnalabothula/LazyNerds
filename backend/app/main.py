@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.api import api_router
 from app.core.config import settings
+import app.db.session as db_session
 from app.db.session import Base, SessionLocal, engine
 from app.models.user import User
 from app.schemas.auth import UserCreate
@@ -29,14 +30,16 @@ def init_db_and_seed_admin():
         return
 
     try:
-        Base.metadata.create_all(bind=engine)
+        active_engine = getattr(db_session, "engine", engine)
+        Base.metadata.create_all(bind=active_engine)
         logger.info("Database tables initialized successfully.")
     except Exception as e:
         logger.warning(f"Database table creation check: {e}")
 
     # Seed initial founder if not present (development and test environments only)
     try:
-        db = SessionLocal()
+        active_sessionmaker = getattr(db_session, "SessionLocal", SessionLocal)
+        db = active_sessionmaker()
         admin = get_user_by_email(db, settings.INITIAL_ADMIN_EMAIL)
         if not admin:
             create_user(

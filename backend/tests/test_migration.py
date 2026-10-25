@@ -11,6 +11,9 @@ def test_alembic_migrations_upgrade_and_downgrade():
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
         tmp_db_path = tmp.name
 
+    old_db_url = os.environ.get("DATABASE_URL")
+    old_unpooled = os.environ.get("DATABASE_URL_UNPOOLED")
+
     try:
         sqlite_url = f"sqlite:///{tmp_db_path}"
         os.environ["DATABASE_URL"] = sqlite_url
@@ -68,6 +71,14 @@ def test_alembic_migrations_upgrade_and_downgrade():
 
         engine.dispose()
     finally:
+        if old_db_url is not None:
+            os.environ["DATABASE_URL"] = old_db_url
+        else:
+            os.environ.pop("DATABASE_URL", None)
+        if old_unpooled is not None:
+            os.environ["DATABASE_URL_UNPOOLED"] = old_unpooled
+        else:
+            os.environ.pop("DATABASE_URL_UNPOOLED", None)
         if os.path.exists(tmp_db_path):
             os.remove(tmp_db_path)
 

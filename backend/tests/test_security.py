@@ -637,7 +637,10 @@ def test_remediation_engine_rollback_on_candidate_failure(monkeypatch):
     final execution record are successfully processed.
     """
     from datetime import datetime, timezone, timedelta
-    from tests.conftest import TestingSessionLocal
+    try:
+        from tests.conftest import TestingSessionLocal
+    except ImportError:
+        from conftest import TestingSessionLocal
     from app.models.client import Client
     from app.models.engagement import Engagement
     from app.models.finding import Finding

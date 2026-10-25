@@ -351,7 +351,8 @@ export default function RegisterPage() {
               <div className="pt-2 border-t border-[#222630] space-y-3">
                 <Button
                   type="submit"
-                  className="w-full h-11 text-xs font-bold tracking-wide uppercase btn-glossy-gold shadow-md"
+                  variant="primary"
+                  className="w-full h-11 text-xs font-bold tracking-wide uppercase"
                   isLoading={isSubmitting}
                 >
                   <Shield className="h-4 w-4 mr-2" />

@@ -67,11 +67,11 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         ref={modalRef}
         className={cn(
-          "w-full rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-2xl overflow-hidden transition-all flex flex-col max-h-[90vh]",
+          "relative w-full rounded-xl border border-zinc-200 dark:border-[#2E333F] bg-white dark:bg-[#111318] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.06)] overflow-hidden transition-all flex flex-col max-h-[90vh] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-[#F5C518]/30 before:to-transparent",
           widthClasses[maxWidth]
         )}
       >
-        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-[#222630] px-4 sm:px-6 py-4 shrink-0">
+        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-[#222630] bg-zinc-50/50 dark:bg-[#161920]/60 px-4 sm:px-6 py-4 shrink-0">
           <div className="min-w-0 pr-2">
             <h2 id="modal-title" className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-[#F9FAFB] truncate tracking-tight">
               {title}
@@ -96,7 +96,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {footer && (
-          <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/80 px-4 sm:px-6 py-3.5 shrink-0">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920] px-4 sm:px-6 py-3.5 shrink-0">
             {footer}
           </div>
         )}

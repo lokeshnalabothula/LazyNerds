@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { Asset } from "@/types/asset";
 import { AssetFormModal } from "@/components/assets/asset-form-modal";
+import { Button } from "@/components/ui/button";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -118,16 +119,18 @@ export default function AssetsPage() {
             </p>
           </div>
 
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => {
               setAssetToEdit(null);
               setIsModalOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg btn-glossy-gold text-xs font-bold transition-all shadow-md shrink-0 min-h-[36px]"
+            className="text-xs h-9 gap-1.5 shrink-0"
           >
-            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            <Plus className="h-3.5 w-3.5" />
             <span>Register Asset</span>
-          </button>
+          </Button>
         </div>
 
         {/* KPI Stat Chips */}

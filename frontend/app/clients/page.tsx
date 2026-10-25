@@ -288,7 +288,8 @@ function ClientsContent() {
             )}
             <Link href="/clients/new">
               <Button
-                className="gap-1.5 text-xs font-bold btn-glossy-gold text-[#111318] border-none shadow-md"
+                variant="primary"
+                className="gap-1.5 text-xs"
                 size="sm"
               >
                 <Plus className="h-3.5 w-3.5" />

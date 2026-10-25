@@ -166,9 +166,10 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
 
           <div className="flex items-center gap-2">
             <Button
+              variant="primary"
               size="sm"
               onClick={() => setIsLauncherOpen(true)}
-              className="gap-1.5 btn-glossy-gold text-[#111318] text-xs font-bold shadow-xs border-none"
+              className="gap-1.5 text-xs"
             >
               <Terminal className="h-3.5 w-3.5" />
               <span>Launch Scan</span>

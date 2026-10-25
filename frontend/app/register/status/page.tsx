@@ -94,7 +94,8 @@ function RegistrationStatusContent() {
               />
               <Button
                 type="submit"
-                className="h-9 px-4 text-xs font-bold btn-glossy-gold"
+                variant="primary"
+                className="h-9 px-4 text-xs font-bold"
                 isLoading={loading}
               >
                 <Search className="h-3.5 w-3.5 mr-1.5" />

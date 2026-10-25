@@ -358,7 +358,7 @@ export const FindingFormModal: React.FC<FindingFormModalProps> = ({
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={saving}>
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={saving} className="btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
+          <Button type="submit" variant="primary" size="sm" disabled={saving}>
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
             {findingToEdit ? "Update Finding" : "Record Finding"}
           </Button>

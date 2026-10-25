@@ -254,7 +254,7 @@ export const ScanImportModal: React.FC<ScanImportModalProps> = ({
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={importing}>
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={importing} className="btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
+          <Button type="submit" variant="primary" size="sm" disabled={importing}>
             {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Terminal className="h-3.5 w-3.5 mr-1.5" />}
             <span>Process & Import Scan</span>
           </Button>

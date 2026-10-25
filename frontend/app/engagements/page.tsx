@@ -174,7 +174,7 @@ function EngagementsContent() {
           </div>
           <div className="flex items-center gap-2.5">
             <Link href="/engagements/new">
-              <Button size="sm" className="gap-1.5 text-xs font-bold btn-glossy-gold text-[#111318] border-none shadow-md">
+              <Button variant="primary" size="sm" className="gap-1.5 text-xs">
                 <Plus className="h-4 w-4" />
                 <span>Create Engagement</span>
               </Button>

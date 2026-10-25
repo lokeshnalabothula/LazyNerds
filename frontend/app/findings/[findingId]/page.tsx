@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { Finding } from "@/types/finding";
+import { Button } from "@/components/ui/button";
 import { VerificationModal } from "@/components/findings/verification-modal";
 import { FindingFormModal } from "@/components/findings/finding-form-modal";
 import { formatDateTime } from "@/lib/utils";
@@ -150,20 +151,24 @@ export default function FindingDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <button
+                  <Button
+                    variant="primary"
+                    size="sm"
                     onClick={() => setIsVerifyOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors shadow-xs"
+                    className="text-xs h-9 gap-1.5"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     <span>Record Verification</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setIsEditOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] text-xs font-semibold text-zinc-700 dark:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors"
+                    className="text-xs h-9 gap-1.5"
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                     <span>Edit</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

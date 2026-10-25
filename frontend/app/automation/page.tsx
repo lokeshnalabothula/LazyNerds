@@ -168,17 +168,19 @@ export default function AutomationPage() {
             </p>
           </div>
 
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => {
               setRuleToEdit(null);
               setIsFormOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg btn-glossy-gold text-xs font-bold transition-all shadow-md shrink-0 min-h-[36px]"
+            className="text-xs h-9 gap-1.5"
             aria-label="Configure new cybersecurity workflow"
           >
-            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            <Plus className="h-3.5 w-3.5" />
             <span>New Workflow</span>
-          </button>
+          </Button>
         </div>
 
         {/* Flagship Production Automation: Remediation Follow-up Engine */}
@@ -204,15 +206,16 @@ export default function AutomationPage() {
             </div>
 
             <Button
+              variant="outline"
               size="sm"
               onClick={handleRunRemediationReminders}
               disabled={runningReminders}
-              className="text-xs h-9 px-4 gap-1.5 shrink-0 btn-glossy-gold font-bold"
+              className="text-xs h-9 px-4 gap-1.5 shrink-0 border-[#F5C518]/40 hover:border-[#F5C518] hover:bg-[#F5C518]/10 text-zinc-200 hover:text-white"
             >
               {runningReminders ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 text-[#F5C518]" />
               ) : (
-                <Play className="h-3.5 w-3.5 mr-1.5" />
+                <Play className="h-3.5 w-3.5 mr-1.5 text-[#F5C518]" />
               )}
               <span>Run Follow-up Check Now</span>
             </Button>

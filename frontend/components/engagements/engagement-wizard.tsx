@@ -761,8 +761,9 @@ export const EngagementWizard: React.FC<EngagementWizardProps> = ({
             {currentStep < 3 ? (
               <Button
                 type="button"
+                variant="primary"
                 onClick={handleNext}
-                className="flex items-center gap-1.5 text-xs btn-glossy-gold font-bold shadow-xs"
+                className="flex items-center gap-1.5 text-xs font-bold shadow-xs"
               >
                 <span>Continue</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -770,9 +771,10 @@ export const EngagementWizard: React.FC<EngagementWizardProps> = ({
             ) : (
               <Button
                 type="button"
+                variant="primary"
                 onClick={handleSubmit(handleFormSubmit)}
                 isLoading={isSubmitting}
-                className="flex items-center gap-1.5 text-xs btn-glossy-gold font-bold shadow-md px-5"
+                className="flex items-center gap-1.5 text-xs font-bold shadow-md px-5"
               >
                 <Shield className="h-4 w-4" />
                 <span>{submitLabel}</span>

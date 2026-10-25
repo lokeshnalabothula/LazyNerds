@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { Finding } from "@/types/finding";
+import { Button } from "@/components/ui/button";
 import { FindingFormModal } from "@/components/findings/finding-form-modal";
 import { ScanImportModal } from "@/components/findings/scan-import-modal";
 import { ScanLauncherModal } from "@/components/findings/scan-launcher-modal";
@@ -102,30 +103,36 @@ export default function FindingsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <button
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => setIsLauncherOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg btn-glossy-gold text-[#111318] text-xs font-bold transition-all shadow-md min-h-[36px] border-none"
+              className="text-xs h-9 gap-1.5"
             >
-              <ShieldAlert className="h-3.5 w-3.5 text-[#111318]" />
+              <ShieldAlert className="h-3.5 w-3.5" />
               <span>Launch Security Scan</span>
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setIsScanOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] text-xs font-semibold text-zinc-700 dark:text-[#F9FAFB] bg-white dark:bg-[#161920] hover:bg-zinc-100 dark:hover:bg-[#222630] transition-colors min-h-[36px] shadow-xs"
+              className="text-xs h-9 gap-1.5 font-medium"
             >
               <Terminal className="h-3.5 w-3.5 text-[#F5C518]" />
               <span>Import Scan Results</span>
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 setSelectedFinding(null);
                 setIsFormOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] text-xs font-semibold text-zinc-700 dark:text-[#F9FAFB] bg-white dark:bg-[#161920] hover:bg-zinc-100 dark:hover:bg-[#222630] transition-colors min-h-[36px] shadow-xs"
+              className="text-xs h-9 gap-1.5 font-medium"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Record Finding</span>
-            </button>
+            </Button>
           </div>
         </div>
 

@@ -97,10 +97,11 @@ export default function ReportDetailPage() {
                 <span>Download Markdown</span>
               </Button>
               <Button
+                variant="primary"
                 size="sm"
                 onClick={() => handleDownload("html")}
                 disabled={downloading !== null}
-                className="text-xs h-9 gap-1.5 btn-glossy-gold font-bold"
+                className="text-xs h-9 gap-1.5"
               >
                 {downloading === "html" ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />

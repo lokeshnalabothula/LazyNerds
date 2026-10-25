@@ -620,9 +620,10 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
           {currentStep < 3 ? (
             <Button
               type="button"
+              variant="primary"
               size="sm"
               onClick={handleNext}
-              className="text-xs h-9 px-5 gap-1.5 btn-glossy-gold text-[#111318] font-bold border-none shadow-md"
+              className="text-xs h-9 px-5 gap-1.5"
             >
               <span>Continue to Stage {currentStep + 2}</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -630,10 +631,11 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
           ) : (
             <Button
               type="button"
+              variant="primary"
               size="sm"
               disabled={isSubmitting}
               onClick={handleSubmit(handleFormSubmit)}
-              className="text-xs h-9 px-5 gap-1.5 btn-glossy-gold text-[#111318] font-bold border-none shadow-md"
+              className="text-xs h-9 px-5 gap-1.5"
             >
               {isSubmitting ? (
                 <>

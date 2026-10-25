@@ -182,9 +182,9 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({
           </Button>
           <Button
             type="submit"
+            variant="primary"
             size="sm"
             disabled={generating || engagements.length === 0 || !engagementId}
-            className="btn-glossy-gold font-bold"
           >
             {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <PieChart className="h-3.5 w-3.5 mr-1.5" />}
             <span>{generating ? "Compiling Telemetry…" : "Generate Report"}</span>

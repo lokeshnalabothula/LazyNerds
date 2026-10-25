@@ -22,21 +22,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] disabled:pointer-events-none disabled:opacity-50 select-none text-sm";
+      "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] disabled:pointer-events-none disabled:opacity-50 select-none text-sm cursor-pointer";
 
     const variantStyles = {
       primary:
-        "gloss-yellow-btn text-[#090A0D] font-bold active:scale-[0.99]",
+        "gloss-yellow-btn text-[#090A0D] font-extrabold active:scale-[0.98] shadow-md",
       secondary:
-        "btn-glass-secondary font-medium",
+        "btn-glass-secondary border border-[#222630] bg-[#161920]/80 text-[#F9FAFB] hover:border-[#F5C518]/30 hover:bg-[#1B1E24] shadow-xs font-medium",
       outline:
-        "border border-[#222630] bg-transparent text-[#F9FAFB] hover:bg-[#161920] hover:border-[#F5C518]/40 shadow-xs font-medium",
+        "border border-[#222630] bg-transparent text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#161920] hover:border-[#F5C518]/30 shadow-xs font-medium",
       ghost:
         "bg-transparent text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-white/[0.05] font-medium",
       destructive:
-        "bg-[#F43F5E] text-white hover:bg-[#E11D48] active:bg-[#BE123C] shadow-sm border border-[#F43F5E]/40 font-semibold",
+        "bg-[#F43F5E]/15 text-[#F43F5E] hover:bg-[#F43F5E] hover:text-white border border-[#F43F5E]/40 active:bg-[#BE123C] shadow-xs font-semibold",
       danger:
-        "bg-[#F43F5E] text-white hover:bg-[#E11D48] active:bg-[#BE123C] shadow-sm border border-[#F43F5E]/40 font-semibold",
+        "bg-[#F43F5E]/15 text-[#F43F5E] hover:bg-[#F43F5E] hover:text-white border border-[#F43F5E]/40 active:bg-[#BE123C] shadow-xs font-semibold",
     };
 
     const sizeStyles = {

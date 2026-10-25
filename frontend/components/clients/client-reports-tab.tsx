@@ -8,6 +8,7 @@ import { Client } from "@/types/client";
 import { formatDateTime } from "@/lib/utils";
 import { PieChart, Download, ExternalLink, Loader2, Plus } from "lucide-react";
 import { ReportFormModal } from "@/components/reports/report-form-modal";
+import { Button } from "@/components/ui/button";
 
 interface ClientReportsTabProps {
   client: Client;
@@ -56,13 +57,15 @@ export const ClientReportsTab: React.FC<ClientReportsTabProps> = ({ client }) =>
           </p>
         </div>
 
-        <button
+        <Button
+          variant="primary"
+          size="sm"
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs"
+          className="gap-1.5 text-xs"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>Generate Report</span>
-        </button>
+        </Button>
       </div>
 
       {loading && reports.length === 0 ? (

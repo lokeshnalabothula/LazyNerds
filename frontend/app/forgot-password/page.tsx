@@ -129,7 +129,8 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full mt-2 h-10 text-xs font-bold btn-glossy-gold shadow-md"
+                variant="primary"
+                className="w-full mt-2 h-10 text-xs font-bold"
                 isLoading={isSubmitting}
               >
                 <Mail className="h-4 w-4 mr-1.5" />

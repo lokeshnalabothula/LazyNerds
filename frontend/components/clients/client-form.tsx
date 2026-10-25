@@ -255,8 +255,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         )}
         <Button
           type="submit"
+          variant="primary"
           isLoading={isSubmitting}
-          className="text-xs btn-glossy-gold text-[#111318] font-bold border-none shadow-md gap-1.5"
+          className="text-xs gap-1.5"
         >
           <Save className="h-3.5 w-3.5" />
           <span>{submitLabel}</span>

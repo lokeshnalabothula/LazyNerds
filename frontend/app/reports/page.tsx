@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { Report } from "@/types/report";
 import { ReportFormModal } from "@/components/reports/report-form-modal";
+import { Button } from "@/components/ui/button";
 import { CardGridSkeleton } from "@/components/ui/loading";
 import { formatDateTime } from "@/lib/utils";
 import {
@@ -57,13 +58,15 @@ export default function ReportsPage() {
             </p>
           </div>
 
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg btn-glossy-gold text-xs font-bold transition-all shadow-md shrink-0 min-h-[36px]"
+            className="text-xs h-9 gap-1.5 shrink-0"
           >
-            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            <Plus className="h-3.5 w-3.5" />
             <span>Generate Report</span>
-          </button>
+          </Button>
         </div>
 
         {/* Reports List */}
@@ -76,13 +79,15 @@ export default function ReportsPage() {
             <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 max-w-sm mx-auto leading-relaxed">
               Generate executive and technical assessment reports summarizing real findings, scoping boundaries, and remediation progress.
             </p>
-            <button
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => setIsModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg btn-glossy-gold text-xs font-bold min-h-[36px]"
+              className="mt-4 text-xs h-9 gap-1.5"
             >
-              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+              <Plus className="h-3.5 w-3.5" />
               <span>Generate First Report</span>
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">

@@ -211,7 +211,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             {client.status === "active" && (
               <Link href={`/engagements/new?client_id=${client.id}`}>
-                <Button size="sm" className="gap-1.5 text-xs btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
+                <Button variant="primary" size="sm" className="gap-1.5 text-xs">
                   <Shield className="h-3.5 w-3.5" />
                   <span>New Engagement</span>
                 </Button>

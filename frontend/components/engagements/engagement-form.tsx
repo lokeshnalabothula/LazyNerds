@@ -354,9 +354,10 @@ export const EngagementForm: React.FC<EngagementFormProps> = ({
         )}
         <Button
           type="submit"
+          variant="primary"
           isLoading={isSubmitting}
           disabled={isSubmitting || (clients.length === 0 && !initialData)}
-          className="text-xs btn-glossy-gold text-[#111318] font-bold border-none shadow-md gap-1.5"
+          className="text-xs gap-1.5"
         >
           {submitLabel}
         </Button>

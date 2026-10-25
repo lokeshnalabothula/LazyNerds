@@ -355,8 +355,9 @@ export const ScanLauncherModal: React.FC<ScanLauncherModalProps> = ({
           </Button>
           <Button
             type="submit"
+            variant="primary"
             disabled={launching || !authorizedConsent || !targetAssetId}
-            className="btn-glossy-gold text-[#111318] text-xs font-bold px-4 py-2 min-h-[36px]"
+            className="text-xs px-4 py-2 min-h-[36px]"
           >
             {launching ? (
               <>

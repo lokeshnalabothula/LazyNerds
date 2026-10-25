@@ -105,7 +105,7 @@ export default function OverviewPage() {
               size="sm"
               onClick={fetchMetrics}
               disabled={loading}
-              className="text-xs h-9 gap-1.5 border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50"
+              className="text-xs h-9 gap-1.5"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>Refresh Telemetry</span>
@@ -113,19 +113,19 @@ export default function OverviewPage() {
             {!isClient && (
               <>
                 <Link href="/clients/new">
-                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50">
+                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium">
                     <Users className="h-3.5 w-3.5" />
                     <span>New Client</span>
                   </Button>
                 </Link>
                 <Link href="/automation?create=true">
-                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-semibold border-zinc-200 dark:border-[#222630] hover:border-[#F5C518]/50">
+                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium">
                     <Zap className="h-3.5 w-3.5 text-[#F5C518]" />
                     <span>New Workflow</span>
                   </Button>
                 </Link>
                 <Link href="/engagements/new">
-                  <Button size="sm" className="text-xs h-9 gap-1.5 btn-glossy-gold text-[#111318] font-bold border-none shadow-md">
+                  <Button variant="primary" size="sm" className="text-xs h-9 gap-1.5">
                     <Plus className="h-3.5 w-3.5" />
                     <span>New Engagement</span>
                   </Button>
@@ -174,7 +174,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
                 <Link href="/findings?status=open" className="shrink-0">
-                  <Button size="sm" className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold h-8 w-full xl:w-auto">
+                  <Button variant="outline" size="sm" className="border-rose-500/40 text-rose-300 hover:bg-rose-500/20 text-xs font-semibold h-8 w-full xl:w-auto">
                     <span>Review Critical Vulnerabilities</span>
                     <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                   </Button>
@@ -199,7 +199,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
                 <Link href="/registrations" className="shrink-0">
-                  <Button size="sm" className="bg-amber-600 hover:bg-amber-500 text-zinc-950 text-xs font-semibold h-8 w-full xl:w-auto">
+                  <Button variant="outline" size="sm" className="border-amber-500/40 text-amber-300 hover:bg-amber-500/20 text-xs font-semibold h-8 w-full xl:w-auto">
                     <span>Review Registrations ({metrics.pending_registrations_total})</span>
                     <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                   </Button>

@@ -312,7 +312,7 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={saving} className="border-zinc-200 dark:border-[#222630]">
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={saving} className="btn-glossy-gold font-bold">
+          <Button type="submit" variant="primary" size="sm" disabled={saving}>
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
             {assetToEdit ? "Update Asset" : "Register Asset"}
           </Button>

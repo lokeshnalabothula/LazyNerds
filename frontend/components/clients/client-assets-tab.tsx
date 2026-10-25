@@ -7,6 +7,7 @@ import { Client } from "@/types/client";
 import { AssetFormModal } from "@/components/assets/asset-form-modal";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Button } from "@/components/ui/button";
 import { Shield, Plus, CheckCircle, AlertCircle, Loader2, Edit2, Trash2 } from "lucide-react";
 
 interface ClientAssetsTabProps {
@@ -65,16 +66,18 @@ export const ClientAssetsTab: React.FC<ClientAssetsTabProps> = ({ client }) => {
           </p>
         </div>
 
-        <button
+        <Button
+          variant="primary"
+          size="sm"
           onClick={() => {
             setAssetToEdit(null);
             setIsModalOpen(true);
           }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold transition-colors shadow-xs"
+          className="gap-1.5 text-xs"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>Add Asset</span>
-        </button>
+        </Button>
       </div>
 
       {loading ? (

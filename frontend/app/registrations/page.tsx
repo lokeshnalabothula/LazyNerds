@@ -203,7 +203,7 @@ function RegistrationsContent() {
               <span>Refresh</span>
             </Button>
             <Link href="/clients">
-              <Button size="sm" className="text-xs h-9 btn-glossy-gold font-bold">
+              <Button variant="outline" size="sm" className="text-xs h-9 border-zinc-200 dark:border-[#222630] dark:bg-[#161920]">
                 <Building2 className="h-3.5 w-3.5 mr-1.5" />
                 <span>Client Directory</span>
               </Button>
@@ -342,12 +342,13 @@ function RegistrationsContent() {
                   <div className="flex items-center gap-2 shrink-0">
                     {reg.status !== "approved" && (
                       <Button
+                        variant="primary"
                         size="sm"
                         onClick={() => {
                           setSelectedReg(reg);
                           setReviewAction("approve");
                         }}
-                        className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                        className="h-8 text-xs font-bold"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                         <span>Approve</span>
@@ -552,15 +553,10 @@ function RegistrationsContent() {
                 </Button>
                 <Button
                   type="submit"
+                  variant={reviewAction === "reject" ? "destructive" : "primary"}
                   size="sm"
                   isLoading={actionLoading}
-                  className={`text-xs font-semibold ${
-                    reviewAction === "approve"
-                      ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                      : reviewAction === "reject"
-                      ? "bg-rose-600 hover:bg-rose-500 text-white"
-                      : "bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318]"
-                  }`}
+                  className="text-xs font-bold"
                 >
                   Confirm {reviewAction === "approve" ? "Approval" : reviewAction === "reject" ? "Rejection" : "Request"}
                 </Button>

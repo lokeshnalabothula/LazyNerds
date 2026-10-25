@@ -228,6 +228,19 @@ def update_finding(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: Client accounts may not directly alter vulnerability finding records.",
         )
+    finding = finding_service.get_finding_by_id(db, finding_id)
+    if not finding:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Finding with ID '{finding_id}' not found.",
+        )
+    if current_user.role == "employee" and finding.engagement and finding.engagement.client:
+        client = finding.engagement.client
+        if client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to this client record.",
+            )
     try:
         return finding_service.update_finding(db, finding_id, finding_in, current_user)
     except ValueError as e:
@@ -241,6 +254,19 @@ def add_verification(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_employee_or_founder),
 ):
+    finding = finding_service.get_finding_by_id(db, finding_id)
+    if not finding:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Finding with ID '{finding_id}' not found.",
+        )
+    if current_user.role == "employee" and finding.engagement and finding.engagement.client:
+        client = finding.engagement.client
+        if client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to this client record.",
+            )
     try:
         return finding_service.add_verification(db, finding_id, verif_in, current_user)
     except ValueError as e:

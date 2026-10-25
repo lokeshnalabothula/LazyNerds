@@ -75,9 +75,10 @@ def test_missing_credentials_failure_message():
 
 def test_sanitize_ai_error_redaction():
     # Redacts live keys and tokens
-    raw_error = "Failed to query https://api.cheaperinference.com/v1 with key ci_live_abcdef1234567890abcdef and Bearer eyJhbGciOiJIUzI1NiJ9.test"
+    raw_error = "Failed to query https://api.cheaperinference.com/v1 with key ci_live_abcdef1234567890abcdef, freellmapi_key freellmapi-abcdef1234567890abcdef and Bearer eyJhbGciOiJIUzI1NiJ9.test"
     sanitized = sanitize_ai_error(raw_error)
     assert "ci_live_" not in sanitized
+    assert "freellmapi-" not in sanitized
     assert "[REDACTED_API_KEY]" in sanitized
     assert "[REDACTED_TOKEN]" in sanitized
 

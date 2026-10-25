@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
+from app.models.client import Client
 from app.models.engagement import Engagement
 from app.models.user import User
 from app.schemas.asset import (
@@ -87,6 +88,13 @@ def create_asset(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not authorized to create assets for another organization.",
             )
+    elif current_user.role == "employee":
+        client = db.query(Client).filter(Client.id == asset_in.client_id).first()
+        if client and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to this client record.",
+            )
     try:
         return asset_service.create_asset(db, asset_in, current_user)
     except ValueError as e:
@@ -133,6 +141,12 @@ def update_asset(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not authorized to modify another organization's assets.",
             )
+    elif current_user.role == "employee" and asset.client:
+        if asset.client.assigned_employee_id and asset.client.assigned_employee_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to this client record.",
+            )
     try:
         return asset_service.update_asset(db, asset_id, asset_in, current_user)
     except ValueError as e:
@@ -156,6 +170,12 @@ def delete_asset(
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not authorized to delete another organization's assets.",
+            )
+    elif current_user.role == "employee" and asset.client:
+        if asset.client.assigned_employee_id and asset.client.assigned_employee_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to this client record.",
             )
     try:
         asset_service.delete_asset(db, asset_id, current_user)

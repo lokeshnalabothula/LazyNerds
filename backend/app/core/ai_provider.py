@@ -177,10 +177,11 @@ def sanitize_ai_error(raw_error_message: str, secret_patterns: Optional[List[str
 
     cleaned = raw_error_message
 
-    # Redact common token patterns: sk-..., ci_live_..., xai-..., etc.
+    # Redact common token patterns: sk-..., ci_live_..., xai-..., freellmapi-..., etc.
     cleaned = re.sub(r"(ci_live_[a-zA-Z0-9_\-]{16,})", "[REDACTED_API_KEY]", cleaned)
     cleaned = re.sub(r"(sk-[a-zA-Z0-9_\-]{16,})", "[REDACTED_API_KEY]", cleaned)
     cleaned = re.sub(r"(xai-[a-zA-Z0-9_\-]{16,})", "[REDACTED_API_KEY]", cleaned)
+    cleaned = re.sub(r"(freellmapi-[a-zA-Z0-9_\-]{16,})", "[REDACTED_API_KEY]", cleaned)
     cleaned = re.sub(r"(Bearer\s+)[a-zA-Z0-9_\-\.]{16,}", r"\1[REDACTED_TOKEN]", cleaned)
 
     if secret_patterns:

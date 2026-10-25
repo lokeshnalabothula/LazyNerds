@@ -12,6 +12,7 @@ def log_audit(
     resource_id: str,
     details: Optional[str] = None,
     ip_address: Optional[str] = None,
+    commit: bool = True,
 ) -> AuditLog:
     """Safely records an audit trail event for sensitive platform operations."""
     entry = AuditLog(
@@ -23,8 +24,9 @@ def log_audit(
         ip_address=ip_address,
     )
     db.add(entry)
-    db.commit()
-    db.refresh(entry)
+    if commit:
+        db.commit()
+        db.refresh(entry)
     return entry
 
 

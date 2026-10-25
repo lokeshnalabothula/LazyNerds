@@ -5,9 +5,10 @@ import shutil
 import subprocess
 import threading
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 
 from app.core.config import settings
 from app.core.security import validate_target_url_ssrf
@@ -59,6 +60,7 @@ def update_assessment_progress(
     active_agent: Optional[str] = None,
     log_line: Optional[str] = None,
     db: Optional[Session] = None,
+    commit: bool = True,
 ):
     """Updates real-time progress state in the Assessment record."""
     session_created = False
@@ -102,10 +104,12 @@ def update_assessment_progress(
         })
 
         assessment.execution_summary = json.dumps(current_summary)
-        db.commit()
+        if commit:
+            db.commit()
     except Exception as e:
         logger.error(f"Failed to update progress for assessment {assessment_id}: {e}")
-        db.rollback()
+        if commit:
+            db.rollback()
     finally:
         if session_created:
             db.close()
@@ -282,14 +286,66 @@ def ingest_scan_results(
     user_email: str = "system@lazynerds.com",
     is_mock_run: bool = False,
     deliverables: Optional[Dict[str, Any]] = None,
+    expected_worker_id: Optional[str] = None,
 ) -> Assessment:
     """
     Normalizes, deduplicates, and ingests security findings into the FixOps database.
     Updates the Assessment status to 'completed', attaches deliverables, and triggers automation events.
+
+    Concurrency Safe & Atomically Locked:
+    - Obtains an explicit row-level lock on the assessment record.
+    - Validates status is 'running' and that expected_worker_id matches the active claimant.
+    - Queues findings, progress, and audit logs without premature commits, locking the assessment
+      record until the final atomic commit.
     """
-    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+    query = db.query(Assessment).filter(Assessment.id == assessment_id)
+    try:
+        bind = db.get_bind()
+        if bind and bind.dialect.name == "postgresql":
+            query = query.with_for_update()
+        else:
+            query = query.with_for_update()
+    except Exception:
+        pass
+    assessment = query.first()
     if not assessment:
         raise ValueError(f"Assessment {assessment_id} not found.")
+
+    if assessment.status != "running":
+        raise ValueError(f"Cannot complete job {assessment_id}: current status is '{assessment.status}' (expected 'running').")
+
+    if expected_worker_id is not None:
+        if not assessment.worker_id:
+            raise ValueError(f"Cannot complete job {assessment_id}: job has not been claimed.")
+        if assessment.worker_id != expected_worker_id:
+            raise PermissionError(f"Worker '{expected_worker_id}' is not the claimant of job {assessment_id} (claimed by '{assessment.worker_id}').")
+
+    # Guard against ingesting scan findings on terminal engagements (audit immutability)
+    eng = db.query(Engagement).filter(Engagement.id == assessment.engagement_id).first()
+    if eng and eng.status in ("completed", "cancelled"):
+        assessment.status = "failed"
+        assessment.completed_at = datetime.now(timezone.utc)
+        update_assessment_progress(
+            assessment_id=assessment_id,
+            phase="failed",
+            progress_percent=100,
+            message=f"Scan ingestion aborted: Parent engagement transitioned to terminal '{eng.status}' status.",
+            log_line=f"Engagement {eng.id} is {eng.status}. Ingestion rejected.",
+            db=db,
+            commit=False,
+        )
+        log_audit(
+            db=db,
+            user_email=user_email,
+            action="SCAN_INGESTION_BLOCKED_TERMINAL_ENGAGEMENT",
+            resource_type="assessment",
+            resource_id=assessment_id,
+            details=f"Blocked findings ingestion because engagement '{eng.name}' is '{eng.status}'.",
+            commit=False,
+        )
+        db.commit()
+        db.refresh(assessment)
+        return assessment
 
     target_asset_id = None
     if assessment.target_asset_ids:
@@ -317,6 +373,7 @@ def ingest_scan_results(
     assessment.completed_at = datetime.now(timezone.utc)
     assessment.status = "completed"
 
+    created_findings = []
     for f_data in parsed_findings:
         if is_mock_run:
             finding_title = f"[LAB BENCHMARK] {f_data['title']}"
@@ -348,22 +405,7 @@ def ingest_scan_results(
             remediation_notes=remediation_notes,
         )
         db.add(finding)
-        db.commit()
-        db.refresh(finding)
-
-        dispatch_event(
-            db=db,
-            event_type="on_finding_created",
-            context={
-                "finding_id": finding.id,
-                "title": finding.title,
-                "severity": finding.severity,
-                "engagement_id": assessment.engagement_id,
-                "asset_id": target_asset_id,
-                "cve_id": finding.cve_id,
-            },
-            trigger_source=f"scanner:{finding.title}",
-        )
+        created_findings.append(finding)
 
     # Deliverables handling
     if deliverables and assessment.execution_summary:
@@ -371,7 +413,6 @@ def ingest_scan_results(
             summary = json.loads(assessment.execution_summary)
             summary["deliverables"] = deliverables
             assessment.execution_summary = json.dumps(summary)
-            db.commit()
         except Exception:
             pass
 
@@ -383,6 +424,7 @@ def ingest_scan_results(
         active_agent=None,
         log_line=f"Scan finished. Created {len(parsed_findings)} FixOps findings.",
         db=db,
+        commit=False,
     )
 
     log_audit(
@@ -392,7 +434,29 @@ def ingest_scan_results(
         resource_type="assessment",
         resource_id=assessment_id,
         details=f"Completed {scan_mode} scan ({'Lab Benchmark' if is_mock_run else 'Live'}). Imported {len(parsed_findings)} findings.",
+        commit=False,
     )
+
+    db.commit()
+    db.refresh(assessment)
+
+    for finding in created_findings:
+        try:
+            dispatch_event(
+                db=db,
+                event_type="on_finding_created",
+                context={
+                    "finding_id": finding.id,
+                    "title": finding.title,
+                    "severity": finding.severity,
+                    "engagement_id": assessment.engagement_id,
+                    "asset_id": target_asset_id,
+                    "cve_id": finding.cve_id,
+                },
+                trigger_source=f"scanner:{finding.title}",
+            )
+        except Exception as dispatch_err:
+            logger.warning(f"Failed to dispatch automation event for finding {finding.id}: {dispatch_err}")
 
     return assessment
 
@@ -925,3 +989,159 @@ def cancel_scan(db: Session, assessment_id: str, current_user_email: str) -> Ass
     )
 
     return assessment
+
+
+def recover_abandoned_assessments(
+    db: Session,
+    max_retries: Optional[int] = None,
+    lease_seconds: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Recovers running assessments whose worker lease has expired without renewal.
+
+    Concurrency Safe & Transaction Isolated:
+    - Fetches and locks candidate rows one-by-one under an isolated row lock.
+    - Re-validates current status and expiration before mutating.
+    - Updates progress and audit logs with commit=False, then commits that single row atomically.
+    - Prevents premature release of locks on unprocessed rows and eliminates stale-state races
+      between concurrent recovery sweeps and worker claims.
+    """
+    if max_retries is None:
+        max_retries = getattr(settings, "WORKER_MAX_RETRIES", 2)
+    if lease_seconds is None:
+        lease_seconds = getattr(settings, "WORKER_LEASE_SECONDS", 300)
+
+    processed_ids = set()
+    results = []
+
+    while True:
+        now = datetime.now(timezone.utc)
+        lease_cutoff = now - timedelta(seconds=lease_seconds)
+
+        query = db.query(Assessment).filter(
+            Assessment.status == "running",
+            or_(
+                and_(Assessment.lease_expires_at.is_not(None), Assessment.lease_expires_at < now),
+                and_(
+                    Assessment.lease_expires_at.is_(None),
+                    Assessment.last_heartbeat_at.is_not(None),
+                    Assessment.last_heartbeat_at < lease_cutoff,
+                ),
+                and_(
+                    Assessment.lease_expires_at.is_(None),
+                    Assessment.last_heartbeat_at.is_(None),
+                    Assessment.started_at.is_not(None),
+                    Assessment.started_at < lease_cutoff,
+                ),
+            ),
+        )
+
+        if processed_ids:
+            query = query.filter(~Assessment.id.in_(processed_ids))
+
+        try:
+            bind = db.get_bind()
+            if bind and bind.dialect.name == "postgresql":
+                query = query.with_for_update(skip_locked=True)
+            else:
+                query = query.with_for_update()
+        except Exception:
+            pass
+
+        assessment = query.first()
+        if not assessment:
+            break
+
+        processed_ids.add(assessment.id)
+
+        # Re-verify condition under acquired row lock
+        if assessment.status != "running":
+            continue
+
+        is_expired = False
+        lease_exp = assessment.lease_expires_at
+        if lease_exp is not None:
+            if lease_exp.tzinfo is None:
+                lease_exp = lease_exp.replace(tzinfo=timezone.utc)
+            if lease_exp < now:
+                is_expired = True
+        elif lease_exp is None:
+            hb = assessment.last_heartbeat_at or assessment.started_at
+            if hb is not None:
+                if hb.tzinfo is None:
+                    hb = hb.replace(tzinfo=timezone.utc)
+                if hb < lease_cutoff:
+                    is_expired = True
+
+        if not is_expired:
+            continue
+
+        prev_worker = assessment.worker_id or "unknown"
+        if assessment.retry_count < max_retries:
+            assessment.retry_count += 1
+            assessment.status = "queued"
+            assessment.worker_id = None
+            assessment.claimed_at = None
+            assessment.last_heartbeat_at = None
+            assessment.lease_expires_at = None
+
+            update_assessment_progress(
+                assessment_id=assessment.id,
+                phase="requeued",
+                progress_percent=0,
+                message=f"Worker '{prev_worker}' lease expired. Re-queued for retry ({assessment.retry_count}/{max_retries}).",
+                active_agent="lease-recovery-daemon",
+                log_line=f"Worker {prev_worker} lost / lease expired. Re-queued assessment (attempt {assessment.retry_count}/{max_retries}).",
+                db=db,
+                commit=False,
+            )
+
+            log_audit(
+                db=db,
+                user_email="system:lease-recovery",
+                action="WORKER_LEASE_REQUEUED",
+                resource_type="assessment",
+                resource_id=assessment.id,
+                details=f"Assessment {assessment.id} lease expired (worker: {prev_worker}). Re-queued (retry {assessment.retry_count}/{max_retries}).",
+                commit=False,
+            )
+            db.commit()
+            results.append({
+                "id": assessment.id,
+                "action": "requeued",
+                "previous_worker": prev_worker,
+                "retry_count": assessment.retry_count,
+            })
+        else:
+            assessment.status = "failed"
+            assessment.completed_at = now
+
+            update_assessment_progress(
+                assessment_id=assessment.id,
+                phase="failed",
+                progress_percent=100,
+                message=f"Worker '{prev_worker}' lost. Max retries ({max_retries}) exceeded; marked as failed.",
+                active_agent="lease-recovery-daemon",
+                log_line=f"Assessment failed: worker {prev_worker} abandoned job and retry limit ({max_retries}) reached.",
+                db=db,
+                commit=False,
+            )
+
+            log_audit(
+                db=db,
+                user_email="system:lease-recovery",
+                action="WORKER_LEASE_EXPIRED_FAILED",
+                resource_type="assessment",
+                resource_id=assessment.id,
+                details=f"Assessment {assessment.id} marked failed after exceeding max retries ({max_retries}) due to worker loss.",
+                commit=False,
+            )
+            db.commit()
+            results.append({
+                "id": assessment.id,
+                "action": "failed",
+                "previous_worker": prev_worker,
+                "retry_count": assessment.retry_count,
+            })
+
+    return results

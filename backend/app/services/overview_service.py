@@ -31,7 +31,7 @@ def get_overview_metrics(db: Session, user: Optional[User] = None) -> OverviewMe
             client_q = client_q.filter(Client.id == client_id)
             engagement_q = engagement_q.filter(Engagement.client_id == client_id)
             asset_q = asset_q.filter(Asset.client_id == client_id)
-            finding_q = finding_q.join(Asset).filter(Asset.client_id == client_id)
+            finding_q = finding_q.join(Engagement, Finding.engagement_id == Engagement.id).filter(Engagement.client_id == client_id)
             audit_q = audit_q.filter(AuditLog.user_email == user.email)
         else:
             client_q = client_q.filter(Client.id == "none")
@@ -47,7 +47,7 @@ def get_overview_metrics(db: Session, user: Optional[User] = None) -> OverviewMe
             client_q = client_q.filter(Client.id.in_(assigned_ids))
             engagement_q = engagement_q.filter(Engagement.client_id.in_(assigned_ids))
             asset_q = asset_q.filter(Asset.client_id.in_(assigned_ids))
-            finding_q = finding_q.join(Asset).filter(Asset.client_id.in_(assigned_ids))
+            finding_q = finding_q.join(Engagement, Finding.engagement_id == Engagement.id).filter(Engagement.client_id.in_(assigned_ids))
         # Employees cannot view founder-level registration review audit logs
         audit_q = audit_q.filter(~AuditLog.action.like("%REGISTRATION%"))
 

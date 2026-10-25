@@ -16,6 +16,8 @@ def create_finding(db: Session, finding_in: FindingCreate, current_user: User) -
     engagement = db.query(Engagement).filter(Engagement.id == finding_in.engagement_id).first()
     if not engagement:
         raise ValueError("Referenced engagement does not exist.")
+    if engagement.status in ("completed", "cancelled"):
+        raise ValueError(f"Cannot create findings for an engagement in '{engagement.status}' status.")
 
     # 2. Validate asset if provided
     if finding_in.asset_id:
@@ -149,6 +151,14 @@ def update_finding(
                 "Remediation verification policy: A finding cannot be marked as 'verified_fixed' "
                 "without a documented and verified test result. Please record a verification check first."
             )
+
+    # Validate asset_id if updating target asset association
+    if "asset_id" in update_data and update_data["asset_id"]:
+        new_asset = db.query(Asset).filter(Asset.id == update_data["asset_id"]).first()
+        if not new_asset:
+            raise ValueError("Referenced asset does not exist.")
+        if finding.engagement and new_asset.client_id != finding.engagement.client_id:
+            raise ValueError("Asset does not belong to the engagement's client.")
 
     for field, value in update_data.items():
         setattr(finding, field, value)

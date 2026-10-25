@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_employee_or_founder
 from app.db.session import get_db
+from app.models.client import Client
 from app.models.user import User
 from app.schemas.engagement import (
     EngagementCreate,
@@ -94,6 +95,14 @@ def create_new_engagement(
     Creates a new engagement linked to a valid client.
     Transactionally committed in PostgreSQL. Restricted to employees and founders.
     """
+    if current_user.role == "employee":
+        client = db.query(Client).filter(Client.id == engagement_in.client_id).first()
+        if client and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to this client record.",
+            )
+
     try:
         new_engagement = create_engagement(db, engagement_in=engagement_in)
     except ValueError as e:
@@ -148,6 +157,12 @@ def update_existing_engagement(
             detail="This engagement could not be found.",
         )
 
+    if current_user.role == "employee" and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not assigned to this client record.",
+        )
+
     try:
         updated = update_engagement(db, engagement=engagement, engagement_in=engagement_in)
     except ValueError as e:
@@ -174,6 +189,12 @@ def archive_existing_engagement(
             detail="This engagement could not be found.",
         )
 
+    if current_user.role == "employee" and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not assigned to this client record.",
+        )
+
     try:
         archived = archive_engagement(db, engagement=engagement)
     except ValueError as e:
@@ -198,6 +219,12 @@ def restore_existing_engagement(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This engagement could not be found.",
+        )
+
+    if current_user.role == "employee" and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not assigned to this client record.",
         )
 
     try:

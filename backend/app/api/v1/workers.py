@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
@@ -15,6 +15,7 @@ from app.services.audit_service import log_audit
 from app.services.scanner_service import (
     ingest_scan_results,
     update_assessment_progress,
+    recover_abandoned_assessments,
 )
 
 logger = logging.getLogger("fixops.workers_api")
@@ -63,10 +64,20 @@ class WorkerHeartbeatRequest(BaseModel):
     active_jobs_count: int = Field(default=0, ge=0)
     max_concurrent_jobs: int = Field(default=2, ge=1)
     version: str = "1.0.0"
+    active_job_ids: Optional[List[str]] = None
 
 
 class WorkerClaimRequest(BaseModel):
     worker_id: str = Field(..., min_length=1, max_length=100)
+
+
+class WorkerJobHeartbeatRequest(BaseModel):
+    worker_id: str = Field(..., min_length=1, max_length=100)
+
+
+class WorkerRecoveryRequest(BaseModel):
+    max_retries: Optional[int] = None
+    lease_seconds: Optional[int] = None
 
 
 class WorkerProgressRequest(BaseModel):
@@ -102,25 +113,58 @@ def worker_heartbeat(
 ):
     """
     Worker telemetry heartbeat: reports worker online status, hardware capabilities, and current job load.
+    Optionally extends lease for active jobs owned by this worker.
     """
+    now = datetime.now(timezone.utc)
+    lease_seconds = getattr(settings, "WORKER_LEASE_SECONDS", 300)
+    renewed_jobs = []
+
+    if payload.active_job_ids:
+        for job_id in payload.active_job_ids:
+            query = db.query(Assessment).filter(
+                Assessment.id == job_id,
+                Assessment.worker_id == payload.worker_id,
+                Assessment.status == "running",
+            )
+            try:
+                query = query.with_for_update()
+            except Exception:
+                pass
+            assessment = query.first()
+            if assessment:
+                assessment.last_heartbeat_at = now
+                assessment.lease_expires_at = now + timedelta(seconds=lease_seconds)
+                renewed_jobs.append(job_id)
+        if renewed_jobs:
+            db.commit()
+
     queued_count = db.query(Assessment).filter(Assessment.status == "queued").count()
     return {
         "status": "acknowledged",
         "worker_id": payload.worker_id,
+        "renewed_jobs": renewed_jobs,
         "pending_jobs_count": queued_count,
-        "server_time": datetime.now(timezone.utc).isoformat(),
+        "server_time": now.isoformat(),
     }
 
 
 @router.get("/jobs/pending", status_code=status.HTTP_200_OK)
 def get_pending_jobs(
     limit: int = Query(default=5, ge=1, le=20),
+    auto_recover: bool = Query(default=True),
     _token: str = Depends(verify_worker_auth),
     db: Session = Depends(get_db),
 ):
     """
     Retrieves queued scan assessments awaiting execution by an authorized worker.
+    Automatically checks and recovers abandoned jobs whose lease has expired before dispatching.
     """
+    if auto_recover:
+        try:
+            recover_abandoned_assessments(db=db)
+        except Exception as e:
+            logger.warning(f"Auto-recovery during pending jobs poll encountered warning: {e}")
+
     queued = (
         db.query(Assessment)
         .filter(Assessment.status == "queued")
@@ -165,6 +209,7 @@ def get_pending_jobs(
             "target_url": target_url,
             "source_repo": source_repo,
             "benchmark_mode": benchmark_mode,
+            "retry_count": a.retry_count,
             "created_at": a.created_at.isoformat() if a.created_at else None,
         })
 
@@ -180,21 +225,39 @@ def claim_job(
 ):
     """
     Atomically claims a queued scan job for execution by this worker node.
+    Enforces worker ownership and sets an initial lease expiration.
     """
-    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).with_for_update().first()
+    query = db.query(Assessment).filter(Assessment.id == assessment_id)
+    try:
+        query = query.with_for_update()
+    except Exception:
+        pass
+    assessment = query.first()
+
     if not assessment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
 
     if assessment.status != "queued":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Job {assessment_id} is already '{assessment.status}' and cannot be claimed.",
+            detail=f"Job {assessment_id} is already in state '{assessment.status}' and cannot be claimed.",
         )
 
+    if assessment.worker_id is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Job {assessment_id} is already claimed by worker '{assessment.worker_id}'.",
+        )
+
+    now = datetime.now(timezone.utc)
+    lease_seconds = getattr(settings, "WORKER_LEASE_SECONDS", 300)
+
     assessment.status = "running"
-    assessment.started_at = datetime.now(timezone.utc)
-    db.commit()
-    db.refresh(assessment)
+    assessment.started_at = now
+    assessment.worker_id = payload.worker_id
+    assessment.claimed_at = now
+    assessment.last_heartbeat_at = now
+    assessment.lease_expires_at = now + timedelta(seconds=lease_seconds)
 
     update_assessment_progress(
         assessment_id=assessment.id,
@@ -202,8 +265,9 @@ def claim_job(
         progress_percent=5,
         message=f"Job claimed by worker {payload.worker_id}. Initializing isolated sandbox container...",
         active_agent="worker-daemon",
-        log_line=f"Worker {payload.worker_id} claimed assessment. Beginning target preflight.",
+        log_line=f"Worker {payload.worker_id} claimed assessment. Lease expires at {assessment.lease_expires_at.isoformat()}.",
         db=db,
+        commit=False,
     )
 
     log_audit(
@@ -213,7 +277,10 @@ def claim_job(
         resource_type="assessment",
         resource_id=assessment.id,
         details=f"Worker node {payload.worker_id} claimed job {assessment.name}.",
+        commit=False,
     )
+    db.commit()
+    db.refresh(assessment)
 
     # Return full dispatch payload
     target_url = None
@@ -242,6 +309,61 @@ def claim_job(
         "target_url": target_url,
         "source_repo": source_repo,
         "benchmark_mode": benchmark_mode,
+        "worker_id": assessment.worker_id,
+        "claimed_at": assessment.claimed_at.isoformat() if assessment.claimed_at else None,
+        "lease_expires_at": assessment.lease_expires_at.isoformat() if assessment.lease_expires_at else None,
+    }
+
+
+@router.post("/jobs/{assessment_id}/heartbeat", status_code=status.HTTP_200_OK)
+def heartbeat_job(
+    assessment_id: str,
+    payload: WorkerJobHeartbeatRequest,
+    _token: str = Depends(verify_worker_auth),
+    db: Session = Depends(get_db),
+):
+    """
+    Extends the worker lease on a specific running assessment.
+    Only the claimant worker can renew the job lease.
+    """
+    query = db.query(Assessment).filter(Assessment.id == assessment_id)
+    try:
+        query = query.with_for_update()
+    except Exception:
+        pass
+    assessment = query.first()
+    if not assessment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
+
+    if assessment.status != "running":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot extend lease for job {assessment_id}: current status is '{assessment.status}' (expected 'running').",
+        )
+
+    if not assessment.worker_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot extend lease for job {assessment_id}: job has not been claimed.",
+        )
+
+    if assessment.worker_id != payload.worker_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Worker '{payload.worker_id}' is not the claimant of job {assessment_id} (claimed by '{assessment.worker_id}').",
+        )
+
+    now = datetime.now(timezone.utc)
+    lease_seconds = getattr(settings, "WORKER_LEASE_SECONDS", 300)
+    assessment.last_heartbeat_at = now
+    assessment.lease_expires_at = now + timedelta(seconds=lease_seconds)
+    db.commit()
+
+    return {
+        "status": "renewed",
+        "assessment_id": assessment_id,
+        "worker_id": assessment.worker_id,
+        "lease_expires_at": assessment.lease_expires_at.isoformat(),
     }
 
 
@@ -254,13 +376,40 @@ def update_job_progress(
 ):
     """
     Updates live scan progress telemetry from the executing worker daemon.
+    Strictly restricted to the current claimant worker and valid 'running' status.
+    Refreshes the worker lease on every progress report.
     """
-    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+    query = db.query(Assessment).filter(Assessment.id == assessment_id)
+    try:
+        query = query.with_for_update()
+    except Exception:
+        pass
+    assessment = query.first()
     if not assessment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
 
-    if assessment.status in ("completed", "failed"):
-        return {"status": "ignored", "detail": f"Assessment is already {assessment.status}"}
+    if assessment.status != "running":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot update progress for job {assessment_id}: current status is '{assessment.status}' (expected 'running').",
+        )
+
+    if not assessment.worker_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot update progress for job {assessment_id}: job has not been claimed.",
+        )
+
+    if assessment.worker_id != payload.worker_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Worker '{payload.worker_id}' is not the claimant of job {assessment_id} (claimed by '{assessment.worker_id}').",
+        )
+
+    now = datetime.now(timezone.utc)
+    lease_seconds = getattr(settings, "WORKER_LEASE_SECONDS", 300)
+    assessment.last_heartbeat_at = now
+    assessment.lease_expires_at = now + timedelta(seconds=lease_seconds)
 
     update_assessment_progress(
         assessment_id=assessment.id,
@@ -270,9 +419,16 @@ def update_job_progress(
         active_agent=payload.active_agent,
         log_line=payload.log_chunk,
         db=db,
+        commit=False,
     )
+    db.commit()
 
-    return {"status": "ok", "assessment_id": assessment_id, "phase": payload.phase}
+    return {
+        "status": "ok",
+        "assessment_id": assessment_id,
+        "phase": payload.phase,
+        "lease_expires_at": assessment.lease_expires_at.isoformat(),
+    }
 
 
 @router.post("/jobs/{assessment_id}/complete", status_code=status.HTTP_200_OK)
@@ -284,11 +440,8 @@ def complete_job(
 ):
     """
     Ingests final scan findings and deliverables from the worker, marking the assessment complete.
+    Strictly restricted to the claiming worker and valid 'running' state with row-level lock retention.
     """
-    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
-    if not assessment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
-
     try:
         updated = ingest_scan_results(
             db=db,
@@ -297,12 +450,25 @@ def complete_job(
             raw_output_obj=payload.raw_output,
             user_email=f"worker:{payload.worker_id}",
             deliverables=payload.deliverables,
+            expected_worker_id=payload.worker_id,
         )
         return {
-            "status": "completed",
+            "status": updated.status,
             "assessment_id": updated.id,
-            "findings_ingested": updated.findings_count,
+            "findings_ingested": updated.findings_count or 0,
         }
+    except PermissionError as pe:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(pe),
+        )
+    except ValueError as ve:
+        err_msg = str(ve)
+        if "not found" in err_msg.lower():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err_msg)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=err_msg)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to ingest worker findings for {assessment_id}: {e}", exc_info=True)
         raise HTTPException(
@@ -320,14 +486,38 @@ def fail_job(
 ):
     """
     Marks an assessment failed with diagnostic error details from the worker daemon.
+    Strictly restricted to the claiming worker and valid 'running' state with row-level lock retention.
     """
-    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+    query = db.query(Assessment).filter(Assessment.id == assessment_id)
+    try:
+        query = query.with_for_update()
+    except Exception:
+        pass
+    assessment = query.first()
     if not assessment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
 
+    if assessment.status != "running":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot fail job {assessment_id}: current status is '{assessment.status}' (expected 'running').",
+        )
+
+    if not assessment.worker_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot fail job {assessment_id}: job has not been claimed.",
+        )
+
+    if assessment.worker_id != payload.worker_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Worker '{payload.worker_id}' is not the claimant of job {assessment_id} (claimed by '{assessment.worker_id}').",
+        )
+
+    now = datetime.now(timezone.utc)
     assessment.status = "failed"
-    assessment.completed_at = datetime.now(timezone.utc)
-    db.commit()
+    assessment.completed_at = now
 
     update_assessment_progress(
         assessment_id=assessment.id,
@@ -336,6 +526,7 @@ def fail_job(
         message=f"Worker error: {payload.error_message}",
         log_line=f"Failure encountered on {payload.worker_id}: {payload.error_message}. Logs: {payload.error_logs or 'None'}",
         db=db,
+        commit=False,
     )
 
     log_audit(
@@ -345,6 +536,33 @@ def fail_job(
         resource_type="assessment",
         resource_id=assessment.id,
         details=f"Worker {payload.worker_id} reported failure: {payload.error_message[:200]}",
+        commit=False,
     )
+    db.commit()
 
     return {"status": "failed", "assessment_id": assessment.id}
+
+
+@router.post("/jobs/recover-abandoned", status_code=status.HTTP_200_OK)
+def trigger_recovery(
+    payload: Optional[WorkerRecoveryRequest] = None,
+    _token: str = Depends(verify_worker_auth),
+    db: Session = Depends(get_db),
+):
+    """
+    Explicit endpoint to recover assessments abandoned by disconnected or lost workers.
+    Re-queues assessments within retry limits or transitions them to failed.
+    """
+    max_retries = payload.max_retries if payload else None
+    lease_seconds = payload.lease_seconds if payload else None
+
+    recovered = recover_abandoned_assessments(
+        db=db,
+        max_retries=max_retries,
+        lease_seconds=lease_seconds,
+    )
+    return {
+        "status": "ok",
+        "recovered_count": len(recovered),
+        "recovered": recovered,
+    }

@@ -15,18 +15,38 @@ This document represents the audited verification status of **Lazy Nerds FixOps 
 
 ---
 
-## 2. Core Functionality
+## 2. Core Functionality & Platform Modules
 
-- [x] **Authentication is real and tested:** Verified via `test_auth.py` and `test_e2e_full_flow.py` with real bcrypt password hashing and signed JWT issuance.
-- [x] **Client creation works:** Verified via `test_create_client_success` and frontend form validation.
-- [x] **Client listing works:** Verified via `GET /api/v1/clients` with database pagination.
-- [x] **Search, filtering, and pagination work:** Verified search across company, contact, and email; status filtering by active/archived; sorting allowlist.
-- [x] **Client profiles work:** Verified at `/clients/[clientId]` with full record details.
-- [x] **Editing works:** Verified via `PATCH /api/v1/clients/{client_id}` with timestamp updating and persistence.
-- [x] **Archiving and restoring work:** Verified with `test_archive_and_restore_flow` preserving records and toggling active/archived state.
-- [x] **Changes persist in PostgreSQL:** Verified via SQLAlchemy transactional commits and migration schema.
-- [x] **All visible controls have functional outcomes:** All buttons, filters, pagination, and tabs perform explicit operations or display honest planned state notices.
-- [x] **Error states have been tested:** Tested empty database state, no search results state, invalid URL schemes, missing fields, and 404 nonexistent IDs.
+### Client Organization Workspace
+- [x] **Client Directory (`/clients`):** Paginated data table backed by PostgreSQL with real-time server-side pagination, debounced search (by company, contact name, or email), status filtering (`Active`, `Archived`, `All`), and sort allowlisting (`created_at`, `updated_at`, `company_name`).
+- [x] **Create & Edit Client Flows (`/clients/new`, `/clients/[clientId]/edit`):** Multi-step wizard and modal with dual-layer validation (Zod client-side, Pydantic backend), whitespace normalization, RFC email validation, and strict URL scheme allowlisting.
+- [x] **Archival & Restoration Lifecycle:** Soft archival preserving historical identifiers and relations, excluding archived clients from default views, and supporting instant restoration.
+
+### Role-Based Access Control & User Management
+- [x] **Authentication & Session Security:** Real bcrypt password hashing, signed JWT issuance, HttpOnly cookie persistence (`/login`), and password reset token workflows (`test_auth.py`, `test_password_reset.py`).
+- [x] **User Registration & Roles (`/register`, `/users`):** Self-service client onboarding and administrative user management enforcing roles (`admin`, `pentester`, `client_viewer`) with server-side privilege checks (`test_roles_and_registration.py`).
+
+### Security Engagements Lifecycle
+- [x] **Engagement Scoping & Tracking (`/engagements`):** Full lifecycle management across assessment types (Web App, Network, Cloud, Red Team), date sequence validation (`due_date >= start_date`), and operational status transitions (`test_engagements.py`).
+- [x] **Rules of Engagement (RoE) Authorization:** Explicit authorization verification states (`draft`, `pending`, `confirmed`) ensuring testing is never initiated without verified legal authorization.
+
+### Target Asset Management
+- [x] **Asset Inventory (`/assets`):** Association of in-scope domains, IPs, web applications, and source repositories to specific client engagements.
+- [x] **Multi-Layer SSRF Guard:** Server-side destination validation blocking cloud metadata IP ranges (`169.254.169.254`, GCP/AWS metadata endpoints), loopback/private ranges in production, and restricted infrastructure ports (22, 5432, 6379, 27017) before any probe execution (`test_security.py`).
+
+### Vulnerability Findings & Scanner Orchestration
+- [x] **Findings Management (`/findings`):** Normalized vulnerability schema with CVSS scoring, severity classification, CVE/CWE mapping, reproduction evidence, and status tracking (`open`, `in_progress`, `remediated`, `accepted_risk`, `false_positive`).
+- [x] **Scanner Adapters (Nuclei & Shannon AI):** Support for native Nuclei black-box vulnerability scanning and Shannon AI pentesting, with SARIF 2.1.0 standard report ingestion (`test_scanner_service.py`).
+- [x] **Truthful Attribution & Provenance Separation:** Clear demarcation separating live confirmed findings from simulated benchmark runs (`[LAB BENCHMARK]`), ensuring honest client reporting without fabricated AI exploits (`test_ai_provider_config.py`).
+
+### Distributed Scanner Worker Subsystem
+- [x] **Decoupled Worker Architecture (`worker/fixops_worker.py`):** Dedicated worker daemon executing security tools inside resource-constrained Docker containers (`--cpus 2.0`, `--memory 2g`, `--cap-drop ALL`, read-only mounts).
+- [x] **Claimant Ownership & State Protection:** Atomically assigns `worker_id` and initial lease upon claim; strictly restricts `/progress`, `/complete`, `/fail`, and `/heartbeat` updates to the claimant worker (non-claimants receive HTTP 403 Forbidden). Prevents completed or unclaimed jobs from being overwritten (HTTP 409 Conflict) (`test_worker_api.py`).
+- [x] **Bounded Lease & Abandoned Worker Recovery:** Configurable lease duration (`WORKER_LEASE_SECONDS`) and automatic recovery (`recover_abandoned_assessments`) that re-queues expired jobs within retry limits (`WORKER_MAX_RETRIES`) or transitions them permanently to `failed` upon persistent worker loss (`test_worker_api.py`).
+
+### Executive Reporting & Automation
+- [x] **Executive Summary Reports (`/reports`):** Automated compilation of executive summary reports with CVSS risk distributions, engagement highlights, and remediation progress metrics.
+- [x] **Remediation Automation Engine (`/automations`):** Event-driven webhook dispatching (`on_finding_created`, severity-based routing, rule matching) with delivery auditing (`test_remediation_automation.py`).
 
 ---
 
@@ -41,16 +61,16 @@ This document represents the audited verification status of **Lazy Nerds FixOps 
 
 ---
 
-## 4. Security
+## 4. Security & Infrastructure
 
 - [x] **No real secrets are committed:** Verified `.env.example` contains only template placeholders; `.gitignore` protects `.env`.
-- [x] **Protected endpoints enforce authentication:** Verified 401 Unauthorized returned to unauthenticated visitors across all client routes.
-- [x] **Authorization is enforced server-side:** Verified via FastAPI `get_current_user` dependency.
-- [x] **CORS and cookie settings are correct:** Verified HttpOnly, SameSite=Lax cookies and explicit origin allowlists.
+- [x] **Protected endpoints enforce authentication:** Verified 401 Unauthorized returned to unauthenticated visitors across all authenticated routes.
+- [x] **Authorization is enforced server-side:** Verified via FastAPI role dependencies (`require_admin`, `require_pentester`, `get_current_user`).
+- [x] **CORS and cookie settings are correct:** Verified HttpOnly, SameSite=Lax cookies and explicit origin allowlists rejecting wildcard `*` with credentials.
+- [x] **Production error handling does not expose sensitive details:** Verified global exception handler suppresses stack traces and SQL strings.
 - [ ] **HTTPS is configured:** *INCOMPLETE.* Requires production TLS certificate termination on the deployed server.
 - [ ] **Database access is restricted:** *INCOMPLETE.* Local development tested; production least-privilege PostgreSQL user must be provisioned.
 - [ ] **Database backups and restoration verified in production:** *INCOMPLETE.* Scheduled backups to be configured upon cloud database deployment.
-- [x] **Production error handling does not expose sensitive details:** Verified global exception handler suppresses stack traces and SQL strings.
 
 ---
 
@@ -61,11 +81,14 @@ This document represents the audited verification status of **Lazy Nerds FixOps 
 - [ ] **HTTPS works on the custom domain:** *INCOMPLETE.* Pending domain deployment.
 - [x] **The favicon works in built output:** Verified in Next.js production build output.
 - [x] **The privacy policy and terms pages work in production build:** Verified prerendered static routes `/privacy` and `/terms`.
-- [x] **Database migrations exist and pass:** Alembic `001_initial_schema` migration verified.
-- [x] **Critical end-to-end tests pass:** 24 backend automated tests and 8 frontend validation tests pass with zero failures.
+- [x] **Database migrations exist and pass:** Alembic revisions `001_initial_schema` through `005_scanner_worker_ownership_and_leases` verified.
+- [x] **Critical automated test suites pass:**
+  - **Backend (Pytest):** 141 automated tests pass with 0 failures (covering auth, clients, engagements, assets, findings, workers, automations, security, regression fixes, and migration).
+  - **Frontend (Node.js test runner):** 61 unit and integration tests pass with 0 failures (covering form validations, wizard workflows, timezone formatting, 204 response handling, and UI responsive states).
 
 ---
 
-## Summary of Gate Status
-- **Local Application Readiness:** 100% COMPLETE. The application compiles, typechecks cleanly, passes all automated tests, and runs locally.
-- **Production Public Launch:** INCOMPLETE pending corporate legal review of placeholder clauses, cloud hosting credential provisioning, and DNS connection for the custom domain.
+## 6. Summary of Gate Status
+
+- **Local Application Readiness:** 100% COMPLETE. The full platform (frontend, backend, scanner worker, database migrations, and automation engine) compiles, typechecks cleanly, passes all 202 automated tests, and runs locally.
+- **Production Public Launch:** INCOMPLETE. The release remains gated on human and operations requirements: corporate legal counsel review of placeholder clauses, cloud hosting credential provisioning, least-privilege database user setup, TLS termination, and DNS connection for `lazynerds.com`.

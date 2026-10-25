@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     ALLOW_LAB_TESTING: bool = os.getenv("ALLOW_LAB_TESTING", "true").lower() in ("true", "1", "yes")
     DOCKER_MAX_CPUS: float = float(os.getenv("DOCKER_MAX_CPUS", "2.0"))
     DOCKER_MAX_MEMORY: str = os.getenv("DOCKER_MAX_MEMORY", "2g")
+    WORKER_LEASE_SECONDS: int = int(os.getenv("WORKER_LEASE_SECONDS", "300"))
+    WORKER_HEARTBEAT_TIMEOUT_SECONDS: int = int(os.getenv("WORKER_HEARTBEAT_TIMEOUT_SECONDS", "180"))
+    WORKER_MAX_RETRIES: int = int(os.getenv("WORKER_MAX_RETRIES", "2"))
     GIT_COMMIT: str = os.getenv("RENDER_GIT_COMMIT", os.getenv("VERCEL_GIT_COMMIT_SHA", os.getenv("GIT_COMMIT", "94fafa4")))
 
 

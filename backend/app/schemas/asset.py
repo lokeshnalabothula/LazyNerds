@@ -37,6 +37,21 @@ class AssetBase(BaseModel):
             return stripped
         return v
 
+    @field_validator("target")
+    @classmethod
+    def validate_target(cls, v: str) -> str:
+        if isinstance(v, str):
+            stripped = v.strip()
+            lower = stripped.lower()
+            for bad_scheme in ("javascript:", "data:", "file:", "ftp:", "gopher:", "vbscript:"):
+                if lower.startswith(bad_scheme):
+                    raise ValueError(f"Dangerous URL scheme '{bad_scheme}' is strictly prohibited.")
+            for blocked in ("169.254.169.254", "169.254.170.2", "100.100.100.200", "metadata.google.internal", "metadata.internal"):
+                if blocked in lower:
+                    raise ValueError(f"Target '{blocked}' is a restricted metadata address and is strictly prohibited.")
+            return stripped
+        return v
+
 
 class AssetCreate(AssetBase):
     client_id: str = Field(..., min_length=36, max_length=36)
@@ -53,6 +68,21 @@ class AssetUpdate(BaseModel):
     authorization_status: Optional[AuthorizationStatusType] = None
     engagement_id: Optional[str] = None
     notes: Optional[str] = None
+
+    @field_validator("target")
+    @classmethod
+    def validate_update_target(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        stripped = v.strip()
+        lower = stripped.lower()
+        for bad_scheme in ("javascript:", "data:", "file:", "ftp:", "gopher:", "vbscript:"):
+            if lower.startswith(bad_scheme):
+                raise ValueError(f"Dangerous URL scheme '{bad_scheme}' is strictly prohibited.")
+        for blocked in ("169.254.169.254", "169.254.170.2", "100.100.100.200", "metadata.google.internal", "metadata.internal"):
+            if blocked in lower:
+                raise ValueError(f"Target '{blocked}' is a restricted metadata address and is strictly prohibited.")
+        return stripped
 
 
 class AssetOut(BaseModel):

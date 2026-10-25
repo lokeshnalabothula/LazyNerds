@@ -55,6 +55,7 @@ except ImportError:
         clean = re.sub(r"(ci_live_[a-zA-Z0-9_\-]{16,})", "[REDACTED_KEY]", str(msg))
         clean = re.sub(r"(sk-[a-zA-Z0-9_\-]{16,})", "[REDACTED_KEY]", clean)
         clean = re.sub(r"(xai-[a-zA-Z0-9_\-]{16,})", "[REDACTED_KEY]", clean)
+        clean = re.sub(r"(freellmapi-[a-zA-Z0-9_\-]{16,})", "[REDACTED_KEY]", clean)
         if "insufficient_balance" in clean or "402" in clean:
             return "AI provider billing error: Insufficient wallet balance on provider (HTTP 402). Please top up credits."
         return clean

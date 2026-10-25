@@ -146,6 +146,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new ApiError(response.status, errorDetail, errorData);
   }
 
+  // Handle 204 No Content or empty response body safely
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return {} as T;
+  }
+
   return response.json();
 }
 

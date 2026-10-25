@@ -144,12 +144,17 @@ class AssessmentOut(BaseModel):
     execution_summary: Optional[str] = None
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
+    worker_id: Optional[str] = None
+    claimed_at: Optional[datetime] = None
+    last_heartbeat_at: Optional[datetime] = None
+    lease_expires_at: Optional[datetime] = None
+    retry_count: int = 0
     created_at: datetime
     updated_at: datetime
 
     model_config = {"from_attributes": True}
 
-    @field_serializer("started_at", "completed_at", "created_at", "updated_at", when_used="json")
+    @field_serializer("started_at", "completed_at", "claimed_at", "last_heartbeat_at", "lease_expires_at", "created_at", "updated_at", when_used="json")
     def serialize_dt(self, dt: Optional[datetime]) -> Optional[str]:
         return serialize_utc_datetime(dt)
 

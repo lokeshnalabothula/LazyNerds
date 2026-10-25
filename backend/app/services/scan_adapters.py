@@ -402,12 +402,16 @@ def run_or_import_scan(
     eng = db.query(Engagement).filter(Engagement.id == engagement_id).first()
     if not eng:
         raise ValueError("Referenced engagement does not exist.")
+    if eng.status in ("completed", "cancelled"):
+        raise ValueError(f"Cannot import scans into an engagement in '{eng.status}' status.")
 
-    # 2. Strict Scope Enforcement: Target asset must be in_scope
+    # 2. Strict Scope Enforcement: Target asset must be in_scope and belong to the engagement client
     if target_asset_id:
         asset = db.query(Asset).filter(Asset.id == target_asset_id).first()
         if not asset:
             raise ValueError("Target asset does not exist.")
+        if asset.client_id != eng.client_id:
+            raise ValueError("Target asset does not belong to the referenced engagement's client.")
         if not asset.in_scope:
             raise ValueError(
                 f"Scope violation: Asset '{asset.name}' is marked out-of-scope. "
@@ -444,6 +448,7 @@ def run_or_import_scan(
     db.commit()
     db.refresh(assessment)
 
+    created_findings = []
     if auto_create_findings:
         for f_data in parsed_findings:
             finding = Finding(
@@ -462,23 +467,28 @@ def run_or_import_scan(
                 references_url=f_data.get("references_url"),
             )
             db.add(finding)
-            db.commit()
-            db.refresh(finding)
+            created_findings.append(finding)
+        db.commit()
 
+        for finding in created_findings:
+            db.refresh(finding)
             # Trigger automation event
-            dispatch_event(
-                db=db,
-                event_type="on_finding_created",
-                context={
-                    "finding_id": finding.id,
-                    "title": finding.title,
-                    "severity": finding.severity,
-                    "engagement_id": engagement_id,
-                    "asset_id": target_asset_id,
-                    "cve_id": finding.cve_id,
-                },
-                trigger_source=f"finding:{finding.title}",
-            )
+            try:
+                dispatch_event(
+                    db=db,
+                    event_type="on_finding_created",
+                    context={
+                        "finding_id": finding.id,
+                        "title": finding.title,
+                        "severity": finding.severity,
+                        "engagement_id": engagement_id,
+                        "asset_id": target_asset_id,
+                        "cve_id": finding.cve_id,
+                    },
+                    trigger_source=f"finding:{finding.title}",
+                )
+            except Exception as ev_err:
+                logger.warning(f"Failed to dispatch automation event for finding {finding.id}: {ev_err}")
 
     if current_user_email:
         log_audit(

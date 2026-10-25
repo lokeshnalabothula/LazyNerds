@@ -181,8 +181,12 @@ def review_registration(
             .filter(func.lower(func.trim(User.email)) == reg.email.strip().lower())
             .first()
         )
-        if not user:
+        if user and user.role in ("founder", "admin", "employee"):
+            raise ValueError(
+                f"Cannot associate registration with existing internal account '{user.email}' (role: {user.role})."
+            )
 
+        if not user:
             user = User(
                 email=reg.email,
                 full_name=reg.full_name,

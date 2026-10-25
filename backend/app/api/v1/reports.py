@@ -1,3 +1,4 @@
+from html import escape
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -113,12 +114,15 @@ def download_report(
             headers={"Content-Disposition": f'attachment; filename="FixOps_Report_{report.id[:8]}.md"'},
         )
 
+    safe_title = escape(report.title or "FixOps Security Report")
+    safe_content = escape(report.summary_content or "")
+
     # Clean, professional print-ready HTML
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>{report.title} - Lazy Nerds FixOps</title>
+<title>{safe_title} - Lazy Nerds FixOps</title>
 <style>
   body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 850px; margin: 40px auto; padding: 0 20px; }}
   h1 {{ font-size: 26px; border-bottom: 2px solid #e4e4e7; padding-bottom: 12px; margin-bottom: 8px; color: #09090b; }}
@@ -133,7 +137,7 @@ def download_report(
 </head>
 <body>
 <div class="header-meta">Lazy Nerds FixOps Platform &bull; Confidential Security Assessment Document</div>
-<pre style="white-space: pre-wrap; font-family: inherit; background: transparent; padding: 0;">{report.summary_content}</pre>
+<pre style="white-space: pre-wrap; font-family: inherit; background: transparent; padding: 0;">{safe_content}</pre>
 </body>
 </html>"""
     return HTMLResponse(

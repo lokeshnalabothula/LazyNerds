@@ -39,6 +39,11 @@ class Assessment(Base):
     raw_output = Column(Text, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
+    worker_id = Column(String(100), nullable=True, index=True)
+    claimed_at = Column(DateTime(timezone=True), nullable=True)
+    last_heartbeat_at = Column(DateTime(timezone=True), nullable=True)
+    lease_expires_at = Column(DateTime(timezone=True), nullable=True)
+    retry_count = Column(Integer, default=0, server_default="0", nullable=False)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
@@ -53,6 +58,8 @@ class Assessment(Base):
         ),
         Index("idx_assessments_engagement_status", "engagement_id", "status"),
         Index("idx_assessments_created_at", "created_at"),
+        Index("idx_assessments_worker_id", "worker_id"),
+        Index("idx_assessments_lease_expires_at", "lease_expires_at"),
     )
 
     def __repr__(self) -> str:

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_founder, require_employee_or_founder
 from app.db.session import get_db
+from app.models.client import Client
 from app.models.user import User
 from app.schemas.client import (
     BulkArchiveRequest,
@@ -118,6 +119,18 @@ def bulk_archive(
     Bulk archives multiple selected clients transactionally.
     Preserves all historical engagements, assets, and reports.
     """
+    if current_user.role == "employee":
+        disallowed = db.query(Client).filter(
+            Client.id.in_(data.client_ids),
+            Client.assigned_employee_id.isnot(None),
+            Client.assigned_employee_id != current_user.id,
+        ).first()
+        if disallowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to one or more selected client records.",
+            )
+
     archived = bulk_archive_clients(db, client_ids=data.client_ids)
     for c in archived:
         log_audit(
@@ -144,6 +157,18 @@ def bulk_restore(
     """
     Bulk restores multiple archived clients to active status.
     """
+    if current_user.role == "employee":
+        disallowed = db.query(Client).filter(
+            Client.id.in_(data.client_ids),
+            Client.assigned_employee_id.isnot(None),
+            Client.assigned_employee_id != current_user.id,
+        ).first()
+        if disallowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to one or more selected client records.",
+            )
+
     restored = bulk_restore_clients(db, client_ids=data.client_ids)
     for c in restored:
         log_audit(
@@ -285,6 +310,12 @@ def archive_existing_client(
             detail="This client could not be found.",
         )
 
+    if current_user.role == "employee" and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not assigned to this client record.",
+        )
+
     archived = archive_client(db, client=client)
     log_audit(
         db=db,
@@ -311,6 +342,12 @@ def restore_existing_client(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This client could not be found.",
+        )
+
+    if current_user.role == "employee" and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not assigned to this client record.",
         )
 
     restored = restore_client(db, client=client)

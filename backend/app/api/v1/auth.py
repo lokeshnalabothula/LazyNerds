@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -157,47 +157,45 @@ def change_password(
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
 def forgot_password(
     data: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
     Initiates password recovery.
     Always returns a generic 200 response to prevent account enumeration.
     Generates a secure, hashed, single-use token with 30-minute expiration.
-    Dispatches a branded password reset email with the recovery URL.
+    Dispatches a branded password reset email with the recovery URL asynchronously
+    via FastAPI BackgroundTasks to eliminate account-existence timing side-channels.
     """
+    if settings.ENVIRONMENT == "production":
+        provider = email_service.get_active_email_provider()
+        if provider not in ("resend", "smtp"):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Password recovery service is temporarily unavailable because email delivery is not yet configured on this environment. Please contact the administrator.",
+            )
+
     reset_info = password_reset_service.initiate_password_reset(db, email=data.email)
     
-    email_status = "not_sent_no_account"
     if reset_info:
         raw_token, target_user = reset_info
         reset_url = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password?token={raw_token}"
-        dispatch_result = email_service.send_password_reset_email(
+        background_tasks.add_task(
+            email_service.send_password_reset_email,
             to_email=target_user.email,
             recipient_name=target_user.full_name,
             reset_url=reset_url,
         )
-        if dispatch_result.get("success"):
-            provider = dispatch_result.get("provider")
-            msg_id = dispatch_result.get("message_id")
-            email_status = f"dispatched_{provider}" + (f"_id_{msg_id}" if msg_id else "")
-        else:
-            email_status = f"failed_{dispatch_result.get('provider')}: {dispatch_result.get('error')}"
 
-    # Audit event without exposing token
+    # Audit event without exposing token or leaking delivery latency
     audit_service.log_audit(
         db=db,
         user_email=str(data.email).strip().lower(),
         action="FORGOT_PASSWORD_REQUEST",
         resource_type="user",
         resource_id="auth",
-        details=f"Password recovery requested for {data.email}. Outcome: {email_status}",
+        details=f"Password recovery requested for {data.email}.",
     )
-
-    if settings.ENVIRONMENT == "production" and reset_info and not dispatch_result.get("success"):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Password recovery service is temporarily unavailable because email delivery is not yet configured on this environment. Please contact the administrator.",
-        )
 
     return {
         "message": "If an account matches that email address, password recovery instructions have been dispatched."

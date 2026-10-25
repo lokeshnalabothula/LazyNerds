@@ -233,9 +233,9 @@ export default function SettingsPage() {
         </div>
 
         {/* Conventional Master-Detail Layout */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex flex-col xl:flex-row gap-6 items-start">
           {/* Desktop Left Sidebar Navigation */}
-          <aside id="settings-sidebar" className="hidden lg:block w-60 xl:w-64 shrink-0">
+          <aside id="settings-sidebar" className="hidden xl:block w-64 shrink-0">
             <div className="sticky top-20 p-2 rounded-xl bg-zinc-50 dark:bg-[#111318] border border-zinc-200 dark:border-[#222630] space-y-1 shadow-xs">
               <div className="px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-bold">
                 Settings Navigation
@@ -264,8 +264,8 @@ export default function SettingsPage() {
             </div>
           </aside>
 
-          {/* Mobile & Tablet Section Selector (Bulletproof Native Dropdown with High Touch Target) */}
-          <div className="w-full lg:hidden">
+          {/* Responsive Section Selector for Mobile, Tablet & Compact Laptop */}
+          <div className="w-full xl:hidden">
             <label htmlFor="mobile-settings-nav" className="block text-xs font-semibold text-zinc-700 dark:text-[#9CA3AF] mb-1.5">
               Settings Section
             </label>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
                             {user.role}
                           </Badge>
                         </div>
-                        <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] font-mono">
+                        <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] font-mono break-all">
                           {user.email}
                         </p>
                         <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
@@ -345,7 +345,7 @@ export default function SettingsPage() {
 
                       <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-200 dark:border-[#222630]">
                         <span className="text-zinc-400 dark:text-zinc-500 block text-[11px] mb-0.5">Account Email</span>
-                        <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                        <span className="font-mono text-zinc-900 dark:text-zinc-100 text-xs break-all block">
                           {user.email}
                         </span>
                       </div>
@@ -389,15 +389,15 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                <div className="pt-3 border-t border-zinc-200 dark:border-[#222630] flex items-center justify-between">
-                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                <div className="pt-3 border-t border-zinc-200 dark:border-[#222630] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500 leading-relaxed">
                     End current active session across all platform services.
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={logout}
-                    className="gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 min-h-[36px] border-zinc-200 dark:border-[#222630] dark:bg-[#161920]"
+                    className="gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 min-h-[36px] border-zinc-200 dark:border-[#222630] dark:bg-[#161920] shrink-0 self-start sm:self-auto"
                   >
                     <LogOut className="h-3.5 w-3.5" />
                     <span>Sign out of Workspace</span>

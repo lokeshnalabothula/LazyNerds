@@ -160,7 +160,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         </div>
 
         {title && (
-          <div className="flex items-center gap-2 min-w-0 truncate">
+          <div className="hidden lg:flex items-center gap-2 min-w-0 truncate">
             <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB] truncate">
               {title}
             </span>

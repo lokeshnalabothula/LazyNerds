@@ -19,15 +19,15 @@ test.describe("Settings Page Organization & Telemetry Integrity (LNA-14)", () =>
   });
 
   test("Settings provides master-detail desktop sidebar without horizontal pill collisions", () => {
-    assert.match(settingsSource, /<aside[^>]*id="settings-sidebar"[^>]*className="[^"]*hidden lg:block[^"]*"/);
+    assert.match(settingsSource, /<aside[^>]*id="settings-sidebar"[^>]*className="[^"]*hidden xl:block[^"]*"/);
     assert.match(settingsSource, /Settings Navigation/);
     assert.match(settingsSource, /min-h-\[40px\]/);
     // Eliminates overflowing horizontal pill strips that caused desktop text collision
     assert.doesNotMatch(settingsSource, /overflow-x-auto/);
   });
 
-  test("Settings provides mobile and tablet select navigation for 100% discoverability at narrow widths", () => {
-    assert.match(settingsSource, /<div className="w-full lg:hidden">/);
+  test("Settings provides mobile, tablet, and compact laptop select navigation for 100% discoverability at narrow widths", () => {
+    assert.match(settingsSource, /<div className="w-full xl:hidden">/);
     assert.match(settingsSource, /<select/);
     assert.match(settingsSource, /id="mobile-settings-nav"/);
     assert.match(settingsSource, /min-h-\[44px\]/);

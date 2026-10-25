@@ -322,6 +322,17 @@ def submit_website_audit(
             detail="Access denied: Cannot submit audits for other client organizations.",
         )
 
+    # Employee assignment check: employees cannot audit clients assigned to another employee
+    if (
+        current_user.role == "employee"
+        and client.assigned_employee_id
+        and client.assigned_employee_id != current_user.id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not assigned to this client record.",
+        )
+
     # 4. Resolve or create Engagement
     if req.engagement_id:
         eng = db.query(Engagement).filter(Engagement.id == req.engagement_id).first()

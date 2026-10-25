@@ -18,11 +18,18 @@ test.describe("Settings Page Organization & Telemetry Integrity (LNA-14)", () =>
     assert.match(settingsSource, /"all"/);
   });
 
-  test("Settings provides responsive tab bar with full labels for desktop and compact labels for mobile", () => {
+  test("Settings provides responsive wrapped grid navigation for full mobile and desktop discoverability", () => {
     assert.match(settingsSource, /tab\.label/);
     assert.match(settingsSource, /tab\.shortLabel/);
-    assert.match(settingsSource, /overflow-x-auto/);
+    assert.match(settingsSource, /grid-cols-2/);
+    assert.match(settingsSource, /md:grid-cols-6/);
     assert.match(settingsSource, /min-h-\[38px\]/);
+  });
+
+  test("Header workspace badges are dynamically sourced and avoid hardcoded static labels", () => {
+    assert.doesNotMatch(settingsSource, /FIXOPS ENTERPRISE/);
+    assert.doesNotMatch(settingsSource, /"v2\.1\.0"/);
+    assert.match(settingsSource, /healthStatus\?\.environment/);
   });
 
   test("Diagnostics are dynamically sourced from api.getHealth and do not hardcode fake operational version", () => {

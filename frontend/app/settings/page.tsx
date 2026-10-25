@@ -232,17 +232,17 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center gap-2 self-start sm:self-auto">
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
-                FIXOPS ENTERPRISE
+                {healthStatus?.environment ? `${healthStatus.environment.toUpperCase()} WORKSPACE` : "FIXOPS WORKSPACE"}
               </span>
               <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
-                v2.1.0
+                {healthStatus?.version ? `v${healthStatus.version}` : (healthLoading ? "Connecting…" : "v1.0.0")}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Section Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-[#161920] border border-zinc-200 dark:border-[#222630] rounded-xl overflow-x-auto scrollbar-none">
+        {/* Section Navigation - Responsive Wrapped Grid for Full Mobile & Desktop Discoverability */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 p-1.5 bg-zinc-100 dark:bg-[#161920] border border-zinc-200 dark:border-[#222630] rounded-xl">
           {SECTIONS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -250,7 +250,7 @@ export default function SettingsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 text-xs rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap min-h-[38px] ${
+                className={`px-3 py-2 text-xs rounded-lg font-medium transition-all flex items-center justify-center sm:justify-start gap-2 whitespace-nowrap min-h-[38px] ${
                   isActive
                     ? "bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-semibold shadow-xs"
                     : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 border border-transparent"

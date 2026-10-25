@@ -107,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={cn(
-        "border-r border-zinc-200/60 dark:border-white/[0.08] bg-white/70 dark:bg-[#090C13]/85 backdrop-blur-2xl flex flex-col h-full select-none transition-all duration-300 ease-in-out",
+        "border-r border-zinc-200/60 dark:border-white/[0.08] bg-white/70 dark:bg-[#07090E]/90 backdrop-blur-2xl flex flex-col h-full select-none transition-all duration-300 ease-in-out shadow-[20px_0_40px_-15px_rgba(0,0,0,0.65)]",
         isCollapsed ? "w-[68px]" : "w-64"
       )}
       aria-label="Application Navigation Sidebar"

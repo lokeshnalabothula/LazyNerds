@@ -87,11 +87,11 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#090A0D] cyber-grid flex flex-col md:flex-row text-zinc-900 dark:text-[#F9FAFB] overflow-x-hidden relative">
-      {/* Ambient Top Cyber Glow */}
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#07090E] cyber-grid flex flex-col md:flex-row text-zinc-900 dark:text-[#F9FAFB] overflow-x-hidden relative">
+      {/* Subtle Atmospheric Radial Vignette (Stitch Liquid Glass Model) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[900px] max-w-full h-[320px] bg-gradient-to-b from-[#F5C518]/[0.03] via-[#F5C518]/[0.01] to-transparent blur-3xl z-0"
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(217,119,6,0.12),rgba(7,9,14,0))]"
       />
 
       {/* Desktop Collapsible Sidebar */}

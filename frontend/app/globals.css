@@ -27,25 +27,25 @@
   }
 
   .dark {
-    /* Liquid Glass Obsidian Precision tokens */
-    --background: 222 30% 5%;        /* #080A0F deep obsidian bedrock */
-    --foreground: 210 20% 98%;        /* #F9FAFB pure readable text */
-    --card: 222 25% 10%;              /* #101622 liquid glass panel base */
+    /* Stitch Liquid Glass Precision Tokens */
+    --background: 222 35% 4%;         /* #07090E deep bedrock */
+    --foreground: 210 20% 98%;        /* #F9FAFB crisp text */
+    --card: 222 25% 8%;               /* #0D1017 glass surface base */
     --card-foreground: 210 20% 98%;   /* #F9FAFB */
-    --popover: 222 26% 12%;           /* #141B2A elevated popover */
+    --popover: 222 28% 10%;           /* #111520 elevated popover */
     --popover-foreground: 210 20% 98%;/* #F9FAFB */
-    --primary: 47 92% 53%;            /* #F5C518 tactile yellow gold */
-    --primary-foreground: 222 30% 5%; /* #080A0F */
-    --secondary: 222 22% 14%;         /* #182030 raised secondary */
+    --primary: 47 92% 53%;            /* #F5C518 tactile amber gold */
+    --primary-foreground: 222 35% 4%; /* #07090E */
+    --secondary: 222 20% 12%;         /* #141824 secondary surface */
     --secondary-foreground: 210 20% 98%;
-    --muted: 222 20% 15%;             /* #161D2B */
-    --muted-foreground: 215 16% 70%;  /* #94A3B8 readable secondary text */
+    --muted: 222 20% 12%;             /* #141824 */
+    --muted-foreground: 215 16% 68%;  /* #94A3B8 readable secondary */
     --accent: 47 92% 53%;             /* #F5C518 */
-    --accent-foreground: 222 30% 5%;
+    --accent-foreground: 222 35% 4%;
     --destructive: 350 89% 60%;       /* #F43F5E critical rose */
     --destructive-foreground: 0 0% 98%;
-    --border: 222 20% 18%;            /* #202738 subtle glass border */
-    --input: 222 20% 18%;             /* #202738 */
+    --border: 222 20% 16%;            /* #1E2433 structural hairline */
+    --input: 222 20% 16%;             /* #1E2433 */
     --ring: 47 92% 53%;               /* #F5C518 */
   }
 
@@ -122,34 +122,46 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.35);
   }
 
-  /* Liquid Glass Panels with Specular Highlights & Restrained Gloss */
+  /* Liquid Glass Panels with Specular Highlights & Restrained Gloss (Stitch Model) */
   .gloss-card,
   .glass-panel,
   .liquid-glass,
   .cockpit-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(16, 22, 34, 0.65);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    background: rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 0.875rem;
     box-shadow:
-      0 16px 36px -4px rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
+      0 20px 40px -15px rgba(0, 0, 0, 0.65),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
       inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   }
 
-  .liquid-glass-elevated {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(22, 30, 48, 0.78);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+  .liquid-glass-elevated,
+  .glass-panel-elevated {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 0.875rem;
     box-shadow:
-      0 24px 52px -8px rgba(0, 0, 0, 0.65),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+      0 25px 50px -20px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
       inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+
+  .glass-input {
+    background: rgba(0, 0, 0, 0.40);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    border-radius: 0.5rem;
+  }
+  .glass-input:focus-within {
+    border-color: #F5C518;
+    box-shadow: 0 0 0 1px #F5C518, inset 0 1px 2px rgba(0, 0, 0, 0.4);
   }
 
   /* Subtle Top Rim Highlight for Cards */
@@ -160,19 +172,19 @@
     content: "";
     position: absolute;
     top: 0;
-    left: 10%;
-    right: 10%;
+    left: 8%;
+    right: 8%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(245, 197, 24, 0.5), transparent);
+    background: linear-gradient(90deg, transparent, rgba(245, 197, 24, 0.6), transparent);
   }
 
   /* Controlled Glow Accents */
   .glow-yellow,
   .glow-gold {
-    box-shadow: 0 0 16px rgba(245, 197, 24, 0.25);
+    box-shadow: 0 0 20px rgba(245, 197, 24, 0.28);
   }
   .glow-critical {
-    box-shadow: 0 0 16px rgba(244, 63, 94, 0.25);
+    box-shadow: 0 0 20px rgba(244, 63, 94, 0.28);
   }
 
   /* Atmospheric Liquid Glass Depth & Backdrop */
@@ -180,9 +192,9 @@
   .liquid-mesh,
   .glass-canvas {
     background-image:
-      radial-gradient(1000px 500px at 50% -80px, rgba(245, 197, 24, 0.08) 0%, transparent 70%),
-      radial-gradient(800px 500px at 90% 15%, rgba(56, 189, 248, 0.045) 0%, transparent 60%),
-      radial-gradient(700px 600px at 10% 75%, rgba(99, 102, 241, 0.035) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 60% at 50% -15%, rgba(217, 119, 6, 0.12) 0%, rgba(10, 12, 16, 0) 70%),
+      radial-gradient(800px 500px at 90% 15%, rgba(56, 189, 248, 0.035) 0%, transparent 60%),
+      radial-gradient(700px 600px at 10% 75%, rgba(99, 102, 241, 0.025) 0%, transparent 60%);
     background-attachment: fixed;
   }
 
@@ -190,14 +202,14 @@
     transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
   }
   .cockpit-card-interactive:hover {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%), rgba(26, 36, 56, 0.78);
+    background: rgba(255, 255, 255, 0.055);
     border-color: rgba(245, 197, 24, 0.35);
-    border-top-color: rgba(245, 197, 24, 0.6);
+    border-top-color: rgba(245, 197, 24, 0.65);
     transform: translateY(-2px);
     box-shadow:
-      0 20px 48px -4px rgba(0, 0, 0, 0.6),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      0 0 20px -2px rgba(245, 197, 24, 0.12);
+      0 24px 48px -12px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 0 20px -2px rgba(245, 197, 24, 0.15);
   }
 
   .specular-top {
@@ -207,25 +219,30 @@
     content: "";
     position: absolute;
     top: 0;
-    left: 5%;
-    right: 5%;
+    left: 4%;
+    right: 4%;
     height: 1px;
-    background: linear-gradient(90deg, transparent 5%, rgba(255, 255, 255, 0.15) 30%, rgba(245, 197, 24, 0.35) 50%, rgba(255, 255, 255, 0.15) 70%, transparent 95%);
+    background: linear-gradient(90deg, transparent 4%, rgba(255, 255, 255, 0.18) 25%, rgba(245, 197, 24, 0.45) 50%, rgba(255, 255, 255, 0.18) 75%, transparent 96%);
     pointer-events: none;
   }
 
   .telemetry-card {
-    background: linear-gradient(180deg, rgba(22, 30, 48, 0.72) 0%, rgba(14, 19, 32, 0.65) 100%);
-    backdrop-filter: blur(20px) saturate(170%);
-    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    background: rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 0.875rem;
     position: relative;
     overflow: hidden;
     box-shadow:
-      0 12px 32px -4px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      0 16px 36px -8px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 0 rgba(245, 197, 24, 0.12);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .telemetry-card:hover {
+    border-color: rgba(245, 197, 24, 0.3);
+    box-shadow: inset 0 1px 0 0 rgba(245, 197, 24, 0.22), 0 20px 40px -10px rgba(0, 0, 0, 0.65), 0 0 16px rgba(245, 197, 24, 0.12);
   }
 
   .badge-cyber {

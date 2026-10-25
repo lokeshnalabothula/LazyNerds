@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScanTelemetryModal } from "@/components/findings/scan-telemetry-modal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { Client } from "@/types/client";
@@ -26,9 +28,13 @@ import {
   Clock,
   Building2,
   FileCheck2,
+  GitBranch,
+  Terminal,
+  Activity,
 } from "lucide-react";
 
 export default function WebsiteAuditPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const isClientRole = user?.role === "client";
 
@@ -37,6 +43,7 @@ export default function WebsiteAuditPage() {
   const [clientId, setClientId] = useState("");
   const [engagementId, setEngagementId] = useState("");
   const [scanMode, setScanMode] = useState<"blackbox" | "source_assisted">("blackbox");
+  const [sourceRepo, setSourceRepo] = useState("lab/vulnerable_app");
   const [confirmedAuth, setConfirmedAuth] = useState(false);
   const [notes, setNotes] = useState("");
 
@@ -47,6 +54,7 @@ export default function WebsiteAuditPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [auditResult, setAuditResult] = useState<WebsiteAuditResponse | null>(null);
+  const [isTelemetryModalOpen, setIsTelemetryModalOpen] = useState(false);
 
   // Load clients and active engagements
   const loadInitialData = useCallback(async () => {
@@ -82,7 +90,11 @@ export default function WebsiteAuditPage() {
   const urlValidation = useMemo(() => {
     const trimmed = url.trim();
     if (!trimmed) {
-      return { isValid: false, message: "Enter a fully qualified web application URL (e.g. https://example.com)", severity: "neutral" };
+      return {
+        isValid: false,
+        message: "Enter a fully qualified web application URL (e.g. https://example.com or http://127.0.0.1:8888)",
+        severity: "neutral",
+      };
     }
 
     const lower = trimmed.toLowerCase();
@@ -114,25 +126,9 @@ export default function WebsiteAuditPage() {
     try {
       const parsed = new URL(trimmed);
       const host = parsed.hostname.toLowerCase();
+      const port = parsed.port;
 
-      // Blocked localhost / loopback
-      if (
-        host === "localhost" ||
-        host === "127.0.0.1" ||
-        host === "0.0.0.0" ||
-        host === "::1" ||
-        host === "[::1]" ||
-        host.includes("::") ||
-        host.endsWith(".localhost")
-      ) {
-        return {
-          isValid: false,
-          message: "SSRF Violation: Localhost and loopback interfaces cannot be targeted for external security audits.",
-          severity: "critical",
-        };
-      }
-
-      // Blocked Cloud Metadata addresses
+      // Blocked Cloud Metadata addresses (unconditionally blocked)
       if (
         host === "169.254.169.254" ||
         host === "169.254.170.2" ||
@@ -143,6 +139,40 @@ export default function WebsiteAuditPage() {
         return {
           isValid: false,
           message: "SSRF Violation: Cloud instance metadata addresses are strictly prohibited.",
+          severity: "critical",
+        };
+      }
+
+      // Prohibited Infrastructure / Database Ports (including FixOps self-ports)
+      if (["22", "25", "53", "3000", "3306", "5432", "6379", "7233", "8000", "8233", "27017"].includes(port)) {
+        return {
+          isValid: false,
+          message: `SSRF Violation: Target port ${port} is an internal infrastructure service. Self-scanning FixOps services is prohibited.`,
+          severity: "critical",
+        };
+      }
+
+      // Loopback / Localhost handling
+      if (
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host === "0.0.0.0" ||
+        host === "::1" ||
+        host === "[::1]" ||
+        host.includes("::") ||
+        host.endsWith(".localhost")
+      ) {
+        if (port === "8888") {
+          return {
+            isValid: true,
+            message: "Authorized Local Lab Target: Vulnerable Test Application (Port 8888)",
+            severity: "success",
+            hostname: host,
+          };
+        }
+        return {
+          isValid: false,
+          message: "SSRF Violation: Loopback addresses are blocked. Only the authorized vulnerable lab on port 8888 is permitted in development.",
           severity: "critical",
         };
       }
@@ -163,7 +193,7 @@ export default function WebsiteAuditPage() {
       // Valid target
       return {
         isValid: true,
-        message: `Authorized Web Target: ${host} (Port ${parsed.port || (parsed.protocol === "https:" ? "443" : "80")})`,
+        message: `Authorized Web Target: ${host} (Port ${port || (parsed.protocol === "https:" ? "443" : "80")})`,
         severity: "success",
         hostname: host,
       };
@@ -191,6 +221,11 @@ export default function WebsiteAuditPage() {
       return;
     }
 
+    if (scanMode === "source_assisted" && !sourceRepo.trim()) {
+      setSubmitError("Source-assisted AI pentests require a valid source repository path or git URL.");
+      return;
+    }
+
     if (!confirmedAuth) {
       setSubmitError("You must certify written authorization to perform security testing on this domain.");
       return;
@@ -203,11 +238,13 @@ export default function WebsiteAuditPage() {
         client_id: clientId,
         engagement_id: engagementId || undefined,
         scan_mode: scanMode,
+        source_repo: scanMode === "source_assisted" ? sourceRepo.trim() : undefined,
         confirmed_authorization: confirmedAuth,
         notes: notes.trim() || undefined,
       });
 
       setAuditResult(res);
+      setIsTelemetryModalOpen(true);
       // Reset input URL on success
       setUrl("");
       setNotes("");
@@ -256,41 +293,57 @@ export default function WebsiteAuditPage() {
 
         {/* Audit Success Banner / Active Assessment Telemetry */}
         {auditResult && (
-          <div className="cockpit-card specular-top p-5 border-emerald-500/30 bg-emerald-950/15 shadow-lg space-y-4">
+          <div className="cockpit-card specular-top p-5 border-emerald-500/30 bg-emerald-950/15 shadow-lg space-y-4 animate-fadeIn">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                <div className="p-2.5 rounded-lg bg-emerald-500/20 text-emerald-400">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-emerald-300">
-                    Website Security Audit Dispatched Successfully
-                  </h3>
-                  <p className="text-xs text-zinc-300 mt-0.5">
-                    Target: <strong className="font-mono text-emerald-400">{auditResult.target_url}</strong> • Status:{" "}
-                    <span className="capitalize font-mono text-zinc-200">{auditResult.assessment_status}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-semibold text-emerald-300">
+                      Website Security Audit Dispatched
+                    </h3>
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Active Scanner Dispatch
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-300 mt-1">
+                    Target: <strong className="font-mono text-emerald-400">{auditResult.target_url}</strong> • Tool:{" "}
+                    <span className="font-mono text-zinc-200 uppercase">{auditResult.assessment_tool}</span> • Status:{" "}
+                    <span className="capitalize font-mono text-emerald-300">{auditResult.assessment_status}</span>
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setAuditResult(null)}
-                className="text-xs text-zinc-400 hover:text-zinc-200"
+                className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
               >
                 Dismiss
               </button>
             </div>
 
             <div className="pt-2 border-t border-emerald-500/20 flex flex-wrap items-center gap-3">
-              <Link href={`/engagements/${auditResult.engagement_id}`}>
-                <Button variant="primary" size="sm" className="text-xs h-8 gap-1.5 font-bold">
-                  <span>Open Audit Engagement</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsTelemetryModalOpen(true)}
+                className="text-xs h-8 gap-1.5 font-bold"
+              >
+                <Terminal className="h-3.5 w-3.5" />
+                <span>Open Live Scan Telemetry</span>
+              </Button>
               <Link href={`/findings?engagement_id=${auditResult.engagement_id}`}>
                 <Button variant="outline" size="sm" className="text-xs h-8 gap-1.5">
                   <FileCheck2 className="h-3.5 w-3.5 text-[#F5C518]" />
                   <span>Inspect Findings</span>
+                </Button>
+              </Link>
+              <Link href={`/engagements/${auditResult.engagement_id}`}>
+                <Button variant="ghost" size="sm" className="text-xs h-8 gap-1.5 text-zinc-300 hover:text-white">
+                  <span>Open Engagement Details</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </div>
@@ -311,9 +364,24 @@ export default function WebsiteAuditPage() {
 
           {/* URL Input */}
           <div className="space-y-2">
-            <label htmlFor="target-url" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">
-              Website Target URL <span className="text-[#F5C518]">*</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="target-url" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">
+                Website Target URL <span className="text-[#F5C518]">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setUrl("http://127.0.0.1:8888");
+                  setConfirmedAuth(true);
+                  setNotes("Authorized Local Vulnerable Lab verification (OWASP Benchmark).");
+                }}
+                className="text-[11px] text-[#F5C518] hover:underline flex items-center gap-1 font-medium transition-colors"
+              >
+                <Zap className="h-3 w-3" />
+                <span>Use Local Vulnerable Lab (127.0.0.1:8888)</span>
+              </button>
+            </div>
+
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
                 <Globe className="h-4 w-4" />
@@ -323,8 +391,8 @@ export default function WebsiteAuditPage() {
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://app.yourdomain.com"
-                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-lg glass-input text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
+                placeholder="https://app.yourdomain.com or http://127.0.0.1:8888"
+                className="w-full h-10 pl-10 pr-4 text-xs rounded-lg glass-input text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
                 disabled={isSubmitting}
                 required
               />
@@ -362,7 +430,7 @@ export default function WebsiteAuditPage() {
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
                 disabled={isClientRole || isLoadingClients || isSubmitting}
-                className="w-full h-9 rounded-lg border border-white/[0.08] bg-[#07090E]/90 px-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
+                className="w-full h-10 rounded-lg border border-white/[0.08] bg-[#07090E]/90 px-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               >
                 {clients.map((c) => (
                   <option key={c.id} value={c.id} className="bg-[#07090E] text-slate-200">
@@ -382,7 +450,7 @@ export default function WebsiteAuditPage() {
                 value={engagementId}
                 onChange={(e) => setEngagementId(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full h-9 rounded-lg border border-white/[0.08] bg-[#07090E]/90 px-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
+                className="w-full h-10 rounded-lg border border-white/[0.08] bg-[#07090E]/90 px-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               >
                 <option value="" className="bg-[#07090E] text-[#FFD84D]">
                   ✨ Create On-Demand Audit Engagement (Recommended)
@@ -424,7 +492,7 @@ export default function WebsiteAuditPage() {
                     Blackbox Vulnerability Scan (Default)
                   </span>
                   <span className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] block leading-relaxed">
-                    Passive and non-destructive active probes: TLS ciphers, CORS, security headers, OWASP Top 10 exposed endpoints.
+                    Passive and active perimeter probes: TLS ciphers, CORS, security headers, OWASP Top 10 exposed endpoints. URL-only, no source required.
                   </span>
                 </div>
               </label>
@@ -449,12 +517,42 @@ export default function WebsiteAuditPage() {
                     Source-Assisted Dynamic Pentest
                   </span>
                   <span className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] block leading-relaxed">
-                    Combines API endpoint discovery, Shannon SAST correlation, and deep vulnerability exploitation proof-of-concepts.
+                    Combines endpoint discovery, Shannon SAST code inspection, and dynamic proof-of-concept exploit generation. Requires repository access.
                   </span>
                 </div>
               </label>
             </div>
           </div>
+
+          {/* Source Repository Input (shown when source-assisted pentest selected) */}
+          {scanMode === "source_assisted" && (
+            <div className="space-y-1.5 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <label htmlFor="source-repo" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">
+                  Source Code Repository Path or URL <span className="text-[#F5C518]">*</span>
+                </label>
+                <span className="text-[10px] text-zinc-500 font-mono">Mounted read-only (:ro)</span>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                  <GitBranch className="h-4 w-4" />
+                </div>
+                <input
+                  id="source-repo"
+                  type="text"
+                  value={sourceRepo}
+                  onChange={(e) => setSourceRepo(e.target.value)}
+                  placeholder="e.g. lab/vulnerable_app or https://github.com/org/repo"
+                  className="w-full h-10 pl-9 pr-3 rounded-lg border border-white/[0.08] bg-[#07090E]/90 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
+                  disabled={isSubmitting}
+                  required={scanMode === "source_assisted"}
+                />
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
+                Local repository path or git clone URL mounted for static source analysis and vulnerability hypothesis testing.
+              </p>
+            </div>
+          )}
 
           {/* Scope Notes */}
           <div className="space-y-1.5">
@@ -466,8 +564,8 @@ export default function WebsiteAuditPage() {
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Test staging authentication endpoints; avoid rate-limited checkout routes"
-              className="w-full px-3 py-2 text-xs rounded-lg glass-input text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
+              placeholder="e.g. Target authenticated endpoints; avoid rate-limited checkout routes"
+              className="w-full h-10 px-3 text-xs rounded-lg glass-input text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               disabled={isSubmitting}
             />
           </div>
@@ -505,7 +603,7 @@ export default function WebsiteAuditPage() {
               size="md"
               disabled={!urlValidation.isValid || !confirmedAuth || isSubmitting}
               isLoading={isSubmitting}
-              className="text-xs h-10 px-5 gap-2 font-bold w-full sm:w-auto"
+              className="text-xs h-10 px-6 gap-2 font-bold w-full sm:w-auto shadow-md"
             >
               <Zap className="h-4 w-4 text-[#090A0D]" />
               <span>Launch Website Audit</span>
@@ -524,6 +622,17 @@ export default function WebsiteAuditPage() {
           </p>
         </div>
       </div>
+
+      {/* Live Scan Telemetry Modal */}
+      <ScanTelemetryModal
+        isOpen={isTelemetryModalOpen}
+        onClose={() => setIsTelemetryModalOpen(false)}
+        assessmentId={auditResult?.assessment_id || null}
+        onViewFindings={(id) => {
+          setIsTelemetryModalOpen(false);
+          router.push(`/findings?assessment_id=${id}`);
+        }}
+      />
     </AppShell>
   );
 }

@@ -44,10 +44,12 @@ BLOCKED_INFRASTRUCTURE_PORTS = {
     2049,  # NFS
     2375,  # Docker unencrypted
     2376,  # Docker TLS
+    3000,  # FixOps Frontend
     3306,  # MySQL
     5432,  # PostgreSQL
     6379,  # Redis
     7233,  # Temporal gRPC
+    8000,  # FixOps Backend API
     8233,  # Temporal Web
     11211, # Memcached
     27017, # MongoDB

@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+const cwd = process.cwd();
+const frontendDir = cwd.endsWith("frontend") ? cwd : path.join(cwd, "frontend");
+
 function validateUrlSsrf(inputUrl) {
   const trimmed = (inputUrl || "").trim();
   if (!trimmed) {
@@ -105,11 +108,27 @@ describe("Website Audit URL Validation & SSRF Guard", () => {
     assert.equal(validateUrlSsrf("ftp://internal.vault/data").isValid, false);
   });
 
-  test("rejects localhost and loopback targets", () => {
+  test("rejects localhost and loopback targets except authorized lab port 8888", () => {
     assert.equal(validateUrlSsrf("http://localhost:8000").isValid, false);
     assert.equal(validateUrlSsrf("https://127.0.0.1:3000").isValid, false);
     assert.equal(validateUrlSsrf("http://[::1]/admin").isValid, false);
     assert.equal(validateUrlSsrf("http://app.localhost").isValid, false);
+  });
+
+  test("Website Audit page supports source repository configuration and live telemetry modal", () => {
+    const pageCode = fs.readFileSync(path.join(frontendDir, "app", "audit", "page.tsx"), "utf8");
+    assert.ok(
+      pageCode.includes("sourceRepo") && pageCode.includes("Source Code Repository"),
+      "Must support source repository configuration for source-assisted audits"
+    );
+    assert.ok(
+      pageCode.includes("ScanTelemetryModal"),
+      "Must integrate ScanTelemetryModal for live scanner telemetry"
+    );
+    assert.ok(
+      pageCode.includes("127.0.0.1:8888"),
+      "Must support authorized local lab quick-fill"
+    );
   });
 
   test("rejects cloud provider instance metadata targets", () => {

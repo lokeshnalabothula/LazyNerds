@@ -138,14 +138,10 @@ async function captureScreenshots() {
       // Desktop Capture (1440x900)
       await page.setViewport({ width: 1440, height: 900 });
       try {
-        await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 35000 });
+        await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
       } catch (err) {
-        if (err.message.includes('detached') || err.message.includes('disposed')) {
-          await new Promise((r) => setTimeout(r, 800));
-          await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 35000 });
-        } else {
-          throw err;
-        }
+        await new Promise((r) => setTimeout(r, 1000));
+        await page.goto(`${BASE_URL}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
       }
       await waitForContentLoaded(page, route.path);
 

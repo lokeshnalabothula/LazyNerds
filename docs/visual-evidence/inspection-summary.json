@@ -142,7 +142,7 @@
   {
     "route": "/audit",
     "title": "Website Security Audit",
-    "totalButtons": 7,
+    "totalButtons": 8,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Launch Website Audit"
@@ -156,7 +156,7 @@
   {
     "route": "/engagements",
     "title": "Engagements LifeCycle",
-    "totalButtons": 20,
+    "totalButtons": 24,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Create Engagement"
@@ -212,7 +212,7 @@
   {
     "route": "/assets",
     "title": "Target Assets Inventory",
-    "totalButtons": 26,
+    "totalButtons": 28,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Register Asset"
@@ -226,7 +226,7 @@
   {
     "route": "/findings",
     "title": "Vulnerabilities & Triage",
-    "totalButtons": 45,
+    "totalButtons": 55,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Launch Security Scan"

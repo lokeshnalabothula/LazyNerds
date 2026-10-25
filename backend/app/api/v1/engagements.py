@@ -343,8 +343,9 @@ def submit_website_audit(
     else:
         eng = None
 
-    # 4. Strict SSRF and URL validation (rejects localhost, private IPs, cloud metadata)
-    is_valid, err_msg = validate_target_url_ssrf(req.url, allow_lab_testing=False)
+    # 4. Strict SSRF and URL validation (rejects localhost, private IPs, cloud metadata; permits lab loopback only if explicitly enabled in non-production)
+    allow_lab = getattr(settings, "ALLOW_LAB_TESTING", False) and getattr(settings, "ENVIRONMENT", "") != "production"
+    is_valid, err_msg = validate_target_url_ssrf(req.url, allow_lab_testing=allow_lab)
     if not is_valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -419,6 +420,7 @@ def submit_website_audit(
             engagement_id=eng.id,
             target_asset_id=asset.id,
             scan_mode=req.scan_mode,
+            source_repo=req.source_repo,
             current_user=current_user,
         )
     except Exception as e:

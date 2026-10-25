@@ -149,6 +149,7 @@ export interface WebsiteAuditInput {
   client_id: string;
   engagement_id?: string;
   scan_mode?: "blackbox" | "source_assisted";
+  source_repo?: string;
   confirmed_authorization: boolean;
   notes?: string;
 }

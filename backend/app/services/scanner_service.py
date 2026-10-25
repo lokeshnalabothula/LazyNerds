@@ -591,6 +591,7 @@ def execute_scan_worker_job(
                         docker_bin, "run", "--rm",
                         "--name", f"fixops-worker-{assessment_id[:8]}",
                         "--network", "shannon-net",
+                        "--add-host=host.docker.internal:host-gateway",
                         "--cpus", "1.0",
                         "--memory", "2g",
                         "--pids-limit", "128",

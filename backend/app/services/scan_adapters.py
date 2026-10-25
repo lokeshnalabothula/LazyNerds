@@ -33,14 +33,23 @@ def parse_nuclei_records(scan_data: Any) -> List[Dict[str, Any]]:
     """
     items = []
     if isinstance(scan_data, str):
-        lines = [line.strip() for line in scan_data.strip().splitlines() if line.strip()]
-        for line in lines:
-            try:
-                item = json.loads(line)
-                if isinstance(item, dict):
-                    items.append(item)
-            except Exception:
-                continue
+        trimmed = scan_data.strip()
+        try:
+            parsed = json.loads(trimmed)
+            if isinstance(parsed, list):
+                items = parsed
+            elif isinstance(parsed, dict):
+                items = [parsed]
+        except Exception:
+            # Fall back to parsing as JSONL (newline-delimited JSON)
+            lines = [line.strip() for line in trimmed.splitlines() if line.strip()]
+            for line in lines:
+                try:
+                    item = json.loads(line)
+                    if isinstance(item, dict):
+                        items.append(item)
+                except Exception:
+                    continue
     elif isinstance(scan_data, list):
         items = scan_data
     elif isinstance(scan_data, dict):

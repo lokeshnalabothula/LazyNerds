@@ -219,6 +219,7 @@ class WebsiteAuditRequest(BaseModel):
     client_id: str = Field(..., min_length=36, max_length=36, description="UUID of associated client organization")
     engagement_id: Optional[str] = Field(None, min_length=36, max_length=36, description="Optional existing engagement UUID")
     scan_mode: Literal["blackbox", "source_assisted"] = Field(default="blackbox", description="Audit scan profile")
+    source_repo: Optional[str] = Field(None, max_length=500, description="Path or Git URL for source-assisted pentests")
     confirmed_authorization: bool = Field(..., description="Certification of explicit written RoE authorization")
     notes: Optional[str] = Field(None, max_length=1000, description="Audit scope notes or instructions")
 

@@ -149,7 +149,7 @@ async function captureScreenshots() {
       }
       await waitForContentLoaded(page, route.path);
 
-      // Check for nested clipping defects on desktop
+      // Check for nested clipping and table occlusion defects on desktop
       const desktopClippingIssues = await page.evaluate(() => {
         const found = [];
         const all = document.querySelectorAll('div, table, section, article, p, h1, h2, h3, h4, span, a');
@@ -170,6 +170,54 @@ async function captureScreenshots() {
             });
           }
         }
+
+        // Table Column Occlusion and Overlap Check
+        const tables = document.querySelectorAll('table');
+        for (const table of tables) {
+          const rows = table.querySelectorAll('tbody tr');
+          for (const row of rows) {
+            const cells = Array.from(row.querySelectorAll('td'));
+            for (let i = 0; i < cells.length - 1; i++) {
+              const current = cells[i].getBoundingClientRect();
+              const next = cells[i + 1].getBoundingClientRect();
+              if (current.width > 0 && next.width > 0) {
+                // If current cell's right boundary extends past next cell's left boundary
+                if (current.right > next.left + 2) {
+                  found.push({
+                    tag: 'TD',
+                    cls: cells[i].className.slice(0, 50),
+                    scrollW: Math.round(current.right),
+                    clientW: Math.round(next.left),
+                    text: `Cell [${cells[i].textContent?.trim().slice(0, 20)}] overlaps [${cells[i + 1].textContent?.trim().slice(0, 20)}]`
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // Sticky Table Cell Occlusion Check
+        const stickyTableCells = document.querySelectorAll('table th.sticky, table td.sticky, table [class*="sticky"], .overflow-x-auto th.sticky, .overflow-x-auto td.sticky');
+        for (const stickyEl of stickyTableCells) {
+          const style = window.getComputedStyle(stickyEl);
+          if (style.position === 'sticky') {
+            const rect = stickyEl.getBoundingClientRect();
+            const prev = stickyEl.previousElementSibling;
+            if (prev) {
+              const prevRect = prev.getBoundingClientRect();
+              if (prevRect.width > 0 && rect.width > 0 && prevRect.right > rect.left + 2 && prevRect.left < rect.right - 2) {
+                found.push({
+                  tag: stickyEl.tagName,
+                  cls: stickyEl.className.slice(0, 50),
+                  scrollW: Math.round(prevRect.right),
+                  clientW: Math.round(rect.left),
+                  text: `Sticky table cell obscures sibling: ${prev.textContent?.trim().slice(0, 25)}`
+                });
+              }
+            }
+          }
+        }
+
         return found;
       });
 
@@ -224,7 +272,7 @@ async function captureScreenshots() {
       await new Promise((r) => setTimeout(r, 400));
       await waitForContentLoaded(page, route.path);
 
-      // Check for nested clipping defects on mobile
+      // Check for nested clipping and table/card occlusion defects on mobile
       const mobileClippingIssues = await page.evaluate(() => {
         const found = [];
         const all = document.querySelectorAll('div, table, section, article, p, h1, h2, h3, h4, span, a');
@@ -245,6 +293,53 @@ async function captureScreenshots() {
             });
           }
         }
+
+        // Table Column Occlusion and Overlap Check on Mobile
+        const tables = document.querySelectorAll('table');
+        for (const table of tables) {
+          const rows = table.querySelectorAll('tbody tr');
+          for (const row of rows) {
+            const cells = Array.from(row.querySelectorAll('td'));
+            for (let i = 0; i < cells.length - 1; i++) {
+              const current = cells[i].getBoundingClientRect();
+              const next = cells[i + 1].getBoundingClientRect();
+              if (current.width > 0 && next.width > 0) {
+                if (current.right > next.left + 2) {
+                  found.push({
+                    tag: 'TD',
+                    cls: cells[i].className.slice(0, 50),
+                    scrollW: Math.round(current.right),
+                    clientW: Math.round(next.left),
+                    text: `Cell [${cells[i].textContent?.trim().slice(0, 20)}] overlaps [${cells[i + 1].textContent?.trim().slice(0, 20)}]`
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // Sticky Table Cell Occlusion Check on Mobile
+        const stickyTableCells = document.querySelectorAll('table th.sticky, table td.sticky, table [class*="sticky"], .overflow-x-auto th.sticky, .overflow-x-auto td.sticky');
+        for (const stickyEl of stickyTableCells) {
+          const style = window.getComputedStyle(stickyEl);
+          if (style.position === 'sticky') {
+            const rect = stickyEl.getBoundingClientRect();
+            const prev = stickyEl.previousElementSibling;
+            if (prev) {
+              const prevRect = prev.getBoundingClientRect();
+              if (prevRect.width > 0 && rect.width > 0 && prevRect.right > rect.left + 2 && prevRect.left < rect.right - 2) {
+                found.push({
+                  tag: stickyEl.tagName,
+                  cls: stickyEl.className.slice(0, 50),
+                  scrollW: Math.round(prevRect.right),
+                  clientW: Math.round(rect.left),
+                  text: `Sticky table cell obscures sibling: ${prev.textContent?.trim().slice(0, 25)}`
+                });
+              }
+            }
+          }
+        }
+
         return found;
       });
 

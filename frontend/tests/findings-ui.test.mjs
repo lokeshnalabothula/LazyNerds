@@ -88,4 +88,26 @@ test('Findings UI & Readability Architecture (LNA-13)', async (t) => {
     // Retest timeline
     assert.match(detailCode, /Retest & Verification Timeline/);
   });
+
+  await t.test('Desktop table layout avoids sticky occlusion over Status column', () => {
+    // Ensure sticky right-0 is NOT present on the Actions column in table view
+    assert.equal(
+      listCode.includes('sticky right-0'),
+      false,
+      'Actions column must not use sticky right-0 which obscures the Status column'
+    );
+    // Table uses table-fixed to guarantee zero horizontal overflow and ensure Actions are directly visible on desktop
+    assert.match(listCode, /<table[^>]*table-fixed/);
+    // Status column has explicit whitespace-nowrap and readable badge
+    assert.match(listCode, /<th[^>]*>\s*Status\s*<\/th>/);
+    assert.match(listCode, /<th[^>]*>\s*Actions\s*<\/th>/);
+    assert.match(listCode, /<th[^>]*>\s*Severity\s*<\/th>/);
+    assert.match(listCode, /<th[^>]*>\s*Vulnerability Finding\s*<\/th>/);
+    assert.match(listCode, /<th[^>]*>\s*Target Asset & Scope\s*<\/th>/);
+    assert.match(listCode, /<th[^>]*>\s*CVE \/ Score\s*<\/th>/);
+  });
+
+  await t.test('Mobile cards view cleanly pairs Severity and Status on top row', () => {
+    assert.match(listCode, /Top Badges Ribbon: Distinct Severity \(left\) and Status \(right\)/);
+  });
 });

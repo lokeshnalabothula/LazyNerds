@@ -693,7 +693,7 @@ function ClientsContent() {
                     <th className="py-3.5 px-4 w-24 text-center">Status</th>
                     <th className="py-3.5 px-4 w-28 whitespace-nowrap">Date Added</th>
                     <th className="py-3.5 px-4 w-28 whitespace-nowrap hidden 2xl:table-cell">Last Updated</th>
-                    <th className="py-3.5 px-4 text-right w-28 whitespace-nowrap sticky right-0 bg-[#07090E]/95 backdrop-blur-md">Actions</th>
+                    <th className="py-3.5 px-4 text-right w-28 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.06]">
@@ -796,7 +796,7 @@ function ClientsContent() {
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3 px-4 text-right w-28 whitespace-nowrap sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">
+                        <td className="py-3 px-4 text-right w-28 whitespace-nowrap">
                           <div className="inline-flex items-center justify-end gap-2">
                             <Link
                               href={`/clients/${client.id}`}

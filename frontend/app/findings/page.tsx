@@ -548,16 +548,26 @@ function FindingsContent() {
                     className={`cockpit-card cockpit-card-interactive specular-top p-5 shadow-md flex flex-col justify-between gap-4 border-l-4 ${sevCfg.rowBorderClass} transition-all`}
                   >
                     <div className="space-y-3.5">
-                      {/* Top Badges Ribbon */}
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-sans font-bold border ${sevCfg.badgeClass}`}
-                          >
-                            <SevIcon className="h-3 w-3" />
-                            <span>{sevCfg.label}</span>
-                          </span>
+                      {/* Top Badges Ribbon: Distinct Severity (left) and Status (right) */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-sans font-bold border ${sevCfg.badgeClass}`}
+                        >
+                          <SevIcon className="h-3 w-3 shrink-0" />
+                          <span>{sevCfg.label}</span>
+                        </span>
 
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border whitespace-nowrap ${statusCfg.badgeClass}`}
+                        >
+                          <StatusIcon className="h-3 w-3 shrink-0" />
+                          <span>{statusCfg.label}</span>
+                        </span>
+                      </div>
+
+                      {/* Technical Identifiers Row: CVSS and CVE */}
+                      {(finding.cvss_score !== null || isValidCve(finding.cve_id)) && (
+                        <div className="flex items-center gap-2 flex-wrap">
                           {finding.cvss_score !== null && finding.cvss_score !== undefined && (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-white/[0.05] text-slate-200 border border-white/[0.1]">
                               CVSS {finding.cvss_score}
@@ -570,25 +580,18 @@ function FindingsContent() {
                             </span>
                           )}
                         </div>
-
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border ${statusCfg.badgeClass}`}
-                        >
-                          <StatusIcon className="h-3 w-3" />
-                          <span>{statusCfg.label}</span>
-                        </span>
-                      </div>
+                      )}
 
                       {/* Finding Title & Description Preview */}
                       <div>
                         <Link
                           href={`/findings/${finding.id}`}
-                          className="font-bold text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] hover:underline text-sm leading-snug line-clamp-2"
+                          className="font-bold text-zinc-100 hover:text-[#FFD84D] hover:underline text-sm leading-snug block break-words"
                         >
                           {finding.title}
                         </Link>
                         {finding.description && (
-                          <p className="text-xs text-zinc-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed text-ellipsis overflow-hidden">
+                          <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed break-words text-ellipsis overflow-hidden">
                             {finding.description}
                           </p>
                         )}
@@ -597,8 +600,8 @@ function FindingsContent() {
                       {/* Scope & Target Asset Details */}
                       <div className="pt-2 border-t border-white/[0.06] space-y-1.5 text-xs">
                         <div className="flex items-center justify-between text-slate-400">
-                          <span className="text-[11px] flex items-center gap-1">
-                            <Globe className="h-3 w-3 text-slate-500" />
+                          <span className="text-[11px] flex items-center gap-1 text-slate-400">
+                            <Globe className="h-3 w-3 text-slate-500 shrink-0" />
                             <span>Target Asset:</span>
                           </span>
                           <span className="font-mono text-[11px] truncate max-w-[190px] text-slate-200 font-medium">
@@ -607,8 +610,8 @@ function FindingsContent() {
                         </div>
 
                         <div className="flex items-center justify-between text-slate-400">
-                          <span className="text-[11px] flex items-center gap-1">
-                            <Layers className="h-3 w-3 text-slate-500" />
+                          <span className="text-[11px] flex items-center gap-1 text-slate-400">
+                            <Layers className="h-3 w-3 text-slate-500 shrink-0" />
                             <span>Engagement:</span>
                           </span>
                           <span className="text-[11px] truncate max-w-[190px] text-slate-300">
@@ -658,18 +661,18 @@ function FindingsContent() {
               })}
             </div>
           ) : (
-            /* High-Density Readable Table View */
+            /* High-Density Readable Table View (Non-sticky Actions to preserve 100% Status visibility) */
             <div className="cockpit-card specular-top rounded-xl overflow-hidden shadow-md">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
+                <table className="w-full table-fixed text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-white/[0.08] bg-white/[0.04] backdrop-blur-md text-slate-300 font-sans text-[11px] font-semibold uppercase tracking-wider">
-                      <th className="py-3 px-4 min-w-[130px]">Severity</th>
-                      <th className="py-3 px-4 min-w-[280px]">Vulnerability Finding</th>
-                      <th className="py-3 px-4 min-w-[170px]">Target Asset & Scope</th>
-                      <th className="py-3 px-4 min-w-[130px]">CVE / Score</th>
-                      <th className="py-3 px-4 min-w-[150px]">Status</th>
-                      <th className="py-3 px-4 text-right min-w-[130px] whitespace-nowrap sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">
+                      <th className="py-3.5 px-4 w-[115px]">Severity</th>
+                      <th className="py-3.5 px-4">Vulnerability Finding</th>
+                      <th className="py-3.5 px-4 w-[165px]">Target Asset & Scope</th>
+                      <th className="py-3.5 px-4 w-[105px]">CVE / Score</th>
+                      <th className="py-3.5 px-4 w-[145px] whitespace-nowrap">Status</th>
+                      <th className="py-3.5 px-4 text-right w-[115px] whitespace-nowrap">
                         Actions
                       </th>
                     </tr>
@@ -703,17 +706,17 @@ function FindingsContent() {
                             </div>
                           </td>
 
-                          {/* Vulnerability Title & 1-Line Description */}
-                          <td className="py-3.5 px-4 align-top">
-                            <div className="space-y-0.5 max-w-md">
+                          {/* Vulnerability Title & Description */}
+                          <td className="py-3.5 px-4 align-top overflow-hidden">
+                            <div className="space-y-0.5">
                               <Link
                                 href={`/findings/${finding.id}`}
-                                className="font-bold text-zinc-100 hover:text-[#FFD84D] hover:underline text-sm leading-snug block"
+                                className="font-bold text-zinc-100 hover:text-[#FFD84D] hover:underline text-sm leading-snug block break-words"
                               >
                                 {finding.title}
                               </Link>
                               {finding.description && (
-                                <p className="text-xs text-slate-400 line-clamp-1 leading-relaxed text-ellipsis overflow-hidden">
+                                <p className="text-xs text-slate-400 truncate leading-relaxed">
                                   {finding.description}
                                 </p>
                               )}
@@ -721,15 +724,15 @@ function FindingsContent() {
                           </td>
 
                           {/* Target Scope & Asset */}
-                          <td className="py-3.5 px-4 align-top">
+                          <td className="py-3.5 px-4 align-top overflow-hidden">
                             <div className="space-y-0.5">
                               <div className="font-mono text-xs font-medium text-slate-200 flex items-center gap-1.5">
                                 <Globe className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                                <span className="truncate max-w-[160px]">
+                                <span className="truncate max-w-[130px]">
                                   {finding.asset_name || "Target Host"}
                                 </span>
                               </div>
-                              <div className="text-[11px] text-slate-400 truncate max-w-[160px]">
+                              <div className="text-[11px] text-slate-400 truncate max-w-[130px]">
                                 {finding.engagement_name || "Engagement"}
                               </div>
                             </div>
@@ -746,18 +749,18 @@ function FindingsContent() {
                             )}
                           </td>
 
-                          {/* Remediation Status */}
-                          <td className="py-3.5 px-4 align-top">
+                          {/* Remediation Status: 100% Unobscured & Fully Legible */}
+                          <td className="py-3.5 px-4 align-top whitespace-nowrap">
                             <span
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border ${statusCfg.badgeClass}`}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border whitespace-nowrap ${statusCfg.badgeClass}`}
                             >
                               <StatusIcon className="h-3 w-3 shrink-0" />
                               <span>{statusCfg.label}</span>
                             </span>
                           </td>
 
-                          {/* Action Buttons */}
-                          <td className="py-3.5 px-4 text-right align-top sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">
+                          {/* Action Buttons: Standard non-sticky right aligned */}
+                          <td className="py-3.5 px-4 text-right align-top whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => {

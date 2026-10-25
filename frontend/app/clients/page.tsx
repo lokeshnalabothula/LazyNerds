@@ -302,26 +302,26 @@ function ClientsContent() {
         {/* Quick KPI Stat Chips */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-semibold">Total Directory</span>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-mono tracking-tight">
+            <span className="text-xs font-medium text-slate-400 block">Total Directory</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-sans tracking-tight">
               {total}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <span className="text-[10px] font-mono uppercase text-emerald-600 dark:text-[#34D399] block font-semibold">Active Accounts</span>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-[#34D399] mt-1 font-mono tracking-tight">
+            <span className="text-xs font-medium text-emerald-400 block">Active Accounts</span>
+            <div className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1 font-sans tracking-tight">
               {statusFilter === "active" ? clients.length : (statusFilter === "archived" ? "—" : clients.filter(c => c.status === "active").length)}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-semibold">Archived Scopes</span>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-700 dark:text-zinc-300 mt-1 font-mono tracking-tight">
+            <span className="text-xs font-medium text-slate-400 block">Archived Scopes</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-700 dark:text-zinc-300 mt-1 font-sans tracking-tight">
               {statusFilter === "archived" ? clients.length : (statusFilter === "active" ? "—" : clients.filter(c => c.status === "archived").length)}
             </div>
           </div>
           <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <span className="text-[10px] font-mono uppercase text-amber-500 dark:text-[#FFD84D] block font-semibold">Active Selection</span>
-            <div className="text-xl sm:text-2xl font-bold text-amber-500 dark:text-[#FFD84D] mt-1 font-mono tracking-tight">
+            <span className="text-xs font-medium text-[#FFD84D] block">Active Selection</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#FFD84D] mt-1 font-sans tracking-tight">
               {selectedClientIds.length}
             </div>
           </div>
@@ -674,7 +674,7 @@ function ClientsContent() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-white/[0.04] backdrop-blur-md border-b border-white/[0.08] text-slate-300 font-semibold select-none font-sans text-[11px] uppercase tracking-wider">
+                <thead className="bg-white/[0.03] backdrop-blur-md border-b border-white/[0.08] text-slate-400 font-medium select-none text-xs">
                   <tr>
                     <th className="py-3.5 px-3 w-10 text-center">
                       <input
@@ -682,21 +682,21 @@ function ClientsContent() {
                         ref={selectAllCheckboxRef}
                         checked={isAllSelected}
                         onChange={toggleSelectAll}
-                        className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
+                        className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-white/[0.15] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
                         aria-label="Select all clients"
                       />
                     </th>
-                    <th className="py-3.5 px-4 min-w-[150px]">Company</th>
-                    <th className="py-3.5 px-4 min-w-[120px]">Primary Contact</th>
-                    <th className="py-3.5 px-4 min-w-[140px]">Contact Email</th>
-                    {isFounder && <th className="py-3.5 px-4 min-w-[110px]">Security Lead</th>}
-                    <th className="py-3.5 px-4 w-24">Status</th>
-                    <th className="py-3.5 px-4 w-28">Date Added</th>
-                    <th className="py-3.5 px-4 w-28 hidden xl:table-cell">Last Updated</th>
-                    <th className="py-3.5 px-4 text-right w-28 whitespace-nowrap sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">Actions</th>
+                    <th className="py-3.5 px-4 min-w-[220px]">Company</th>
+                    <th className="py-3.5 px-4 min-w-[140px]">Primary Contact</th>
+                    <th className="py-3.5 px-4 min-w-[180px]">Contact Email</th>
+                    {isFounder && <th className="py-3.5 px-4 min-w-[130px]">Security Lead</th>}
+                    <th className="py-3.5 px-4 w-24 text-center">Status</th>
+                    <th className="py-3.5 px-4 w-28 whitespace-nowrap">Date Added</th>
+                    <th className="py-3.5 px-4 w-28 whitespace-nowrap hidden 2xl:table-cell">Last Updated</th>
+                    <th className="py-3.5 px-4 text-right w-28 whitespace-nowrap sticky right-0 bg-[#07090E]/95 backdrop-blur-md">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-[#222630]">
+                <tbody className="divide-y divide-white/[0.06]">
                   {clients.map((client) => {
                     const isSelected = selectedClientIds.includes(client.id);
                     return (
@@ -705,7 +705,7 @@ function ClientsContent() {
                         className={`transition-colors group ${
                           isSelected
                             ? "bg-[#F5C518]/5 dark:bg-[#F5C518]/10"
-                            : "hover:bg-zinc-50 dark:hover:bg-[#161920]/80"
+                            : "hover:bg-white/[0.03]"
                         }`}
                       >
                         {/* Checkbox */}
@@ -714,35 +714,38 @@ function ClientsContent() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectClient(client.id)}
-                            className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
+                            className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-white/[0.15] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
                             aria-label={`Select ${client.company_name}`}
                           />
                         </td>
 
                         {/* Company Name & Link */}
-                        <td className="py-3 px-4 font-medium text-zinc-900 dark:text-[#F9FAFB]">
+                        <td className="py-3.5 px-4 font-medium text-zinc-900 dark:text-[#F9FAFB] max-w-[260px]">
                           <Link
                             href={`/clients/${client.id}`}
-                            className="hover:text-[#B88700] dark:hover:text-[#FFD84D] font-semibold flex items-center gap-1.5"
+                            className="hover:text-[#B88700] dark:hover:text-[#FFD84D] font-semibold flex items-center gap-1.5 group/link"
+                            title={client.company_name}
                           >
-                            <span>{client.company_name}</span>
-                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400" />
+                            <span className="truncate">{client.company_name}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover/link:opacity-100 transition-opacity text-zinc-400" />
                           </Link>
                           {client.industry && (
-                            <span className="text-[11px] text-zinc-400 dark:text-[#94A3B8] block font-normal font-sans">
+                            <span className="text-[11px] text-zinc-400 dark:text-[#94A3B8] block font-normal truncate mt-0.5">
                               {client.industry}
                             </span>
                           )}
                         </td>
 
                         {/* Contact Name */}
-                        <td className="py-3 px-4 text-zinc-700 dark:text-zinc-300">
+                        <td className="py-3.5 px-4 text-zinc-700 dark:text-zinc-300 max-w-[160px] truncate" title={client.primary_contact_name}>
                           {client.primary_contact_name}
                         </td>
 
                         {/* Contact Email */}
-                        <td className="py-3 px-4 font-mono text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
-                          {client.primary_contact_email}
+                        <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-600 dark:text-[#9CA3AF] max-w-[200px] truncate" title={client.primary_contact_email}>
+                          <a href={`mailto:${client.primary_contact_email}`} className="hover:text-[#F5C518] hover:underline truncate block">
+                            {client.primary_contact_email}
+                          </a>
                         </td>
 
                         {/* Security Lead (Founder View) */}

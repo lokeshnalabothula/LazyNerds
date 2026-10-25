@@ -28,11 +28,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       primary:
         "gloss-yellow-btn text-[#090A0D] font-extrabold active:scale-[0.98] shadow-md",
       secondary:
-        "btn-glass-secondary border border-[#222630] bg-[#161920]/80 text-[#F9FAFB] hover:border-[#F5C518]/30 hover:bg-[#1B1E24] shadow-xs font-medium",
+        "btn-glass-secondary border border-white/[0.10] bg-white/[0.04] text-[#F9FAFB] hover:border-[#F5C518]/40 hover:bg-white/[0.08] shadow-xs font-medium",
       outline:
-        "border border-[#222630] bg-transparent text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-[#161920] hover:border-[#F5C518]/30 shadow-xs font-medium",
+        "border border-white/[0.10] bg-white/[0.02] text-slate-300 hover:text-[#F9FAFB] hover:bg-white/[0.06] hover:border-[#F5C518]/40 shadow-xs font-medium",
       ghost:
-        "bg-transparent text-[#9CA3AF] hover:text-[#F9FAFB] hover:bg-white/[0.05] font-medium",
+        "bg-transparent text-slate-400 hover:text-[#F9FAFB] hover:bg-white/[0.06] font-medium",
       destructive:
         "bg-[#F43F5E]/15 text-[#F43F5E] hover:bg-[#F43F5E] hover:text-white border border-[#F43F5E]/40 active:bg-[#BE123C] shadow-xs font-semibold",
       danger:

@@ -99,38 +99,47 @@ export default function OverviewPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchMetrics}
-              disabled={loading}
-              className="text-xs h-9 gap-1.5"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span>Refresh Telemetry</span>
-            </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 w-full md:w-auto">
+            {/* Calmer Subordinate Actions */}
+            <div className="flex items-center justify-start sm:justify-end gap-1.5 order-2 sm:order-1 overflow-x-auto pb-1 sm:pb-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchMetrics}
+                disabled={loading}
+                className="text-xs h-8 px-2.5 gap-1.5 shrink-0"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                <span>Refresh Telemetry</span>
+              </Button>
+              {!isClient && (
+                <>
+                  <Link href="/clients/new" className="shrink-0">
+                    <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 gap-1.5 font-medium">
+                      <Users className="h-3.5 w-3.5" />
+                      <span>New Client</span>
+                    </Button>
+                  </Link>
+                  <Link href="/automation?create=true" className="shrink-0">
+                    <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 gap-1.5 font-medium">
+                      <Zap className="h-3.5 w-3.5 text-[#F5C518]" />
+                      <span>New Workflow</span>
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Dominant Primary CTA */}
             {!isClient && (
-              <>
-                <Link href="/clients/new">
-                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium">
-                    <Users className="h-3.5 w-3.5" />
-                    <span>New Client</span>
-                  </Button>
-                </Link>
-                <Link href="/automation?create=true">
-                  <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium">
-                    <Zap className="h-3.5 w-3.5 text-[#F5C518]" />
-                    <span>New Workflow</span>
-                  </Button>
-                </Link>
-                <Link href="/engagements/new">
-                  <Button variant="primary" size="sm" className="text-xs h-9 gap-1.5">
+              <div className="order-1 sm:order-2 shrink-0">
+                <Link href="/engagements/new" className="block w-full">
+                  <Button variant="primary" size="sm" className="w-full sm:w-auto text-xs h-9 gap-1.5 font-bold shadow-md justify-center">
                     <Plus className="h-3.5 w-3.5" />
                     <span>New Engagement</span>
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -162,8 +171,8 @@ export default function OverviewPage() {
                     <Flame className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-bold text-rose-300 font-mono uppercase tracking-wide">
-                      URGENT ATTENTION: UNMITIGATED CRITICAL / HIGH VULNERABILITIES
+                    <h3 className="text-xs sm:text-sm font-semibold text-rose-300 font-sans tracking-normal">
+                      Urgent Attention: Unmitigated Critical & High Vulnerabilities
                     </h3>
                     <p className="text-xs text-zinc-300 mt-0.5">
                       There are currently{" "}
@@ -190,8 +199,8 @@ export default function OverviewPage() {
                     <UserCheck className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-bold text-amber-300 font-mono uppercase tracking-wide">
-                      CLIENT ONBOARDING QUEUE: FOUNDER REVIEW REQUIRED
+                    <h3 className="text-xs sm:text-sm font-semibold text-amber-300 font-sans tracking-normal">
+                      Client Onboarding Queue: Founder Review Required
                     </h3>
                     <p className="text-xs text-zinc-300 mt-0.5">
                       <strong className="text-amber-400">{metrics.pending_registrations_total} new organization{metrics.pending_registrations_total > 1 ? "s have" : " has"}</strong> submitted self-registration requests pending your review and employee assignment.
@@ -256,7 +265,7 @@ export default function OverviewPage() {
                 >
                   <div>
                     <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Clients</span>
+                      <span className="text-xs font-medium text-slate-400">Clients</span>
                       <Users className="h-4 w-4 text-[#F5C518]" />
                     </div>
                     <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
@@ -272,7 +281,7 @@ export default function OverviewPage() {
                 <div className="telemetry-card specular-top p-4 flex flex-col justify-between shadow-md">
                   <div>
                     <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Security State</span>
+                      <span className="text-xs font-medium text-slate-400">Security State</span>
                       <Shield className="h-4 w-4 text-[#34D399]" />
                     </div>
                     <div className="text-xl font-bold font-sans text-[#34D399] tracking-tight">
@@ -292,7 +301,7 @@ export default function OverviewPage() {
               >
                 <div>
                   <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Engagements</span>
+                    <span className="text-xs font-medium text-slate-400">Engagements</span>
                     <Layers className="h-4 w-4 text-indigo-400" />
                   </div>
                   <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
@@ -312,7 +321,7 @@ export default function OverviewPage() {
               >
                 <div>
                   <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">In-Scope</span>
+                    <span className="text-xs font-medium text-slate-400">In-Scope Assets</span>
                     <Shield className="h-4 w-4 text-emerald-400" />
                   </div>
                   <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
@@ -332,7 +341,7 @@ export default function OverviewPage() {
               >
                 <div>
                   <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Open Findings</span>
+                    <span className="text-xs font-medium text-slate-400">Open Findings</span>
                     <FileCheck2 className="h-4 w-4 text-amber-400" />
                   </div>
                   <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
@@ -352,7 +361,7 @@ export default function OverviewPage() {
               >
                 <div>
                   <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                    <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Remediated</span>
+                    <span className="text-xs font-medium text-slate-400">Remediated</span>
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   </div>
                   <div className="text-2xl font-bold font-sans text-emerald-600 dark:text-[#34D399] tracking-tight tabular-nums">
@@ -373,7 +382,7 @@ export default function OverviewPage() {
                 >
                   <div>
                     <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Automations</span>
+                      <span className="text-xs font-medium text-slate-400">Automations</span>
                       <Zap className="h-4 w-4 text-amber-400" />
                     </div>
                     <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight tabular-nums">
@@ -392,7 +401,7 @@ export default function OverviewPage() {
                 >
                   <div>
                     <div className="flex items-center justify-between text-zinc-500 dark:text-[#94A3B8] mb-2.5">
-                      <span className="text-[11px] font-sans uppercase tracking-wider font-semibold">Reports</span>
+                      <span className="text-xs font-medium text-slate-400">Reports</span>
                       <FileText className="h-4 w-4 text-blue-400" />
                     </div>
                     <div className="text-2xl font-bold font-sans text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
@@ -409,14 +418,14 @@ export default function OverviewPage() {
             {/* Quick Workflow Hub */}
             <div className="cockpit-card specular-top p-5 space-y-3.5 shadow-md">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase font-mono tracking-wider text-zinc-500 dark:text-[#9CA3AF]">
+                <span className="text-xs font-semibold text-slate-300">
                   Quick Workflow Shortcuts
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <Link
                   href="/findings"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md hover:border-[#F5C518]/40 hover:bg-white/[0.06] transition-all flex items-center justify-between group text-xs font-medium shadow-sm"
                 >
                   <div className="flex items-center gap-2.5">
                     <UploadCloud className="h-4 w-4 text-[#F5C518]" />
@@ -427,7 +436,7 @@ export default function OverviewPage() {
 
                 <Link
                   href="/engagements"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-indigo-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md hover:border-indigo-500/50 hover:bg-white/[0.06] transition-all flex items-center justify-between group text-xs font-medium shadow-sm"
                 >
                   <div className="flex items-center gap-2.5">
                     <Layers className="h-4 w-4 text-indigo-400" />
@@ -438,7 +447,7 @@ export default function OverviewPage() {
 
                 <Link
                   href="/automation"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md hover:border-[#F5C518]/40 hover:bg-white/[0.06] transition-all flex items-center justify-between group text-xs font-medium shadow-sm"
                 >
                   <div className="flex items-center gap-2.5">
                     <Zap className="h-4 w-4 text-[#F5C518]" />
@@ -450,7 +459,7 @@ export default function OverviewPage() {
                 {isFounder ? (
                   <Link
                     href="/registrations"
-                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-amber-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                    className="p-3 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md hover:border-amber-500/50 hover:bg-white/[0.06] transition-all flex items-center justify-between group text-xs font-medium shadow-sm"
                   >
                     <div className="flex items-center gap-2.5">
                       <UserCheck className="h-4 w-4 text-amber-400" />
@@ -461,7 +470,7 @@ export default function OverviewPage() {
                 ) : (
                   <Link
                     href="/assets"
-                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-emerald-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                    className="p-3 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md hover:border-emerald-500/50 hover:bg-white/[0.06] transition-all flex items-center justify-between group text-xs font-medium shadow-sm"
                   >
                     <div className="flex items-center gap-2.5">
                       <Shield className="h-4 w-4 text-emerald-400" />
@@ -473,7 +482,7 @@ export default function OverviewPage() {
 
                 <Link
                   href="/reports"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md hover:border-[#F5C518]/40 hover:bg-white/[0.06] transition-all flex items-center justify-between group text-xs font-medium shadow-sm"
                 >
                   <div className="flex items-center gap-2.5">
                     <FileText className="h-4 w-4 text-blue-400" />
@@ -489,7 +498,7 @@ export default function OverviewPage() {
               {/* Finding Severity Distribution */}
               <div className="cockpit-card specular-top p-5 lg:col-span-1 shadow-md space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
+                  <h2 className="text-xs font-semibold text-slate-300">
                     Severity Breakdown
                   </h2>
                   <Link
@@ -534,8 +543,8 @@ export default function OverviewPage() {
 
               {/* Audit Trail & Live Activity */}
               <div className="cockpit-card specular-top p-5 lg:col-span-2 shadow-md space-y-4">
-                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-[#222630] pb-2.5">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
+                  <h2 className="text-xs font-semibold text-slate-300">
                     Verified Activity & Audit Log
                   </h2>
                   <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] font-mono">

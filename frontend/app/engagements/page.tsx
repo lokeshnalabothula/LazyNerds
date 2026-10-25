@@ -245,11 +245,11 @@ function EngagementsContent() {
             <select
               value={statusFilter}
               onChange={handleStatusFilterChange}
-              className="h-8 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 py-1 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="h-8 rounded-lg border border-white/[0.08] bg-white/[0.04] backdrop-blur-md px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="all">All Statuses</option>
               {Object.entries(ENGAGEMENT_STATUS_CONFIG).map(([val, cfg]) => (
-                <option key={val} value={val}>
+                <option key={val} value={val} className="bg-[#07090E] text-slate-200">
                   {cfg.label}
                 </option>
               ))}
@@ -259,11 +259,11 @@ function EngagementsContent() {
             <select
               value={typeFilter}
               onChange={handleTypeFilterChange}
-              className="h-8 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 py-1 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="h-8 rounded-lg border border-white/[0.08] bg-white/[0.04] backdrop-blur-md px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="all">All Assessment Types</option>
               {ASSESSMENT_TYPE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-[#07090E] text-slate-200">
                   {opt.label}
                 </option>
               ))}
@@ -273,11 +273,11 @@ function EngagementsContent() {
             <select
               value={authFilter}
               onChange={handleAuthFilterChange}
-              className="h-8 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2.5 py-1 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="h-8 rounded-lg border border-white/[0.08] bg-white/[0.04] backdrop-blur-md px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
             >
               <option value="all">All Written Authorizations</option>
               {Object.entries(AUTHORIZATION_STATUS_CONFIG).map(([val, cfg]) => (
-                <option key={val} value={val}>
+                <option key={val} value={val} className="bg-[#07090E] text-slate-200">
                   {cfg.label}
                 </option>
               ))}
@@ -396,7 +396,7 @@ function EngagementsContent() {
                     {/* Authorization Status Badge */}
                     <div className="pt-1">
                       <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded border ${authCfg.badgeClass}`}
+                        className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${authCfg.badgeClass}`}
                       >
                         <Shield className="h-3 w-3 shrink-0" />
                         {authCfg.label}
@@ -404,10 +404,10 @@ function EngagementsContent() {
                     </div>
 
                     {/* Dates & Assignment */}
-                    <div className="space-y-1.5 text-xs text-zinc-500 pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
+                    <div className="space-y-1.5 text-xs text-zinc-500 pt-2 border-t border-white/[0.06]">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                        <span className="font-mono text-[11px]">
+                        <span className="font-sans text-xs text-slate-300">
                           {eng.start_date ? formatDate(eng.start_date) : "Start unset"} →{" "}
                           {eng.due_date ? formatDate(eng.due_date) : "Due unset"}
                         </span>
@@ -415,7 +415,7 @@ function EngagementsContent() {
                       {eng.assigned_to && (
                         <div className="flex items-center gap-1.5">
                           <User className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                          <span className="truncate text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
+                          <span className="truncate text-xs font-sans text-slate-400">
                             {eng.assigned_to}
                           </span>
                         </div>
@@ -424,7 +424,7 @@ function EngagementsContent() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
+                  <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
                     <Link
                       href={`/engagements/${eng.id}`}
                       className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1"
@@ -449,7 +449,7 @@ function EngagementsContent() {
           <div className="cockpit-card specular-top overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-white/[0.04] backdrop-blur-md border-b border-white/[0.08] font-sans text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                <thead className="bg-white/[0.03] backdrop-blur-md border-b border-white/[0.08] text-slate-400 font-medium text-xs">
                   <tr>
                     <th
                       className="py-3 px-4 min-w-[160px] cursor-pointer hover:text-zinc-900 dark:hover:text-[#F9FAFB] transition-colors"

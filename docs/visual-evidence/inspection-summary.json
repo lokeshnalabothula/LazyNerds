@@ -156,7 +156,7 @@
   {
     "route": "/engagements",
     "title": "Engagements LifeCycle",
-    "totalButtons": 16,
+    "totalButtons": 20,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Create Engagement"
@@ -212,7 +212,7 @@
   {
     "route": "/assets",
     "title": "Target Assets Inventory",
-    "totalButtons": 22,
+    "totalButtons": 26,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Register Asset"
@@ -226,13 +226,13 @@
   {
     "route": "/findings",
     "title": "Vulnerabilities & Triage",
-    "totalButtons": 40,
+    "totalButtons": 45,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "Launch Security Scan"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "glassPanelCount": 7,
+    "glassPanelCount": 8,
     "hasLoadingSkeleton": false,
     "desktopClippingIssues": 0,
     "mobileClippingIssues": 0
@@ -246,7 +246,7 @@
       "Record Verification"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "glassPanelCount": 6,
+    "glassPanelCount": 5,
     "hasLoadingSkeleton": false,
     "desktopClippingIssues": 0,
     "mobileClippingIssues": 0

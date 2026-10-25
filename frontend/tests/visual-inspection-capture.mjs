@@ -213,6 +213,9 @@ async function captureScreenshots() {
       console.log(`    - Glass Panels: ${domStats.glassPanelCount}`);
       console.log(`    - Skeletons: ${domStats.hasLoadingSkeleton ? 'YES (UNSTABLE)' : 'NONE (STABLE DATA)'}`);
       console.log(`    - Clipping Issues: ${desktopClippingIssues.length}`);
+      if (desktopClippingIssues.length > 0) {
+        console.log(`      ⚠ Details:`, JSON.stringify(desktopClippingIssues, null, 2));
+      }
       console.log(`    - Captured: ${route.name}-desktop.png`);
 
       // Mobile Capture (390x844 iPhone standard)
@@ -248,6 +251,9 @@ async function captureScreenshots() {
       const mobileShotPath = path.join(OUTPUT_DIR, `${route.name}-mobile.png`);
       await page.screenshot({ path: mobileShotPath, fullPage: false });
       console.log(`    - Mobile Clipping Issues: ${mobileClippingIssues.length}`);
+      if (mobileClippingIssues.length > 0) {
+        console.log(`      ⚠ Mobile Details:`, JSON.stringify(mobileClippingIssues, null, 2));
+      }
       console.log(`    - Captured: ${route.name}-mobile.png`);
 
       inspectionResults.push({
@@ -259,10 +265,14 @@ async function captureScreenshots() {
       });
     }
 
+    const filter = process.env.ROUTE_FILTER;
+
     // 1. Unauthenticated: Capture Public & Auth Pages
-    console.log('--- Step 1: Inspecting & Capturing Public & Auth Pages ---');
-    for (const route of PUBLIC_ROUTES_TO_INSPECT) {
-      await inspectAndCaptureRoute(route);
+    if (!filter) {
+      console.log('--- Step 1: Inspecting & Capturing Public & Auth Pages ---');
+      for (const route of PUBLIC_ROUTES_TO_INSPECT) {
+        await inspectAndCaptureRoute(route);
+      }
     }
 
     // 2. Sign In
@@ -278,7 +288,10 @@ async function captureScreenshots() {
 
     // 3. Inspect Core & Extended Authenticated Routes (Desktop & Mobile)
     console.log('\n--- Step 3: Inspecting Core & Detail Authenticated Routes ---');
-    for (const route of ROUTES_TO_INSPECT) {
+    const routesToRun = filter
+      ? ROUTES_TO_INSPECT.filter((r) => r.path.includes(filter))
+      : ROUTES_TO_INSPECT;
+    for (const route of routesToRun) {
       await inspectAndCaptureRoute(route);
     }
 

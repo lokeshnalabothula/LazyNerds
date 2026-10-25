@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { api } from "@/lib/api";
 import { Finding } from "@/types/finding";
@@ -26,9 +27,103 @@ import {
   LayoutList,
   LayoutGrid,
   ShieldAlert,
+  AlertTriangle,
+  AlertCircle,
+  Info,
+  Globe,
+  Server,
+  Layers,
+  Clock,
+  Shield,
+  X,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 
-export default function FindingsPage() {
+// Severity Badge & Icon Definitions
+const SEVERITY_CONFIG: Record<
+  string,
+  { label: string; badgeClass: string; rowBorderClass: string; icon: any }
+> = {
+  critical: {
+    label: "Critical",
+    badgeClass: "bg-rose-500/15 text-rose-300 border-rose-500/35 shadow-[0_0_12px_rgba(244,63,94,0.18)]",
+    rowBorderClass: "border-l-rose-500",
+    icon: ShieldAlert,
+  },
+  high: {
+    label: "High",
+    badgeClass: "bg-orange-500/15 text-orange-300 border-orange-500/35 shadow-[0_0_12px_rgba(251,146,60,0.18)]",
+    rowBorderClass: "border-l-orange-500",
+    icon: AlertTriangle,
+  },
+  medium: {
+    label: "Medium",
+    badgeClass: "bg-amber-500/15 text-amber-300 border-amber-500/35",
+    rowBorderClass: "border-l-amber-500",
+    icon: AlertCircle,
+  },
+  low: {
+    label: "Low",
+    badgeClass: "bg-sky-500/15 text-sky-300 border-sky-500/35",
+    rowBorderClass: "border-l-sky-500",
+    icon: Info,
+  },
+  info: {
+    label: "Info",
+    badgeClass: "bg-slate-500/15 text-slate-300 border-slate-500/35",
+    rowBorderClass: "border-l-slate-500",
+    icon: Info,
+  },
+};
+
+// Remediation Status Badge Definitions
+const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: any }> = {
+  open: {
+    label: "Open",
+    badgeClass: "bg-rose-500/10 text-rose-300 border-rose-500/30",
+    icon: AlertCircle,
+  },
+  in_remediation: {
+    label: "In Remediation",
+    badgeClass: "bg-amber-500/10 text-amber-300 border-amber-500/30",
+    icon: Clock,
+  },
+  verification_pending: {
+    label: "Retest Pending",
+    badgeClass: "bg-sky-500/10 text-sky-300 border-sky-500/30",
+    icon: Loader2,
+  },
+  verified_fixed: {
+    label: "Verified Fixed",
+    badgeClass: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
+    icon: CheckCheck,
+  },
+  accepted_risk: {
+    label: "Accepted Risk",
+    badgeClass: "bg-slate-500/10 text-slate-300 border-slate-500/30",
+    icon: Shield,
+  },
+};
+
+// Clean helper to check if CVE is meaningful
+function isValidCve(cveId?: string | null): boolean {
+  if (!cveId) return false;
+  const trimmed = cveId.trim().toLowerCase();
+  if (trimmed === "" || trimmed === "none" || trimmed === "null" || trimmed === "n/a" || trimmed === "—") {
+    return false;
+  }
+  return true;
+}
+
+function FindingsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // URL query params
+  const engagementFilter = searchParams.get("engagement_id") || searchParams.get("engagementId") || "";
+
   const [findings, setFindings] = useState<Finding[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -54,12 +149,13 @@ export default function FindingsPage() {
         search: search || undefined,
         severity: severityFilter || undefined,
         status: statusFilter || undefined,
+        engagement_id: engagementFilter || undefined,
         page_size: 100,
       });
       setFindings(data.items);
       setTotal(data.total);
     } catch {
-      // Ignore
+      // Ignore network errors in polling
     } finally {
       setLoading(false);
     }
@@ -68,165 +164,299 @@ export default function FindingsPage() {
   useEffect(() => {
     const timer = setTimeout(fetchFindings, 200);
     return () => clearTimeout(timer);
-  }, [search, severityFilter, statusFilter]);
+  }, [search, severityFilter, statusFilter, engagementFilter]);
 
-  const getSeverityBadge = (severity: string) => {
-    switch (severity.toLowerCase()) {
-      case "critical":
-        return "bg-rose-500/10 text-rose-500 dark:text-[#F43F5E] border-rose-500/30";
-      case "high":
-        return "bg-orange-500/10 text-orange-500 dark:text-[#FB923C] border-orange-500/30";
-      case "medium":
-        return "bg-amber-500/10 text-amber-500 dark:text-[#FBBF24] border-amber-500/30";
-      default:
-        return "bg-blue-500/10 text-blue-500 dark:text-[#60A5FA] border-blue-500/30";
-    }
+  // Metric counts across full returned list
+  const criticalCount = useMemo(
+    () => findings.filter((f) => f.severity === "critical").length,
+    [findings]
+  );
+  const highCount = useMemo(
+    () => findings.filter((f) => f.severity === "high").length,
+    [findings]
+  );
+  const inRemediationCount = useMemo(
+    () => findings.filter((f) => f.status === "in_remediation").length,
+    [findings]
+  );
+  const fixedCount = useMemo(
+    () => findings.filter((f) => f.status === "verified_fixed").length,
+    [findings]
+  );
+
+  const clearEngagementFilter = () => {
+    router.push("/findings");
   };
-
-  const criticalCount = findings.filter((f) => f.severity === "critical").length;
-  const highCount = findings.filter((f) => f.severity === "high").length;
-  const inRemediationCount = findings.filter((f) => f.status === "in_remediation").length;
-  const fixedCount = findings.filter((f) => f.status === "verified_fixed").length;
 
   return (
     <AppShell title="Assessment & Findings">
       <div className="space-y-6 max-w-7xl mx-auto pb-16">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-[#222630] pb-5">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB]">
-              Vulnerabilities & Remediation
-            </h1>
-            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 leading-relaxed">
-              Vulnerability Pipeline & Scanner Ingestion — Technical findings, CVSS scoring, remediation verification, and scanner imports.
-            </p>
-          </div>
+        {/* Cockpit Header Card */}
+        <div className="cockpit-card specular-top border-[#F5C518]/25 p-5 sm:p-6 shadow-xl relative overflow-hidden">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="flex items-start gap-4 min-w-0">
+              <div className="h-12 w-12 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_14px_rgba(245,197,24,0.18)] flex items-center justify-center shrink-0 text-[#F5C518]">
+                <ShieldAlert className="h-6 w-6 text-[#F5C518]" />
+              </div>
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB]">
+                    Vulnerabilities & Remediation
+                  </h1>
+                  <span className="badge-cyber bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border-[#F5C518]/35 shrink-0">
+                    Live Security Pipeline
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] leading-relaxed max-w-2xl">
+                  Centralized vulnerability triage, CVSS scoring, technical proof-of-concept evidence, and verified remediation audit trails.
+                </p>
+              </div>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsLauncherOpen(true)}
-              className="text-xs h-9 gap-1.5"
-            >
-              <ShieldAlert className="h-3.5 w-3.5" />
-              <span>Launch Security Scan</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsScanOpen(true)}
-              className="text-xs h-9 gap-1.5 font-medium"
-            >
-              <Terminal className="h-3.5 w-3.5 text-[#F5C518]" />
-              <span>Import Scan Results</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedFinding(null);
-                setIsFormOpen(true);
-              }}
-              className="text-xs h-9 gap-1.5 font-medium"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Record Finding</span>
-            </Button>
+            {/* Header Actions: Single prominent primary action with subordinate helpers */}
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsLauncherOpen(true)}
+                className="text-xs h-9 px-4 gap-2 font-bold shadow-md"
+              >
+                <ShieldAlert className="h-3.5 w-3.5" />
+                <span>Launch Security Scan</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsScanOpen(true)}
+                className="text-xs h-9 px-3 gap-1.5 font-medium"
+              >
+                <Terminal className="h-3.5 w-3.5 text-[#F5C518]" />
+                <span>Import Scan Results</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedFinding(null);
+                  setIsFormOpen(true);
+                }}
+                className="text-xs h-9 px-3 gap-1.5 font-medium"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Record Finding</span>
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* 5 Severity KPI Stat Chips (Obsidian Precision) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
-            <span className="text-[10px] font-sans uppercase text-zinc-500 dark:text-[#94A3B8] block font-semibold">Total Pipeline</span>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-sans tracking-tight tabular-nums">
+        {/* Interactive KPI Telemetry Strip (Clickable Fast-Filters) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {/* Total Findings (Reset filter) */}
+          <button
+            type="button"
+            onClick={() => {
+              setSeverityFilter("");
+              setStatusFilter("");
+            }}
+            className={`cockpit-card cockpit-card-interactive specular-top p-3.5 text-left transition-all ${
+              severityFilter === "" && statusFilter === ""
+                ? "ring-1 ring-[#F5C518] bg-[#F5C518]/5 shadow-md"
+                : "opacity-90 hover:opacity-100"
+            }`}
+          >
+            <div className="flex items-center justify-between text-zinc-400 dark:text-slate-400 text-[11px] font-medium">
+              <span>All Findings</span>
+              <FileCheck2 className="h-3.5 w-3.5 text-[#F5C518]" />
+            </div>
+            <div className="text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 tracking-tight tabular-nums">
               {total}
             </div>
-          </div>
-          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#F43F5E]">
-            <span className="text-[10px] font-sans uppercase text-[#F43F5E] block font-semibold">Critical</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#F43F5E] mt-1 font-sans tracking-tight tabular-nums">
+            <span className="text-[10px] text-zinc-500 dark:text-slate-500 mt-0.5 block truncate">
+              {severityFilter === "" && statusFilter === "" ? "Active scope" : "Click to view all"}
+            </span>
+          </button>
+
+          {/* Critical */}
+          <button
+            type="button"
+            onClick={() => {
+              setSeverityFilter(severityFilter === "critical" ? "" : "critical");
+            }}
+            className={`cockpit-card cockpit-card-interactive specular-top p-3.5 text-left transition-all border-l-4 border-l-rose-500 ${
+              severityFilter === "critical"
+                ? "ring-1 ring-rose-500 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
+                : "opacity-90 hover:opacity-100"
+            }`}
+          >
+            <div className="flex items-center justify-between text-rose-400 text-[11px] font-semibold">
+              <span>Critical</span>
+              <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
+            </div>
+            <div className="text-2xl font-bold text-rose-400 mt-1 tracking-tight tabular-nums">
               {criticalCount}
             </div>
-          </div>
-          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#FB923C]">
-            <span className="text-[10px] font-sans uppercase text-[#FB923C] block font-semibold">High</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#FB923C] mt-1 font-sans tracking-tight tabular-nums">
+            <span className="text-[10px] text-zinc-500 dark:text-slate-500 mt-0.5 block truncate">
+              {severityFilter === "critical" ? "Filtering Critical" : "Immediate triage"}
+            </span>
+          </button>
+
+          {/* High */}
+          <button
+            type="button"
+            onClick={() => {
+              setSeverityFilter(severityFilter === "high" ? "" : "high");
+            }}
+            className={`cockpit-card cockpit-card-interactive specular-top p-3.5 text-left transition-all border-l-4 border-l-orange-500 ${
+              severityFilter === "high"
+                ? "ring-1 ring-orange-500 bg-orange-500/10 shadow-[0_0_15px_rgba(251,146,60,0.2)]"
+                : "opacity-90 hover:opacity-100"
+            }`}
+          >
+            <div className="flex items-center justify-between text-orange-400 text-[11px] font-semibold">
+              <span>High Severity</span>
+              <AlertTriangle className="h-3.5 w-3.5 text-orange-400" />
+            </div>
+            <div className="text-2xl font-bold text-orange-400 mt-1 tracking-tight tabular-nums">
               {highCount}
             </div>
-          </div>
-          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#FBBF24]">
-            <span className="text-[10px] font-sans uppercase text-[#FBBF24] block font-semibold">In Remediation</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#FBBF24] mt-1 font-sans tracking-tight tabular-nums">
+            <span className="text-[10px] text-zinc-500 dark:text-slate-500 mt-0.5 block truncate">
+              {severityFilter === "high" ? "Filtering High" : "Priority remediation"}
+            </span>
+          </button>
+
+          {/* In Remediation */}
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter(statusFilter === "in_remediation" ? "" : "in_remediation");
+            }}
+            className={`cockpit-card cockpit-card-interactive specular-top p-3.5 text-left transition-all border-l-4 border-l-amber-500 ${
+              statusFilter === "in_remediation"
+                ? "ring-1 ring-amber-500 bg-amber-500/10 shadow-[0_0_15px_rgba(245,197,24,0.2)]"
+                : "opacity-90 hover:opacity-100"
+            }`}
+          >
+            <div className="flex items-center justify-between text-amber-300 text-[11px] font-semibold">
+              <span>In Remediation</span>
+              <Clock className="h-3.5 w-3.5 text-amber-400" />
+            </div>
+            <div className="text-2xl font-bold text-amber-300 mt-1 tracking-tight tabular-nums">
               {inRemediationCount}
             </div>
-          </div>
-          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#34D399]">
-            <span className="text-[10px] font-sans uppercase text-[#34D399] block font-semibold">Verified Fixed</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#34D399] mt-1 font-sans tracking-tight tabular-nums">
+            <span className="text-[10px] text-zinc-500 dark:text-slate-500 mt-0.5 block truncate">
+              {statusFilter === "in_remediation" ? "Filtering in progress" : "Under active fix"}
+            </span>
+          </button>
+
+          {/* Verified Fixed */}
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter(statusFilter === "verified_fixed" ? "" : "verified_fixed");
+            }}
+            className={`cockpit-card cockpit-card-interactive specular-top p-3.5 text-left transition-all border-l-4 border-l-emerald-500 ${
+              statusFilter === "verified_fixed"
+                ? "ring-1 ring-emerald-500 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                : "opacity-90 hover:opacity-100"
+            }`}
+          >
+            <div className="flex items-center justify-between text-emerald-300 text-[11px] font-semibold">
+              <span>Verified Fixed</span>
+              <CheckCheck className="h-3.5 w-3.5 text-emerald-400" />
+            </div>
+            <div className="text-2xl font-bold text-emerald-300 mt-1 tracking-tight tabular-nums">
               {fixedCount}
             </div>
-          </div>
+            <span className="text-[10px] text-zinc-500 dark:text-slate-500 mt-0.5 block truncate">
+              {statusFilter === "verified_fixed" ? "Filtering fixed" : "Audited & closed"}
+            </span>
+          </button>
         </div>
 
         {/* Filter Toolbar */}
-        <div className="cockpit-card specular-top p-3.5 sm:p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-md">
-          <div className="flex-1 min-w-[200px] relative">
-            <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-[#6B7280]" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search findings by title, CVE, description..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#6B7280] min-h-[36px] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
-            />
+        <div className="cockpit-card specular-top p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-md">
+          <div className="flex-1 flex flex-wrap items-center gap-2.5">
+            <div className="relative flex-1 min-w-[220px]">
+              <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-[#6B7280]" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search findings by title, CVE, description..."
+                className="w-full pl-9 pr-8 py-2 text-xs rounded-lg glass-input text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#6B7280] min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Active Engagement Filter Pill */}
+            {engagementFilter && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F5C518]/10 border border-[#F5C518]/30 text-xs text-[#FFD84D]">
+                <Layers className="h-3.5 w-3.5" />
+                <span>Scope Filtered</span>
+                <button
+                  type="button"
+                  onClick={clearEngagementFilter}
+                  className="ml-1 p-0.5 hover:bg-white/[0.1] rounded text-[#FFD84D]"
+                  title="Clear Engagement Scope Filter"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <select
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] min-h-[36px] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
+              className="px-3 py-1.5 rounded-lg border border-white/[0.08] bg-[#07090E]/90 text-xs text-slate-200 min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               aria-label="Filter by vulnerability severity"
             >
-              <option value="">All Severities</option>
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-              <option value="info">Info</option>
+              <option value="" className="bg-[#07090E] text-slate-300">All Severities</option>
+              <option value="critical" className="bg-[#07090E] text-rose-400">Critical</option>
+              <option value="high" className="bg-[#07090E] text-orange-400">High</option>
+              <option value="medium" className="bg-[#07090E] text-amber-400">Medium</option>
+              <option value="low" className="bg-[#07090E] text-sky-400">Low</option>
+              <option value="info" className="bg-[#07090E] text-slate-400">Info</option>
             </select>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#161920] text-xs text-zinc-900 dark:text-[#F9FAFB] min-h-[36px] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
+              className="px-3 py-1.5 rounded-lg border border-white/[0.08] bg-[#07090E]/90 text-xs text-slate-200 min-h-[36px] focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
               aria-label="Filter by remediation status"
             >
-              <option value="">All Statuses</option>
-              <option value="open">Open</option>
-              <option value="in_remediation">In Remediation</option>
-              <option value="verification_pending">Verification Pending</option>
-              <option value="verified_fixed">Verified Fixed</option>
-              <option value="accepted_risk">Accepted Risk</option>
+              <option value="" className="bg-[#07090E] text-slate-300">All Statuses</option>
+              <option value="open" className="bg-[#07090E] text-rose-300">Open</option>
+              <option value="in_remediation" className="bg-[#07090E] text-amber-300">In Remediation</option>
+              <option value="verification_pending" className="bg-[#07090E] text-sky-300">Retest Pending</option>
+              <option value="verified_fixed" className="bg-[#07090E] text-emerald-300">Verified Fixed</option>
+              <option value="accepted_risk" className="bg-[#07090E] text-slate-400">Accepted Risk</option>
             </select>
 
             {/* View Mode Toggle */}
             <div
               role="group"
               aria-label="Findings directory view mode"
-              className="inline-flex rounded-lg border border-zinc-200 dark:border-[#222630] p-0.5 bg-zinc-100 dark:bg-[#161920] text-xs shrink-0"
+              className="inline-flex rounded-lg border border-white/[0.08] p-0.5 bg-white/[0.02] text-xs shrink-0"
             >
               <button
                 type="button"
                 onClick={() => setViewMode("cards")}
                 aria-label="Switch to card view"
                 aria-pressed={viewMode === "cards"}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
+                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-1 focus:ring-[#F5C518] ${
                   viewMode === "cards"
-                    ? "bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
-                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
+                    ? "bg-[#F5C518]/15 text-[#FFD84D] border border-[#F5C518]/30 shadow-xs font-semibold"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
@@ -237,278 +467,333 @@ export default function FindingsPage() {
                 onClick={() => setViewMode("table")}
                 aria-label="Switch to list view"
                 aria-pressed={viewMode === "table"}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
+                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-1 focus:ring-[#F5C518] ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
-                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
+                    ? "bg-[#F5C518]/15 text-[#FFD84D] border border-[#F5C518]/30 shadow-xs font-semibold"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 <LayoutList className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">List</span>
+                <span className="hidden sm:inline">Table</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Findings Content */}
+        {/* Findings Directory Content */}
         <div data-loading-state={loading && findings.length === 0 ? "loading" : "complete"}>
-        {loading && findings.length === 0 ? (
-          viewMode === "cards" ? (
-            <CardGridSkeleton count={6} />
-          ) : (
-            <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
-              <TableSkeleton rows={5} cols={5} />
-            </div>
-          )
-        ) : findings.length === 0 ? (
-          <div data-empty="true" className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30">
-            <FileCheck2 className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No security findings recorded</p>
-            <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto leading-relaxed">
-              Import scan results using the Nuclei/Nmap adapter or record manual penetration testing findings.
-            </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              <button
-                onClick={() => setIsScanOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[36px]"
-              >
-                <Terminal className="h-3.5 w-3.5" />
-                <span>Import Scan Results</span>
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedFinding(null);
-                  setIsFormOpen(true);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F5C518] hover:bg-[#FFD84D] active:bg-[#DDAA07] text-[#111318] text-xs font-semibold min-h-[36px]"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Record Finding</span>
-              </button>
-            </div>
-          </div>
-        ) : viewMode === "cards" ? (
-          /* Responsive Cards View (Default on Mobile) */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {findings.map((finding) => (
-              <div
-                key={finding.id}
-                className={`cockpit-card cockpit-card-interactive specular-top p-4 sm:p-5 shadow-md flex flex-col justify-between gap-4 border-l-4 ${
-                  finding.severity === "critical"
-                    ? "border-l-[#F43F5E]"
-                    : finding.severity === "high"
-                    ? "border-l-[#FB923C]"
-                    : finding.severity === "medium"
-                    ? "border-l-[#FBBF24]"
-                    : "border-l-[#60A5FA]"
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold border ${getSeverityBadge(
-                        finding.severity
-                      )}`}
-                    >
-                      {finding.severity}
-                    </span>
-
-                    <span
-                      className={`inline-flex items-center gap-1 text-[11px] font-medium ${
-                        finding.status === "verified_fixed"
-                          ? "text-emerald-600 dark:text-[#34D399]"
-                          : finding.status === "in_remediation"
-                          ? "text-amber-600 dark:text-[#FBBF24]"
-                          : "text-zinc-600 dark:text-[#9CA3AF]"
-                      }`}
-                    >
-                      {finding.status === "verified_fixed" ? (
-                        <CheckCheck className="h-3.5 w-3.5 text-[#34D399]" />
-                      ) : null}
-                      <span className="capitalize">{finding.status.replace("_", " ")}</span>
-                    </span>
-                  </div>
-
-                  <div>
-                    <Link
-                      href={`/findings/${finding.id}`}
-                      className="font-semibold text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] hover:underline text-sm leading-snug line-clamp-2"
-                    >
-                      {finding.title}
-                    </Link>
-                    <div className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] mt-1 truncate font-mono">
-                      {finding.engagement_name || "Engagement"}
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-zinc-100 dark:border-[#222630] space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between text-zinc-600 dark:text-[#9CA3AF]">
-                      <span className="text-[11px] text-zinc-400 dark:text-[#6B7280]">Target Asset:</span>
-                      <span className="font-mono text-[11px] truncate max-w-[180px] text-zinc-800 dark:text-zinc-200">
-                        {finding.asset_name || "—"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-zinc-600 dark:text-[#9CA3AF]">
-                      <span className="text-[11px] text-zinc-400 dark:text-[#6B7280]">Identifier:</span>
-                      <span className="font-mono text-[11px] text-zinc-800 dark:text-zinc-200">
-                        {finding.cve_id || (finding.cvss_score ? `CVSS ${finding.cvss_score}` : "—")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-zinc-100 dark:border-[#222630] flex items-center justify-between gap-2">
-                  <Link
-                    href={`/findings/${finding.id}`}
-                    className="text-xs text-[#B88700] dark:text-[#FFD84D] hover:underline font-semibold"
-                  >
-                    View Details
-                  </Link>
-
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => {
-                        setSelectedFinding(finding);
-                        setIsVerifyOpen(true);
-                      }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-[#161920] hover:bg-zinc-200 dark:hover:bg-[#222630] text-xs text-zinc-700 dark:text-[#F9FAFB] min-h-[34px] font-medium border border-zinc-200 dark:border-[#222630]"
-                      title="Record Verification Retest"
-                    >
-                      <CheckCircle2 className="h-3.5 w-3.5 text-[#34D399]" />
-                      <span>Verify</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedFinding(finding);
-                        setIsFormOpen(true);
-                      }}
-                      className="p-1.5 rounded-lg text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center border border-transparent dark:hover:border-[#222630]"
-                      title="Edit Finding"
-                      aria-label={`Edit finding ${finding.title}`}
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
+          {loading && findings.length === 0 ? (
+            viewMode === "cards" ? (
+              <CardGridSkeleton count={6} />
+            ) : (
+              <div className="cockpit-card specular-top rounded-xl overflow-hidden shadow-md">
+                <TableSkeleton rows={6} cols={6} />
               </div>
-            ))}
-          </div>
-        ) : (
-          /* Table View (Default on Desktop) */
-          <div className="cockpit-card specular-top rounded-xl overflow-hidden shadow-md">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-white/[0.04] backdrop-blur-md text-zinc-600 dark:text-slate-300 font-sans text-[11px] font-semibold uppercase tracking-wider">
-                    <th className="py-3 px-4 min-w-[100px]">Severity</th>
-                    <th className="py-3 px-4 min-w-[240px]">Vulnerability Title</th>
-                    <th className="py-3 px-4 min-w-[140px]">Target Asset</th>
-                    <th className="py-3 px-4 min-w-[120px]">CVE / CVSS</th>
-                    <th className="py-3 px-4 min-w-[140px]">Remediation Status</th>
-                    <th className="py-3 px-4 text-right min-w-[120px] whitespace-nowrap sticky right-0 bg-white dark:bg-[#0F1420]/95 backdrop-blur-md">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-white/[0.06]">
-                  {findings.map((finding) => (
-                    <tr
-                      key={finding.id}
-                      className={`hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors border-l-4 ${
-                        finding.severity === "critical"
-                          ? "border-l-[#F43F5E]"
-                          : finding.severity === "high"
-                          ? "border-l-[#FB923C]"
-                          : finding.severity === "medium"
-                          ? "border-l-[#FBBF24]"
-                          : "border-l-[#60A5FA]"
-                      }`}
-                    >
-                      <td className="py-3 px-4">
+            )
+          ) : findings.length === 0 ? (
+            <div
+              data-empty="true"
+              className="cockpit-card specular-top p-12 text-center rounded-xl shadow-md border-dashed border-white/[0.12] space-y-3"
+            >
+              <div className="h-12 w-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-slate-400">
+                <FileCheck2 className="h-6 w-6 opacity-70" />
+              </div>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                No security vulnerabilities found
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                {search || severityFilter || statusFilter || engagementFilter
+                  ? "No findings match your current filters. Try resetting search criteria or selecting all severities."
+                  : "Launch an automated website security audit or import scan results from Nuclei/Shannon to populate findings."}
+              </p>
+              <div className="pt-2 flex flex-wrap justify-center gap-2">
+                {(search || severityFilter || statusFilter || engagementFilter) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearch("");
+                      setSeverityFilter("");
+                      setStatusFilter("");
+                      if (engagementFilter) clearEngagementFilter();
+                    }}
+                    className="text-xs h-8"
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsLauncherOpen(true)}
+                  className="text-xs h-8 font-bold gap-1.5"
+                >
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                  <span>Launch Security Scan</span>
+                </Button>
+              </div>
+            </div>
+          ) : viewMode === "cards" ? (
+            /* Responsive Cards View */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {findings.map((finding) => {
+                const sevCfg = SEVERITY_CONFIG[finding.severity] || SEVERITY_CONFIG.info;
+                const statusCfg = STATUS_CONFIG[finding.status] || STATUS_CONFIG.open;
+                const SevIcon = sevCfg.icon;
+                const StatusIcon = statusCfg.icon;
+
+                return (
+                  <div
+                    key={finding.id}
+                    className={`cockpit-card cockpit-card-interactive specular-top p-5 shadow-md flex flex-col justify-between gap-4 border-l-4 ${sevCfg.rowBorderClass} transition-all`}
+                  >
+                    <div className="space-y-3.5">
+                      {/* Top Badges Ribbon */}
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-sans font-bold border ${sevCfg.badgeClass}`}
+                          >
+                            <SevIcon className="h-3 w-3" />
+                            <span>{sevCfg.label}</span>
+                          </span>
+
+                          {finding.cvss_score !== null && finding.cvss_score !== undefined && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-white/[0.05] text-slate-200 border border-white/[0.1]">
+                              CVSS {finding.cvss_score}
+                            </span>
+                          )}
+
+                          {isValidCve(finding.cve_id) && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#F5C518]/10 text-[#FFD84D] border border-[#F5C518]/25">
+                              {finding.cve_id}
+                            </span>
+                          )}
+                        </div>
+
                         <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold border ${getSeverityBadge(
-                            finding.severity
-                          )}`}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border ${statusCfg.badgeClass}`}
                         >
-                          {finding.severity}
+                          <StatusIcon className="h-3 w-3" />
+                          <span>{statusCfg.label}</span>
                         </span>
-                      </td>
-                      <td className="py-3 px-4">
+                      </div>
+
+                      {/* Finding Title & Description Preview */}
+                      <div>
                         <Link
                           href={`/findings/${finding.id}`}
-                          className="font-semibold text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] hover:underline"
+                          className="font-bold text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] hover:underline text-sm leading-snug line-clamp-2"
                         >
                           {finding.title}
                         </Link>
-                        <div className="text-[10px] text-zinc-400 dark:text-[#6B7280] truncate max-w-sm font-mono mt-0.5">
-                          {finding.engagement_name || "Engagement"}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-mono text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
-                          {finding.asset_name || "System"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="font-mono text-[11px] text-zinc-700 dark:text-zinc-200">
-                          {finding.cve_id || "—"}
-                        </div>
-                        {finding.cvss_score !== null && finding.cvss_score !== undefined && (
-                          <div className="text-[10px] text-zinc-400 dark:text-[#6B7280] font-mono">
-                            CVSS {finding.cvss_score}
-                          </div>
+                        {finding.description && (
+                          <p className="text-xs text-zinc-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed text-ellipsis overflow-hidden">
+                            {finding.description}
+                          </p>
                         )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1 text-[11px] font-medium ${
-                            finding.status === "verified_fixed"
-                              ? "text-emerald-600 dark:text-[#34D399]"
-                              : finding.status === "in_remediation"
-                              ? "text-amber-600 dark:text-[#FBBF24]"
-                              : "text-zinc-600 dark:text-[#9CA3AF]"
-                          }`}
-                        >
-                          {finding.status === "verified_fixed" ? (
-                            <CheckCheck className="h-3.5 w-3.5 text-[#34D399]" />
-                          ) : null}
-                          <span className="capitalize">{finding.status.replace("_", " ")}</span>
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right min-w-[120px] whitespace-nowrap sticky right-0 bg-white dark:bg-[#0F1420]/95 backdrop-blur-md">
-                        <div className="inline-flex items-center justify-end gap-2 pr-1">
-                          <button
-                            onClick={() => {
-                              setSelectedFinding(finding);
-                              setIsVerifyOpen(true);
-                            }}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-[#161920] hover:bg-zinc-200 dark:hover:bg-[#222630] text-xs text-zinc-700 dark:text-[#F9FAFB] min-h-[34px] border border-zinc-200 dark:border-[#222630]"
-                            title="Record Verification Retest"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5 text-[#34D399]" />
-                            <span>Verify</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedFinding(finding);
-                              setIsFormOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center border border-transparent dark:hover:border-[#222630]"
-                            title="Edit Finding"
-                            aria-label={`Edit finding ${finding.title}`}
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
+                      </div>
+
+                      {/* Scope & Target Asset Details */}
+                      <div className="pt-2 border-t border-white/[0.06] space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span className="text-[11px] flex items-center gap-1">
+                            <Globe className="h-3 w-3 text-slate-500" />
+                            <span>Target Asset:</span>
+                          </span>
+                          <span className="font-mono text-[11px] truncate max-w-[190px] text-slate-200 font-medium">
+                            {finding.asset_name || "Scoped Host"}
+                          </span>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span className="text-[11px] flex items-center gap-1">
+                            <Layers className="h-3 w-3 text-slate-500" />
+                            <span>Engagement:</span>
+                          </span>
+                          <span className="text-[11px] truncate max-w-[190px] text-slate-300">
+                            {finding.engagement_name || "Web Assessment"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between gap-2">
+                      <Link
+                        href={`/findings/${finding.id}`}
+                        className="text-xs text-[#B88700] dark:text-[#FFD84D] hover:underline font-bold inline-flex items-center gap-1"
+                      >
+                        <span>View Details</span>
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Link>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setSelectedFinding(finding);
+                            setIsVerifyOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-xs text-slate-200 min-h-[32px] font-medium border border-white/[0.1] transition-colors"
+                          title="Record Verification Retest"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>Verify</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedFinding(finding);
+                            setIsFormOpen(true);
+                          }}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-white/[0.06] min-h-[32px] min-w-[32px] flex items-center justify-center border border-white/[0.06]"
+                          title="Edit Finding"
+                          aria-label={`Edit finding ${finding.title}`}
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        )}
+          ) : (
+            /* High-Density Readable Table View */
+            <div className="cockpit-card specular-top rounded-xl overflow-hidden shadow-md">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-white/[0.08] bg-white/[0.04] backdrop-blur-md text-slate-300 font-sans text-[11px] font-semibold uppercase tracking-wider">
+                      <th className="py-3 px-4 min-w-[130px]">Severity</th>
+                      <th className="py-3 px-4 min-w-[280px]">Vulnerability Finding</th>
+                      <th className="py-3 px-4 min-w-[170px]">Target Asset & Scope</th>
+                      <th className="py-3 px-4 min-w-[130px]">CVE / Score</th>
+                      <th className="py-3 px-4 min-w-[150px]">Status</th>
+                      <th className="py-3 px-4 text-right min-w-[130px] whitespace-nowrap sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.06]">
+                    {findings.map((finding) => {
+                      const sevCfg = SEVERITY_CONFIG[finding.severity] || SEVERITY_CONFIG.info;
+                      const statusCfg = STATUS_CONFIG[finding.status] || STATUS_CONFIG.open;
+                      const SevIcon = sevCfg.icon;
+                      const StatusIcon = statusCfg.icon;
+
+                      return (
+                        <tr
+                          key={finding.id}
+                          className={`hover:bg-white/[0.02] transition-colors border-l-4 ${sevCfg.rowBorderClass}`}
+                        >
+                          {/* Severity & CVSS */}
+                          <td className="py-3.5 px-4 align-top">
+                            <div className="flex flex-col gap-1.5 items-start">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-sans font-bold border ${sevCfg.badgeClass}`}
+                              >
+                                <SevIcon className="h-3 w-3 shrink-0" />
+                                <span>{sevCfg.label}</span>
+                              </span>
+                              {finding.cvss_score !== null && finding.cvss_score !== undefined && (
+                                <span className="px-2 py-0.2 rounded text-[10px] font-mono font-semibold bg-white/[0.05] text-slate-300 border border-white/[0.08]">
+                                  CVSS {finding.cvss_score}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Vulnerability Title & 1-Line Description */}
+                          <td className="py-3.5 px-4 align-top">
+                            <div className="space-y-0.5 max-w-md">
+                              <Link
+                                href={`/findings/${finding.id}`}
+                                className="font-bold text-zinc-100 hover:text-[#FFD84D] hover:underline text-sm leading-snug block"
+                              >
+                                {finding.title}
+                              </Link>
+                              {finding.description && (
+                                <p className="text-xs text-slate-400 line-clamp-1 leading-relaxed text-ellipsis overflow-hidden">
+                                  {finding.description}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Target Scope & Asset */}
+                          <td className="py-3.5 px-4 align-top">
+                            <div className="space-y-0.5">
+                              <div className="font-mono text-xs font-medium text-slate-200 flex items-center gap-1.5">
+                                <Globe className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                <span className="truncate max-w-[160px]">
+                                  {finding.asset_name || "Target Host"}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-slate-400 truncate max-w-[160px]">
+                                {finding.engagement_name || "Engagement"}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* CVE / Identifier */}
+                          <td className="py-3.5 px-4 align-top">
+                            {isValidCve(finding.cve_id) ? (
+                              <span className="inline-block px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-[#F5C518]/10 text-[#FFD84D] border border-[#F5C518]/25">
+                                {finding.cve_id}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-500 font-mono">—</span>
+                            )}
+                          </td>
+
+                          {/* Remediation Status */}
+                          <td className="py-3.5 px-4 align-top">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border ${statusCfg.badgeClass}`}
+                            >
+                              <StatusIcon className="h-3 w-3 shrink-0" />
+                              <span>{statusCfg.label}</span>
+                            </span>
+                          </td>
+
+                          {/* Action Buttons */}
+                          <td className="py-3.5 px-4 text-right align-top sticky right-0 bg-[#0F1420]/95 backdrop-blur-md">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setSelectedFinding(finding);
+                                  setIsVerifyOpen(true);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-xs text-slate-200 min-h-[30px] font-medium border border-white/[0.1] transition-colors"
+                                title="Record Verification Retest"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                                <span>Verify</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedFinding(finding);
+                                  setIsFormOpen(true);
+                                }}
+                                className="p-1 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-white/[0.06] min-h-[30px] min-w-[30px] flex items-center justify-center border border-white/[0.06]"
+                                title="Edit Finding"
+                                aria-label={`Edit finding ${finding.title}`}
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Modals & Dialogs */}
         <FindingFormModal
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
@@ -538,7 +823,7 @@ export default function FindingsPage() {
             fetchFindings();
           }}
           assessmentId={telemetryAssessmentId}
-          onViewFindings={(id) => {
+          onViewFindings={() => {
             setIsTelemetryOpen(false);
             fetchFindings();
           }}
@@ -552,5 +837,22 @@ export default function FindingsPage() {
         />
       </div>
     </AppShell>
+  );
+}
+
+export default function FindingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppShell title="Assessment & Findings">
+          <div className="py-24 flex flex-col items-center justify-center gap-3 text-zinc-400">
+            <Loader2 className="h-6 w-6 animate-spin text-[#F5C518]" />
+            <span className="text-xs font-mono">Loading security findings...</span>
+          </div>
+        </AppShell>
+      }
+    >
+      <FindingsContent />
+    </Suspense>
   );
 }

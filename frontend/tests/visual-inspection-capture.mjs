@@ -49,6 +49,7 @@ const ROUTES_TO_INSPECT = [
   { path: `/clients/${CLIENT_ID}`, name: 'client-detail', title: 'Client Organization Detail' },
   { path: '/clients/new', name: 'client-new', title: 'Register New Client' },
   { path: `/clients/${CLIENT_ID}/edit`, name: 'client-edit', title: 'Edit Client Organization' },
+  { path: '/audit', name: 'audit', title: 'Website Security Audit' },
   { path: '/engagements', name: 'engagements', title: 'Engagements LifeCycle' },
   { path: `/engagements/${ENGAGEMENT_ID}`, name: 'engagement-detail', title: 'Engagement Scope & Operations' },
   { path: '/engagements/new', name: 'engagement-new', title: 'Create New Engagement' },

@@ -140,6 +140,20 @@
     "mobileClippingIssues": 0
   },
   {
+    "route": "/audit",
+    "title": "Website Security Audit",
+    "totalButtons": 7,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Launch Website Audit"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "glassPanelCount": 3,
+    "hasLoadingSkeleton": false,
+    "desktopClippingIssues": 0,
+    "mobileClippingIssues": 0
+  },
+  {
     "route": "/engagements",
     "title": "Engagements LifeCycle",
     "totalButtons": 16,
@@ -240,13 +254,13 @@
   {
     "route": "/automation",
     "title": "Workflow Automation",
-    "totalButtons": 7,
+    "totalButtons": 11,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "New Workflow"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "glassPanelCount": 2,
+    "glassPanelCount": 3,
     "hasLoadingSkeleton": false,
     "desktopClippingIssues": 0,
     "mobileClippingIssues": 0

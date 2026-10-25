@@ -143,3 +143,26 @@ export const AUTHORIZATION_STATUS_CONFIG: Record<
     badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   },
 };
+
+export interface WebsiteAuditInput {
+  url: string;
+  client_id: string;
+  engagement_id?: string;
+  scan_mode?: "blackbox" | "source_assisted";
+  confirmed_authorization: boolean;
+  notes?: string;
+}
+
+export interface WebsiteAuditResponse {
+  status: string;
+  message: string;
+  assessment_id: string;
+  engagement_id: string;
+  asset_id: string;
+  target_url: string;
+  scan_mode: string;
+  assessment_status: string;
+  assessment_tool: string;
+  findings_count: number;
+  created_at: string;
+}

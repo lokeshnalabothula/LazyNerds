@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   Zap,
   UserPlus,
+  Globe,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -62,6 +63,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           },
         ]
       : []),
+    {
+      name: "Website Audit",
+      href: "/audit",
+      icon: Globe,
+      badge: "Scan",
+      description: "Automated URL Security Assessment",
+    },
     {
       name: "Engagements",
       href: "/engagements",

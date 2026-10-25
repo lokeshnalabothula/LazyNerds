@@ -1,17 +1,31 @@
+import uuid
+from datetime import datetime, timezone, timedelta
 from typing import Optional
+from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_employee_or_founder
+from app.core.config import settings
+from app.core.security import validate_target_url_ssrf
 from app.db.session import get_db
+from app.models.asset import Asset
 from app.models.client import Client
+from app.models.engagement import Engagement
 from app.models.user import User
 from app.schemas.engagement import (
+    AssessmentType,
     EngagementCreate,
     EngagementListResponse,
     EngagementOut,
+    EngagementStatus,
+    AuthorizationStatus,
     EngagementUpdate,
+    WebsiteAuditRequest,
+    WebsiteAuditResponse,
 )
+from app.services import scanner_service
+from app.services.audit_service import log_audit
 from app.services.engagement_service import (
     SORT_FIELDS_ALLOWLIST,
     archive_engagement,
@@ -258,3 +272,176 @@ def restore_existing_engagement(
             detail=str(e),
         )
     return EngagementOut.model_validate(restored)
+
+
+@router.post("/website-audit", response_model=WebsiteAuditResponse, status_code=status.HTTP_201_CREATED)
+def submit_website_audit(
+    req: WebsiteAuditRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Submits a website URL for automated security auditing and scanner dispatch.
+    Enforces strict SSRF protection, scope boundaries, and explicit written RoE authorization.
+    """
+    # 1. Mandatory written authorization check
+    if not req.confirmed_authorization:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Security testing requires confirmed written authorization from the domain owner.",
+        )
+
+    # 2. Strict SSRF and URL validation (rejects localhost, private IPs, cloud metadata)
+    is_valid, err_msg = validate_target_url_ssrf(req.url, allow_lab_testing=False)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"URL validation failed: {err_msg}",
+        )
+
+    parsed = urlparse(req.url.strip())
+    hostname = parsed.hostname or req.url.strip()
+
+    # 3. Client existence & multi-tenant isolation
+    client = db.query(Client).filter(Client.id == req.client_id).first()
+    if not client:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Referenced client organization does not exist.",
+        )
+    if client.status == "archived":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot audit assets for an archived client organization.",
+        )
+
+    # Role permission check: client users can only audit for their own organization
+    if current_user.role == "client" and current_user.client_id != req.client_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Cannot submit audits for other client organizations.",
+        )
+
+    # 4. Resolve or create Engagement
+    if req.engagement_id:
+        eng = db.query(Engagement).filter(Engagement.id == req.engagement_id).first()
+        if not eng:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Referenced engagement does not exist.",
+            )
+        if eng.client_id != req.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Referenced engagement belongs to a different client organization.",
+            )
+        if eng.status in ("completed", "cancelled"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot launch audit on an engagement with status '{eng.status}'.",
+            )
+        eng.authorization_status = "confirmed"
+        if eng.status == "draft":
+            eng.status = "in_progress"
+        db.flush()
+    else:
+        now_dt = datetime.now(timezone.utc)
+        eng = Engagement(
+            id=str(uuid.uuid4()),
+            client_id=req.client_id,
+            name=f"Website Audit: {hostname}",
+            assessment_type=AssessmentType.WEB_APP.value,
+            status=EngagementStatus.IN_PROGRESS.value,
+            authorization_status=AuthorizationStatus.CONFIRMED.value,
+            start_date=now_dt.date(),
+            due_date=now_dt.date() + timedelta(days=7),
+            description=f"Automated on-demand website security audit for {req.url.strip()} initiated by {current_user.email}.",
+            scope_summary=f"Target URL: {req.url.strip()}",
+            assigned_to=current_user.full_name or current_user.email,
+            created_at=now_dt,
+            updated_at=now_dt,
+        )
+        db.add(eng)
+        db.flush()
+
+    # 5. Resolve or create Asset
+    clean_target = req.url.strip()
+    asset = (
+        db.query(Asset)
+        .filter(Asset.client_id == req.client_id, Asset.target == clean_target)
+        .first()
+    )
+    if not asset:
+        now_dt = datetime.now(timezone.utc)
+        asset = Asset(
+            id=str(uuid.uuid4()),
+            client_id=req.client_id,
+            engagement_id=eng.id,
+            name=f"Web: {hostname}",
+            asset_type="web_application",
+            target=clean_target,
+            environment="production",
+            criticality="high",
+            in_scope=True,
+            authorization_status="verified",
+            notes=req.notes or "Registered via Website Audit submission flow.",
+            created_at=now_dt,
+            updated_at=now_dt,
+        )
+        db.add(asset)
+        db.flush()
+    else:
+        asset.engagement_id = eng.id
+        asset.in_scope = True
+        asset.authorization_status = "verified"
+        db.flush()
+
+    # 6. Launch or register scan via existing scanner pipeline
+    try:
+        assessment = scanner_service.launch_scan(
+            db=db,
+            engagement_id=eng.id,
+            target_asset_id=asset.id,
+            scan_mode=req.scan_mode,
+            current_user=current_user,
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Scanner dispatch failed: {str(e)}",
+        )
+
+    # 7. Record security audit log
+    import json
+    log_audit(
+        db=db,
+        user_email=current_user.email,
+        action="website_audit_launched",
+        resource_type="assessment",
+        resource_id=assessment.id,
+        details=json.dumps({
+            "target_url": clean_target,
+            "client_id": req.client_id,
+            "engagement_id": eng.id,
+            "asset_id": asset.id,
+            "scan_mode": req.scan_mode,
+        }),
+        commit=False,
+    )
+
+    db.commit()
+
+    return WebsiteAuditResponse(
+        status="success",
+        message="Website security audit successfully initiated.",
+        assessment_id=assessment.id,
+        engagement_id=eng.id,
+        asset_id=asset.id,
+        target_url=clean_target,
+        scan_mode=req.scan_mode,
+        assessment_status=assessment.status,
+        assessment_tool=assessment.assessment_tool,
+        findings_count=assessment.findings_count,
+        created_at=assessment.created_at,
+    )

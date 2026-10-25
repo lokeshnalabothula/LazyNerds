@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Literal
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -212,3 +212,48 @@ class EngagementListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class WebsiteAuditRequest(BaseModel):
+    url: str = Field(..., min_length=1, max_length=500, description="Target website URL (HTTP/HTTPS)")
+    client_id: str = Field(..., min_length=36, max_length=36, description="UUID of associated client organization")
+    engagement_id: Optional[str] = Field(None, min_length=36, max_length=36, description="Optional existing engagement UUID")
+    scan_mode: Literal["blackbox", "source_assisted"] = Field(default="blackbox", description="Audit scan profile")
+    confirmed_authorization: bool = Field(..., description="Certification of explicit written RoE authorization")
+    notes: Optional[str] = Field(None, max_length=1000, description="Audit scope notes or instructions")
+
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, v: str) -> str:
+        stripped = v.strip()
+        if not stripped:
+            raise ValueError("Target website URL cannot be empty.")
+        lower = stripped.lower()
+        if not (lower.startswith("http://") or lower.startswith("https://")):
+            raise ValueError("Target URL must begin with http:// or https://")
+        return stripped
+
+
+class WebsiteAuditResponse(BaseModel):
+    status: str
+    message: str
+    assessment_id: str
+    engagement_id: str
+    asset_id: str
+    target_url: str
+    scan_mode: str
+    assessment_status: str
+    assessment_tool: str
+    findings_count: int
+    created_at: datetime
+
+    @field_serializer("created_at", when_used="json")
+    def serialize_dt(self, dt: datetime) -> str:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
+        iso = dt.isoformat()
+        if iso.endswith("+00:00"):
+            return iso[:-6] + "Z"
+        return iso

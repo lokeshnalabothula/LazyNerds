@@ -20,6 +20,8 @@ import {
   EngagementCreateInput,
   EngagementListResponse,
   EngagementUpdateInput,
+  WebsiteAuditInput,
+  WebsiteAuditResponse,
 } from "@/types/engagement";
 import {
   Asset,
@@ -473,6 +475,13 @@ export const api = {
 
   async launchScan(input: ScanLaunchInput): Promise<Assessment> {
     return request<Assessment>("/findings/launch-scan", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async submitWebsiteAudit(input: WebsiteAuditInput): Promise<WebsiteAuditResponse> {
+    return request<WebsiteAuditResponse>("/engagements/website-audit", {
       method: "POST",
       body: JSON.stringify(input),
     });

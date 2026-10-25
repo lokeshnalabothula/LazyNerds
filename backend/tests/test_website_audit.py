@@ -133,6 +133,31 @@ def test_submit_website_audit_ssrf_loopback_blocked(auth_client: TestClient, act
     assert "ssrf" in detail or "disallowed" in detail or "loopback" in detail or "blocked" in detail
 
 
+def test_submit_website_audit_production_mode_blocks_lab_target_even_with_flag_true(
+    auth_client: TestClient, active_client, monkeypatch
+):
+    """
+    Regression test for LNA-14: Fail-closed production SSRF guard on Website Audit.
+    Verifies that when ENVIRONMENT='production', even if ALLOW_LAB_TESTING is explicitly set True,
+    targeting loopback or the local lab target (http://127.0.0.1:8888) is strictly rejected with HTTP 400.
+    """
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(settings, "ALLOW_LAB_TESTING", True)
+
+    payload = {
+        "url": "http://127.0.0.1:8888",
+        "client_id": active_client.id,
+        "scan_mode": "blackbox",
+        "confirmed_authorization": True,
+    }
+    resp = auth_client.post("/api/v1/engagements/website-audit", json=payload)
+    assert resp.status_code == 400
+    detail = resp.json()["detail"].lower()
+    assert "ssrf" in detail or "disallowed" in detail or "loopback" in detail
+
+
 def test_submit_website_audit_invalid_scheme_rejected(auth_client: TestClient, active_client):
     payload = {
         "url": "javascript:alert(1)",

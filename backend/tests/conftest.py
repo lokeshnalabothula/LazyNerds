@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 # Ensure test environment
 os.environ["ENVIRONMENT"] = "testing"
+os.environ["ALLOW_LAB_TESTING"] = "true"
 os.environ["DATABASE_URL"] = "sqlite:///./test_fixops.db"
 os.environ["SECRET_KEY"] = "test-secret-key-lazy-nerds-fixops-super-secure-2026"
 

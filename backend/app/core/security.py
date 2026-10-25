@@ -56,11 +56,36 @@ BLOCKED_INFRASTRUCTURE_PORTS = {
 }
 
 
+OWNED_LAB_PORTS = {8888}
+OWNED_LAB_HOSTNAMES = {"127.0.0.1", "localhost", "host.docker.internal"}
+
+
+def is_lab_testing_authorized() -> bool:
+    """
+    Returns True ONLY if:
+    1. settings.ENVIRONMENT is NOT 'production' (case-insensitive fail-closed check).
+    2. settings.ALLOW_LAB_TESTING is explicitly True.
+    Under ALL other circumstances, returns False.
+    """
+    env = (getattr(settings, "ENVIRONMENT", "production") or "production").lower().strip()
+    if env == "production":
+        return False
+    return getattr(settings, "ALLOW_LAB_TESTING", False) is True
+
+
 def validate_target_url_ssrf(url: str, allow_lab_testing: bool = False) -> tuple[bool, str]:
     """
     Strict SSRF and destination validation for automated scanner targets.
     Ensures targets use http/https, valid web ports, cannot reach internal infrastructure,
     and unconditionally blocks cloud metadata services.
+
+    Lab Testing Fail-Closed Safeguards:
+    - Lab testing is FAIL-CLOSED in production unconditionally: even if allow_lab_testing=True
+      is passed, if settings.ENVIRONMENT == "production" or ALLOW_LAB_TESTING is False,
+      lab mode is strictly forbidden.
+    - When authorized in non-production, lab testing is restricted EXCLUSIVELY to the owned
+      local lab target (port 8888 on localhost / 127.0.0.1 / host.docker.internal).
+    - Internal infrastructure and FixOps self-ports (e.g. 8000, 3000) are blocked unconditionally.
     """
     if not url or not isinstance(url, str):
         return False, "Target URL must be a non-empty string."
@@ -84,6 +109,9 @@ def validate_target_url_ssrf(url: str, allow_lab_testing: bool = False) -> tuple
         if parsed.port < 1 or parsed.port > 65535:
             return False, f"Invalid target port {parsed.port}."
 
+    # Determine effective lab testing authorization: fail-closed in production
+    effective_allow_lab = allow_lab_testing and is_lab_testing_authorized()
+
     # Check for direct numeric IP representations or hex/octal bypass attempts
     try:
         resolved_ips = []
@@ -103,7 +131,7 @@ def validate_target_url_ssrf(url: str, allow_lab_testing: bool = False) -> tuple
                     pass
     except socket.gaierror:
         # If hostname cannot be resolved in production, reject
-        if not allow_lab_testing:
+        if not effective_allow_lab:
             return False, f"Target hostname '{hostname}' could not be resolved."
         # In lab testing, might be mock or container hostname
         return True, ""
@@ -123,8 +151,15 @@ def validate_target_url_ssrf(url: str, allow_lab_testing: bool = False) -> tuple
         # Check blocked networks
         for net in BLOCKED_IP_NETWORKS:
             if ip in net:
-                if allow_lab_testing and (ip.is_loopback or hostname.lower() in ("localhost", "127.0.0.1", "host.docker.internal") or hostname.lower().endswith(".internal") or hostname.lower().endswith(".local")):
-                    # Permitted in explicit lab environment
+                is_owned_lab_host = (
+                    ip.is_loopback
+                    or clean_hostname in OWNED_LAB_HOSTNAMES
+                    or clean_hostname.endswith(".internal")
+                    or clean_hostname.endswith(".local")
+                )
+                target_port = parsed.port or (443 if parsed.scheme == "https" else 80)
+                if effective_allow_lab and is_owned_lab_host and (target_port in OWNED_LAB_PORTS):
+                    # Permitted in explicit non-production lab environment on authorized lab port 8888
                     continue
                 return False, f"SSRF violation: Target resolves to disallowed internal/private IP ({ip})."
 

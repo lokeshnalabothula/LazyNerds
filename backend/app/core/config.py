@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     FIXOPS_WORKER_TOKEN: str = os.getenv("FIXOPS_WORKER_TOKEN", "fixops_worker_secret_token_dev_2026")
     WORKER_DISPATCH_MODE: str = os.getenv("WORKER_DISPATCH_MODE", "auto")  # "auto", "distributed", "embedded"
     ALLOW_EMBEDDED_DOCKER: bool = os.getenv("ALLOW_EMBEDDED_DOCKER", "false").lower() in ("true", "1", "yes")
-    ALLOW_LAB_TESTING: bool = os.getenv("ALLOW_LAB_TESTING", "true").lower() in ("true", "1", "yes")
+    ALLOW_LAB_TESTING: bool = os.getenv("ALLOW_LAB_TESTING", "false").lower() in ("true", "1", "yes")
     DOCKER_MAX_CPUS: float = float(os.getenv("DOCKER_MAX_CPUS", "2.0"))
     DOCKER_MAX_MEMORY: str = os.getenv("DOCKER_MAX_MEMORY", "2g")
     WORKER_LEASE_SECONDS: int = int(os.getenv("WORKER_LEASE_SECONDS", "300"))

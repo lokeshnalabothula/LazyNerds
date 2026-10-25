@@ -1,6 +1,7 @@
 import json
 import pytest
 from datetime import datetime, timezone
+from app.core.config import settings
 from app.core.security import validate_target_url_ssrf
 from app.models.client import Client
 from app.models.engagement import Engagement
@@ -563,3 +564,151 @@ def test_concurrency_limit_enforced(db_session, test_client_record, monkeypatch)
             is_mock_run=True,
         )
     assert "concurrency limit reached" in str(excinfo.value).lower()
+
+
+def test_launch_scan_production_mode_blocks_lab_target_even_with_flag_true(
+    db_session, test_client_record, monkeypatch
+):
+    """
+    Regression test for LNA-14: Fail-closed production SSRF guard on scanner_service.launch_scan.
+    Verifies that when ENVIRONMENT='production', even if ALLOW_LAB_TESTING is explicitly set True,
+    targeting loopback / local lab (http://127.0.0.1:8888) raises a ValueError SSRF violation.
+    """
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(settings, "ALLOW_LAB_TESTING", True)
+
+    eng = Engagement(
+        client_id=test_client_record.id,
+        name="Prod Lab Scan Attempt",
+        status="in_progress",
+        authorization_status="confirmed",
+        assessment_type="blackbox_pentest",
+    )
+    db_session.add(eng)
+    db_session.commit()
+
+    asset = Asset(
+        client_id=test_client_record.id,
+        engagement_id=eng.id,
+        name="Lab Target in Prod",
+        asset_type="web_application",
+        target="http://127.0.0.1:8888",
+        in_scope=True,
+        authorization_status="verified",
+    )
+    db_session.add(asset)
+    db_session.commit()
+
+    with pytest.raises(ValueError) as excinfo:
+        scanner_service.launch_scan(
+            db=db_session,
+            engagement_id=eng.id,
+            target_asset_id=asset.id,
+            scan_mode="blackbox",
+        )
+    assert "ssrf" in str(excinfo.value).lower() or "disallowed" in str(excinfo.value).lower()
+
+
+def test_findings_launch_scan_endpoint_production_mode_blocks_lab_target(
+    auth_client, db_session, test_client_record, monkeypatch
+):
+    """
+    Regression test for LNA-14: Fail-closed production guard on /findings/launch-scan entry point.
+    """
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(settings, "ALLOW_LAB_TESTING", True)
+
+    eng = Engagement(
+        client_id=test_client_record.id,
+        name="Prod Findings Launch Scan",
+        status="in_progress",
+        authorization_status="confirmed",
+        assessment_type="blackbox_pentest",
+    )
+    db_session.add(eng)
+    db_session.commit()
+
+    asset = Asset(
+        client_id=test_client_record.id,
+        engagement_id=eng.id,
+        name="Lab Target via API",
+        asset_type="web_application",
+        target="http://127.0.0.1:8888",
+        in_scope=True,
+        authorization_status="verified",
+    )
+    db_session.add(asset)
+    db_session.commit()
+
+    payload = {
+        "engagement_id": eng.id,
+        "target_asset_id": asset.id,
+        "scan_mode": "blackbox",
+        "is_mock_run": True,
+    }
+    resp = auth_client.post("/api/v1/findings/launch-scan", json=payload)
+    assert resp.status_code == 400
+    detail = resp.json()["detail"].lower()
+    assert "ssrf" in detail or "disallowed" in detail
+
+
+def test_launch_scan_rejects_git_urls_for_source_repo(db_session, test_client_record):
+    """
+    Regression test for LNA-14: Rejects direct Git URLs for source-assisted bind mounts.
+    Direct Git URLs cannot be mounted as host directories.
+    """
+    eng = Engagement(
+        client_id=test_client_record.id,
+        name="Git URL Source Pentest",
+        status="in_progress",
+        authorization_status="confirmed",
+        assessment_type="whitebox_audit",
+    )
+    db_session.add(eng)
+    db_session.commit()
+
+    asset = Asset(
+        client_id=test_client_record.id,
+        engagement_id=eng.id,
+        name="Public App Target",
+        asset_type="web_application",
+        target="https://example.com",
+        in_scope=True,
+        authorization_status="verified",
+    )
+    db_session.add(asset)
+    db_session.commit()
+
+    with pytest.raises(ValueError) as excinfo:
+        scanner_service.launch_scan(
+            db=db_session,
+            engagement_id=eng.id,
+            target_asset_id=asset.id,
+            scan_mode="source_assisted",
+            source_repo="https://github.com/lazynerds/vulnerable-lab.git",
+        )
+    assert "direct git repository url" in str(excinfo.value).lower() or "cannot be directly mounted" in str(excinfo.value).lower()
+
+
+def test_validate_target_url_ssrf_restricts_lab_to_owned_port_8888(monkeypatch):
+    """
+    Verifies that in non-production with ALLOW_LAB_TESTING=True,
+    loopback is permitted EXCLUSIVELY on the owned lab port 8888.
+    All other loopback ports (80, 443, 8000, 3000, etc.) are rejected.
+    """
+    monkeypatch.setattr(settings, "ENVIRONMENT", "development")
+    monkeypatch.setattr(settings, "ALLOW_LAB_TESTING", True)
+
+    # Owned lab port 8888 is permitted
+    is_safe, _ = validate_target_url_ssrf("http://127.0.0.1:8888", allow_lab_testing=True)
+    assert is_safe
+
+    # Default web port 80 on loopback is rejected
+    is_safe, msg = validate_target_url_ssrf("http://127.0.0.1", allow_lab_testing=True)
+    assert not is_safe
+    assert "ssrf" in msg.lower() or "disallowed" in msg.lower()
+
+    # Port 8000 (FixOps internal backend) on loopback is rejected
+    is_safe, msg = validate_target_url_ssrf("http://127.0.0.1:8000/api/v1/health", allow_lab_testing=True)
+    assert not is_safe
+    assert "ssrf" in msg.lower() or "infrastructure port" in msg.lower() or "disallowed" in msg.lower()

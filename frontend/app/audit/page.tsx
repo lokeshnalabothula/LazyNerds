@@ -42,8 +42,7 @@ export default function WebsiteAuditPage() {
   const [url, setUrl] = useState("");
   const [clientId, setClientId] = useState("");
   const [engagementId, setEngagementId] = useState("");
-  const [scanMode, setScanMode] = useState<"blackbox" | "source_assisted">("blackbox");
-  const [sourceRepo, setSourceRepo] = useState("lab/vulnerable_app");
+  const [scanMode] = useState<"blackbox">("blackbox");
   const [confirmedAuth, setConfirmedAuth] = useState(false);
   const [notes, setNotes] = useState("");
 
@@ -221,11 +220,6 @@ export default function WebsiteAuditPage() {
       return;
     }
 
-    if (scanMode === "source_assisted" && !sourceRepo.trim()) {
-      setSubmitError("Source-assisted AI pentests require a valid source repository path or git URL.");
-      return;
-    }
-
     if (!confirmedAuth) {
       setSubmitError("You must certify written authorization to perform security testing on this domain.");
       return;
@@ -237,8 +231,7 @@ export default function WebsiteAuditPage() {
         url: url.trim(),
         client_id: clientId,
         engagement_id: engagementId || undefined,
-        scan_mode: scanMode,
-        source_repo: scanMode === "source_assisted" ? sourceRepo.trim() : undefined,
+        scan_mode: "blackbox",
         confirmed_authorization: confirmedAuth,
         notes: notes.trim() || undefined,
       });
@@ -473,24 +466,25 @@ export default function WebsiteAuditPage() {
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label
-                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
-                  scanMode === "blackbox"
-                    ? "border-[#F5C518] bg-[#F5C518]/10 shadow-sm"
-                    : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
-                }`}
+                className="p-3.5 rounded-xl border border-[#F5C518] bg-[#F5C518]/10 shadow-sm flex items-start gap-3 cursor-default"
               >
                 <input
                   type="radio"
                   name="scan-mode"
                   value="blackbox"
-                  checked={scanMode === "blackbox"}
-                  onChange={() => setScanMode("blackbox")}
+                  checked={true}
+                  readOnly
                   className="mt-0.5 text-[#F5C518] focus:ring-[#F5C518]"
                 />
                 <div className="space-y-0.5">
-                  <span className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] block">
-                    Blackbox Vulnerability Scan (Default)
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] block">
+                      Blackbox Vulnerability Scan (Active)
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">
+                      READY
+                    </span>
+                  </div>
                   <span className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] block leading-relaxed">
                     Passive and active perimeter probes: TLS ciphers, CORS, security headers, OWASP Top 10 exposed endpoints. URL-only, no source required.
                   </span>
@@ -498,61 +492,32 @@ export default function WebsiteAuditPage() {
               </label>
 
               <label
-                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
-                  scanMode === "source_assisted"
-                    ? "border-[#F5C518] bg-[#F5C518]/10 shadow-sm"
-                    : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
-                }`}
+                className="p-3.5 rounded-xl border border-white/[0.08] bg-white/[0.02] opacity-60 cursor-not-allowed flex items-start gap-3"
               >
                 <input
                   type="radio"
                   name="scan-mode"
                   value="source_assisted"
-                  checked={scanMode === "source_assisted"}
-                  onChange={() => setScanMode("source_assisted")}
-                  className="mt-0.5 text-[#F5C518] focus:ring-[#F5C518]"
+                  disabled={true}
+                  checked={false}
+                  className="mt-0.5 text-zinc-600 focus:ring-0 cursor-not-allowed"
                 />
                 <div className="space-y-0.5">
-                  <span className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] block">
-                    Source-Assisted Dynamic Pentest
-                  </span>
-                  <span className="text-[11px] text-zinc-500 dark:text-[#9CA3AF] block leading-relaxed">
-                    Combines endpoint discovery, Shannon SAST code inspection, and dynamic proof-of-concept exploit generation. Requires repository access.
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-zinc-400 block">
+                      Source-Assisted Dynamic Pentest
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">
+                      UNAVAILABLE
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-zinc-500 block leading-relaxed">
+                    Requires mounted repository acquisition and Shannon AI agent container deployment. For automated URL assessments, select Blackbox Vulnerability Scan.
                   </span>
                 </div>
               </label>
             </div>
           </div>
-
-          {/* Source Repository Input (shown when source-assisted pentest selected) */}
-          {scanMode === "source_assisted" && (
-            <div className="space-y-1.5 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <label htmlFor="source-repo" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">
-                  Source Code Repository Path or URL <span className="text-[#F5C518]">*</span>
-                </label>
-                <span className="text-[10px] text-zinc-500 font-mono">Mounted read-only (:ro)</span>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
-                  <GitBranch className="h-4 w-4" />
-                </div>
-                <input
-                  id="source-repo"
-                  type="text"
-                  value={sourceRepo}
-                  onChange={(e) => setSourceRepo(e.target.value)}
-                  placeholder="e.g. lab/vulnerable_app or https://github.com/org/repo"
-                  className="w-full h-10 pl-9 pr-3 rounded-lg border border-white/[0.08] bg-[#07090E]/90 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
-                  disabled={isSubmitting}
-                  required={scanMode === "source_assisted"}
-                />
-              </div>
-              <p className="text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
-                Local repository path or git clone URL mounted for static source analysis and vulnerability hypothesis testing.
-              </p>
-            </div>
-          )}
 
           {/* Scope Notes */}
           <div className="space-y-1.5">

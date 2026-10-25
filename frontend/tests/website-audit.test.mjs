@@ -115,11 +115,15 @@ describe("Website Audit URL Validation & SSRF Guard", () => {
     assert.equal(validateUrlSsrf("http://app.localhost").isValid, false);
   });
 
-  test("Website Audit page supports source repository configuration and live telemetry modal", () => {
+  test("Website Audit page clearly labels source-assisted pentest as unavailable and provides live telemetry modal", () => {
     const pageCode = fs.readFileSync(path.join(frontendDir, "app", "audit", "page.tsx"), "utf8");
     assert.ok(
-      pageCode.includes("sourceRepo") && pageCode.includes("Source Code Repository"),
-      "Must support source repository configuration for source-assisted audits"
+      pageCode.includes("Source-Assisted Dynamic Pentest") && pageCode.includes("UNAVAILABLE"),
+      "Must clearly label source-assisted pentest as unavailable rather than simulating functional status"
+    );
+    assert.ok(
+      pageCode.includes("disabled={true}"),
+      "Source-assisted control must be disabled"
     );
     assert.ok(
       pageCode.includes("ScanTelemetryModal"),

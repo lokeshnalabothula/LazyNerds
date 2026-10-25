@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 
 from app.core.config import settings
-from app.core.security import validate_target_url_ssrf
+from app.core.security import validate_target_url_ssrf, is_lab_testing_authorized
 from app.db.session import SessionLocal
 from app.models.asset import Asset
 from app.models.engagement import Engagement
@@ -692,6 +692,7 @@ def execute_scan_worker_job(
                 output_dir = os.path.join(workspace_dir, "output")
                 os.makedirs(output_dir, exist_ok=True)
 
+                repo_mount_path = os.path.abspath(source_repo) if source_repo else workspace_dir
                 cmd = [
                     "docker", "run", "--rm",
                     "--name", f"fixops-worker-{assessment_id[:8]}",
@@ -702,7 +703,7 @@ def execute_scan_worker_job(
                     "--security-opt", "no-new-privileges:true",
                     "--cap-drop", "ALL",
                     "-v", f"{workspace_dir}:/app/workspaces",
-                    "-v", f"{source_repo or workspace_dir}:/app/repo:ro",
+                    "-v", f"{repo_mount_path}:/app/repo:ro",
                     "-v", f"{output_dir}:/app/output",
                 ]
                 if os.getenv("SHANNON_AI_API_KEY"):
@@ -836,22 +837,27 @@ def launch_scan(
             "Only assets with 'verified' authorization status may be targeted."
         )
 
-    # 3. SSRF Preflight
-    allow_lab = getattr(settings, "ALLOW_LAB_TESTING", True)
+    # 3. SSRF Preflight: Fail-closed in production across all scanner routes
+    allow_lab = is_lab_testing_authorized()
     is_safe, ssrf_err = validate_target_url_ssrf(asset.target, allow_lab_testing=allow_lab)
     if not is_safe:
         raise ValueError(f"SSRF validation blocked target URL: {ssrf_err}")
 
-    # 4. Source-Assisted Mode Verification
+    # 4. Source-Assisted Mode Verification: Require local filesystem repository path
     tool_name = "shannon" if scan_mode == "source_assisted" else "nuclei"
     if scan_mode == "source_assisted":
         if not source_repo:
             raise ValueError(
-                "Source-assisted AI pentests require a valid source repository path or git URL. "
+                "Source-assisted AI pentests require an accessible source repository path on the worker host. "
                 "For URL-only assessments without source code, select Black-Box Web Scanner mode."
             )
-        if os.path.exists(source_repo) is False and not source_repo.startswith(("http://", "https://", "git@")):
-            raise ValueError(f"Specified source repository path '{source_repo}' could not be found.")
+        if source_repo.startswith(("http://", "https://", "git@", "ssh://")):
+            raise ValueError(
+                f"Direct Git repository URLs ('{source_repo}') cannot be directly mounted as host volumes. "
+                "Remote git cloning is not currently supported; please specify an accessible local directory path on the worker host (e.g. 'lab/vulnerable_app')."
+            )
+        if not os.path.exists(source_repo) or not os.path.isdir(source_repo):
+            raise ValueError(f"Specified source repository path '{source_repo}' is not an accessible directory on this host.")
 
     # 5. Create Assessment record in "queued" state
     user_email = current_user.email if current_user else "system@lazynerds.com"

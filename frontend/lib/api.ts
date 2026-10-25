@@ -637,7 +637,16 @@ export const api = {
     return request(`/audit-logs?page=${page}`);
   },
 
-  async getHealth(): Promise<{ status: string; database: string }> {
+  async getHealth(): Promise<{
+    status: string;
+    database: string;
+    service?: string;
+    version?: string;
+    commit?: string;
+    environment?: string;
+    worker_dispatch_mode?: string;
+    timestamp?: string;
+  }> {
     return request("/health");
   },
 };

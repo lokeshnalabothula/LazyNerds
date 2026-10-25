@@ -254,13 +254,13 @@
   {
     "route": "/automation",
     "title": "Workflow Automation",
-    "totalButtons": 11,
+    "totalButtons": 7,
     "primaryButtonCount": 1,
     "primaryButtonTexts": [
       "New Workflow"
     ],
     "bodyBackground": "rgb(9, 10, 13)",
-    "glassPanelCount": 3,
+    "glassPanelCount": 2,
     "hasLoadingSkeleton": false,
     "desktopClippingIssues": 0,
     "mobileClippingIssues": 0
@@ -308,13 +308,11 @@
   {
     "route": "/settings",
     "title": "Settings & Administration",
-    "totalButtons": 7,
-    "primaryButtonCount": 1,
-    "primaryButtonTexts": [
-      "Update Password"
-    ],
+    "totalButtons": 13,
+    "primaryButtonCount": 0,
+    "primaryButtonTexts": [],
     "bodyBackground": "rgb(9, 10, 13)",
-    "glassPanelCount": 6,
+    "glassPanelCount": 1,
     "hasLoadingSkeleton": false,
     "desktopClippingIssues": 0,
     "mobileClippingIssues": 0

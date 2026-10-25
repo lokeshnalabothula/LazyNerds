@@ -101,9 +101,24 @@ export const ScanLauncherModal: React.FC<ScanLauncherModalProps> = ({
       setError("Please select an authorized in-scope target asset.");
       return;
     }
-    if (scanMode === "source_assisted" && !sourceRepo.trim()) {
-      setError("Source-assisted AI pentests require a valid source repository path or git URL.");
-      return;
+    if (scanMode === "source_assisted") {
+      const trimmedRepo = sourceRepo.trim();
+      if (!trimmedRepo) {
+        setError("Source-assisted AI pentests require an accessible local repository directory path on the worker host.");
+        return;
+      }
+      if (
+        trimmedRepo.startsWith("http://") ||
+        trimmedRepo.startsWith("https://") ||
+        trimmedRepo.startsWith("git@") ||
+        trimmedRepo.startsWith("ssh://")
+      ) {
+        setError(
+          "Direct Git repository URLs are not yet supported for automated bind-mounting. " +
+          "Please specify an accessible local directory path on the worker host (e.g. 'lab/vulnerable_app')."
+        );
+        return;
+      }
     }
     if (!authorizedConsent) {
       setError("You must confirm that this target asset is authorized under active Rules of Engagement.");
@@ -267,7 +282,7 @@ export const ScanLauncherModal: React.FC<ScanLauncherModalProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="block text-[11px] font-semibold text-zinc-300">
-                Source Code Repository Path or URL <span className="text-rose-400">*</span>
+                Source Repository Directory Path <span className="text-rose-400">*</span>
               </label>
               <span className="text-[10px] text-zinc-500 font-mono">Mounted read-only (:ro)</span>
             </div>
@@ -277,12 +292,12 @@ export const ScanLauncherModal: React.FC<ScanLauncherModalProps> = ({
                 type="text"
                 value={sourceRepo}
                 onChange={(e) => setSourceRepo(e.target.value)}
-                placeholder="e.g. lab/vulnerable_app or /Users/path/to/repo"
+                placeholder="e.g. lab/vulnerable_app or /absolute/path/to/repo"
                 className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#161920] border border-zinc-800 text-zinc-200 text-xs focus:outline-none focus:border-[#F5C518]"
               />
             </div>
             <p className="text-[10px] text-zinc-500">
-              Local repository directory or private git clone path. Container isolation guarantees read-only access.
+              Local repository directory path on worker host. Direct Git clone URLs are currently unavailable.
             </p>
           </div>
         )}

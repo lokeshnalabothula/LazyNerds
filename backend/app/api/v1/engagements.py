@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_employee_or_founder
 from app.core.config import settings
-from app.core.security import validate_target_url_ssrf
+from app.core.security import validate_target_url_ssrf, is_lab_testing_authorized
 from app.db.session import get_db
 from app.models.asset import Asset
 from app.models.client import Client
@@ -343,13 +343,20 @@ def submit_website_audit(
     else:
         eng = None
 
-    # 4. Strict SSRF and URL validation (rejects localhost, private IPs, cloud metadata; permits lab loopback only if explicitly enabled in non-production)
-    allow_lab = getattr(settings, "ALLOW_LAB_TESTING", False) and getattr(settings, "ENVIRONMENT", "") != "production"
+    # 4. Strict SSRF and URL validation: fail-closed in production across all scanner entry points
+    allow_lab = is_lab_testing_authorized()
     is_valid, err_msg = validate_target_url_ssrf(req.url, allow_lab_testing=allow_lab)
     if not is_valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"URL validation failed: {err_msg}",
+        )
+
+    # 4b. Scan mode availability check: source-assisted is unavailable for website URL audits
+    if req.scan_mode != "blackbox":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Source-assisted AI pentests are currently unavailable for website URL audits. Please select 'blackbox' scan mode.",
         )
 
     parsed = urlparse(req.url.strip())

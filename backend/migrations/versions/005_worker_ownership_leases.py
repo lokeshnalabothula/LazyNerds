@@ -1,6 +1,6 @@
 """scanner worker ownership and lease recovery
 
-Revision ID: 005_scanner_worker_ownership_and_leases
+Revision ID: 005_worker_ownership_leases
 Revises: 004_roles_registrations_auth
 Create Date: 2026-10-25 11:30:00.000000
 
@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "005_scanner_worker_ownership_and_leases"
+revision: str = "005_worker_ownership_leases"
 down_revision: Union[str, None] = "004_roles_registrations_auth"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

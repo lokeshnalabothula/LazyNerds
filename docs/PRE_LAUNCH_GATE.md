@@ -81,9 +81,9 @@ This document represents the audited verification status of **Lazy Nerds FixOps 
 - [ ] **HTTPS works on the custom domain:** *INCOMPLETE.* Pending domain deployment.
 - [x] **The favicon works in built output:** Verified in Next.js production build output.
 - [x] **The privacy policy and terms pages work in production build:** Verified prerendered static routes `/privacy` and `/terms`.
-- [x] **Database migrations exist and pass:** Alembic revisions `001_initial_schema` through `005_scanner_worker_ownership_and_leases` verified.
+- [x] **Database migrations exist and pass:** Alembic revisions `001_initial_schema` through `005_worker_ownership_leases` verified.
 - [x] **Critical automated test suites pass:**
-  - **Backend (Pytest):** 141 automated tests pass with 0 failures (covering auth, clients, engagements, assets, findings, workers, automations, security, regression fixes, and migration).
+  - **Backend (Pytest):** 146 automated tests pass with 0 failures (covering auth, clients, engagements, assets, findings, workers, automations, security, regression fixes, and migration).
   - **Frontend (Node.js test runner):** 61 unit and integration tests pass with 0 failures (covering form validations, wizard workflows, timezone formatting, 204 response handling, and UI responsive states).
 
 ---

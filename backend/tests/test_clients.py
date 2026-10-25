@@ -293,3 +293,34 @@ def test_unauthorized_endpoints(client):
     assert client.patch("/api/v1/clients/dummy-id", json={}).status_code == status.HTTP_401_UNAUTHORIZED
     assert client.post("/api/v1/clients/dummy-id/archive").status_code == status.HTTP_401_UNAUTHORIZED
     assert client.post("/api/v1/clients/dummy-id/restore").status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_client_with_internal_or_lab_domain_email_serializes_cleanly(auth_client):
+    """
+    Verifies that client records with internal, lab, or test domains (e.g. lab@fixops.local)
+    are accepted and serialized by ClientOut without throwing Pydantic validation errors (HTTP 500).
+    """
+    internal_emails = [
+        "lab@fixops.local",
+        "sec-lead@cyberrange.internal",
+        "operator@pentest.test",
+    ]
+    for email in internal_emails:
+        create_res = auth_client.post(
+            "/api/v1/clients",
+            json={
+                "company_name": f"Internal Org {email.split('@')[1]}",
+                "primary_contact_name": "Lab Operator",
+                "primary_contact_email": email,
+            },
+        )
+        assert create_res.status_code == status.HTTP_201_CREATED, f"Failed for {email}: {create_res.text}"
+        data = create_res.json()
+        assert data["primary_contact_email"] == email
+
+    # List clients and ensure they serialize cleanly
+    list_res = auth_client.get("/api/v1/clients")
+    assert list_res.status_code == status.HTTP_200_OK
+    emails_in_list = {c["primary_contact_email"] for c in list_res.json()["items"]}
+    for email in internal_emails:
+        assert email in emails_in_list

@@ -13,7 +13,7 @@ class ClientStatus(str, Enum):
 class ClientBase(BaseModel):
     company_name: str = Field(..., min_length=1, max_length=255, description="Official company or organization name")
     primary_contact_name: str = Field(..., min_length=1, max_length=255, description="Primary contact full name")
-    primary_contact_email: EmailStr = Field(..., description="Primary contact email address")
+    primary_contact_email: str = Field(..., description="Primary contact email address")
     website: Optional[str] = Field(None, max_length=500, description="Company website URL (HTTP/HTTPS only)")
     phone: Optional[str] = Field(None, max_length=50, description="Contact phone number")
     industry: Optional[str] = Field(None, max_length=100, description="Business sector / industry")
@@ -30,8 +30,14 @@ class ClientBase(BaseModel):
 
     @field_validator("primary_contact_email")
     @classmethod
-    def normalize_email(cls, v: EmailStr) -> str:
-        return str(v).strip().lower()
+    def normalize_email(cls, v: str) -> str:
+        s = str(v).strip().lower()
+        if not s:
+            raise ValueError("Email address cannot be empty.")
+        email_pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$")
+        if not email_pattern.match(s):
+            raise ValueError("Value is not a valid email address.")
+        return s
 
     @field_validator("website")
     @classmethod
@@ -85,7 +91,7 @@ class ClientUpdate(BaseModel):
 
     company_name: Optional[str] = Field(None, min_length=1, max_length=255)
     primary_contact_name: Optional[str] = Field(None, min_length=1, max_length=255)
-    primary_contact_email: Optional[EmailStr] = None
+    primary_contact_email: Optional[str] = None
     website: Optional[str] = Field(None, max_length=500)
     phone: Optional[str] = Field(None, max_length=50)
     industry: Optional[str] = Field(None, max_length=100)
@@ -104,10 +110,16 @@ class ClientUpdate(BaseModel):
 
     @field_validator("primary_contact_email")
     @classmethod
-    def normalize_email(cls, v: Optional[EmailStr]) -> Optional[str]:
+    def normalize_email(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return None
-        return str(v).strip().lower()
+        s = str(v).strip().lower()
+        if not s:
+            raise ValueError("Email address cannot be empty.")
+        email_pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$")
+        if not email_pattern.match(s):
+            raise ValueError("Value is not a valid email address.")
+        return s
 
     @field_validator("website")
     @classmethod

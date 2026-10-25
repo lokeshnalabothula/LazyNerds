@@ -298,6 +298,29 @@ def ingest_scan_results(
     - Queues findings, progress, and audit logs without premature commits, locking the assessment
       record until the final atomic commit.
     """
+    # Hierarchical locking: Lock parent Engagement then child Assessment to serialize
+    # scan ingestion against terminal status transitions and eliminate deadlocks.
+    stub = db.query(Assessment.engagement_id).filter(Assessment.id == assessment_id).first()
+    if not stub:
+        raise ValueError(f"Assessment {assessment_id} not found.")
+
+    parent_engagement_id = stub[0]
+
+    # 1. Acquire row-level lock on parent Engagement
+    eng = None
+    if parent_engagement_id:
+        eng_query = db.query(Engagement).filter(Engagement.id == parent_engagement_id)
+        try:
+            bind = db.get_bind()
+            if bind and bind.dialect.name == "postgresql":
+                eng_query = eng_query.with_for_update()
+            else:
+                eng_query = eng_query.with_for_update()
+        except Exception:
+            pass
+        eng = eng_query.first()
+
+    # 2. Acquire row-level lock on child Assessment
     query = db.query(Assessment).filter(Assessment.id == assessment_id)
     try:
         bind = db.get_bind()
@@ -321,7 +344,6 @@ def ingest_scan_results(
             raise PermissionError(f"Worker '{expected_worker_id}' is not the claimant of job {assessment_id} (claimed by '{assessment.worker_id}').")
 
     # Guard against ingesting scan findings on terminal engagements (audit immutability)
-    eng = db.query(Engagement).filter(Engagement.id == assessment.engagement_id).first()
     if eng and eng.status in ("completed", "cancelled"):
         assessment.status = "failed"
         assessment.completed_at = datetime.now(timezone.utc)

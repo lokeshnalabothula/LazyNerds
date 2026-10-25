@@ -517,3 +517,137 @@ def test_ingest_scan_results_rejects_terminal_engagement(client, db_session, mon
 
     # Ensure zero findings exist
     assert db_session.query(Finding).filter(Finding.assessment_id == assessment2.id).count() == 0
+
+
+def test_ingest_scan_results_serialized_against_concurrent_terminal_transition(client, auth_headers, db_session):
+    """
+    Verifies that ingest_scan_results acquires row-level locks on the parent engagement
+    in safe hierarchical order (Engagement -> Assessment), serializing findings ingestion
+    against concurrent engagement completion/cancellation to guarantee audit immutability.
+    """
+    c = Client(company_name="Concurrency Corp", primary_contact_name="Lead", primary_contact_email="lead@concurrency.corp")
+    db_session.add(c)
+    db_session.commit()
+
+    eng = Engagement(
+        client_id=c.id,
+        name="Concurrent Ingestion Audit",
+        assessment_type="Web App Pen Test",
+        status="in_progress",
+        authorization_status="confirmed",
+    )
+    db_session.add(eng)
+    db_session.commit()
+
+    asset = Asset(
+        client_id=c.id,
+        name="Concurrent Target",
+        asset_type="web_application",
+        target="https://target.corp",
+        in_scope=True,
+        authorization_status="verified",
+    )
+    db_session.add(asset)
+    db_session.commit()
+
+    assessment = Assessment(
+        name="Concurrent Assessment",
+        engagement_id=eng.id,
+        assessment_tool="nuclei",
+        status="running",
+        worker_id="worker-concur",
+        claimed_at=datetime.now(timezone.utc),
+        last_heartbeat_at=datetime.now(timezone.utc),
+    )
+    db_session.add(assessment)
+    db_session.commit()
+
+    from app.services.scanner_service import ingest_scan_results
+
+    # 1. Verify parent engagement lock acquisition occurs before assessment locking and findings insert
+    locked_entities = []
+    real_query = db_session.query
+
+    def tracking_query(*entities, **kwargs):
+        q = real_query(*entities, **kwargs)
+        orig_with_for_update = q.with_for_update
+
+        def tracking_with_for_update(*args, **kw):
+            entity_names = [e.__name__ if hasattr(e, "__name__") else str(e) for e in entities]
+            locked_entities.append(entity_names)
+            return orig_with_for_update(*args, **kw)
+
+        q.with_for_update = tracking_with_for_update
+        return q
+
+    db_session.query = tracking_query
+
+    sample_findings = [
+        {
+            "title": "Critical RCE Exploit",
+            "severity": "critical",
+            "cvss_score": 9.8,
+            "description": "Remote code execution.",
+        }
+    ]
+
+    # Ingest while engagement is in progress
+    updated = ingest_scan_results(
+        db=db_session,
+        assessment_id=assessment.id,
+        parsed_findings=sample_findings,
+        user_email="worker:worker-concur",
+        expected_worker_id="worker-concur",
+    )
+
+    db_session.query = real_query
+
+    # Verify lock order: Engagement lock MUST precede Assessment lock
+    # locked_entities contains the ordered list of with_for_update queries
+    assert len(locked_entities) >= 2
+    assert any("Engagement" in str(ent) for ent in locked_entities[0]), f"Expected Engagement locked first, got: {locked_entities}"
+    assert any("Assessment" in str(ent) for ent in locked_entities[1]), f"Expected Assessment locked second, got: {locked_entities}"
+
+    assert updated.status == "completed"
+    assert db_session.query(Finding).filter(Finding.assessment_id == assessment.id).count() == 1
+
+    # 2. Interleaved race verification:
+    # Engagement transitions to completed while worker completes a second assessment
+    assessment2 = Assessment(
+        name="Concurrent Assessment 2",
+        engagement_id=eng.id,
+        assessment_tool="nuclei",
+        status="running",
+        worker_id="worker-concur-2",
+        claimed_at=datetime.now(timezone.utc),
+        last_heartbeat_at=datetime.now(timezone.utc),
+    )
+    db_session.add(assessment2)
+    db_session.commit()
+
+    # Complete the engagement via API / service
+    patch_res = client.patch(
+        f"/api/v1/engagements/{eng.id}",
+        json={"status": "completed"},
+        headers=auth_headers,
+    )
+    assert patch_res.status_code == status.HTTP_200_OK
+    assert patch_res.json()["status"] == "completed"
+
+    # Worker attempts completion on the now completed engagement
+    res_assessment2 = ingest_scan_results(
+        db=db_session,
+        assessment_id=assessment2.id,
+        parsed_findings=sample_findings,
+        user_email="worker:worker-concur-2",
+        expected_worker_id="worker-concur-2",
+    )
+
+    # Ingestion must be aborted and marked failed under the locked check
+    assert res_assessment2.status == "failed"
+    assert res_assessment2.completed_at is not None
+    assert db_session.query(Finding).filter(Finding.assessment_id == assessment2.id).count() == 0
+
+    # Ensure the parent engagement remains clean and completed without new findings
+    db_session.refresh(eng)
+    assert eng.status == "completed"

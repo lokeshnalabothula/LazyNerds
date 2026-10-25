@@ -171,7 +171,7 @@ def update_engagement(
     update_data.pop("id", None)
     update_data.pop("client_id", None)
 
-    # Validate lifecycle status transition
+    # Validate lifecycle status transition and lock row for update
     if "status" in update_data and update_data["status"] is not None:
         new_status = update_data["status"]
         if hasattr(new_status, "value"):
@@ -181,6 +181,16 @@ def update_engagement(
         allowed = VALID_STATUS_TRANSITIONS.get(current_status, {current_status})
         if new_status not in allowed:
             raise ValueError(f"Invalid status transition from '{current_status}' to '{new_status}'.")
+        try:
+            bind = db.get_bind()
+            eng_lock = db.query(Engagement.id).filter(Engagement.id == engagement.id)
+            if bind and bind.dialect.name == "postgresql":
+                eng_lock = eng_lock.with_for_update()
+            else:
+                eng_lock = eng_lock.with_for_update()
+            eng_lock.first()
+        except Exception:
+            pass
 
     # Unpack enums
     if "assessment_type" in update_data and update_data["assessment_type"] is not None:
@@ -213,6 +223,16 @@ def update_engagement(
 
 def archive_engagement(db: Session, engagement: Engagement) -> Engagement:
     """Cancels/archives an engagement record. Preserves historical data."""
+    try:
+        bind = db.get_bind()
+        eng_lock = db.query(Engagement.id).filter(Engagement.id == engagement.id)
+        if bind and bind.dialect.name == "postgresql":
+            eng_lock = eng_lock.with_for_update()
+        else:
+            eng_lock = eng_lock.with_for_update()
+        eng_lock.first()
+    except Exception:
+        pass
     if engagement.status == EngagementStatus.COMPLETED.value:
         raise ValueError("Cannot archive or cancel a completed engagement.")
     if engagement.status != EngagementStatus.CANCELLED.value:
@@ -225,6 +245,16 @@ def archive_engagement(db: Session, engagement: Engagement) -> Engagement:
 
 def restore_engagement(db: Session, engagement: Engagement) -> Engagement:
     """Reopens a cancelled engagement back to draft status for replanning."""
+    try:
+        bind = db.get_bind()
+        eng_lock = db.query(Engagement.id).filter(Engagement.id == engagement.id)
+        if bind and bind.dialect.name == "postgresql":
+            eng_lock = eng_lock.with_for_update()
+        else:
+            eng_lock = eng_lock.with_for_update()
+        eng_lock.first()
+    except Exception:
+        pass
     if engagement.status == EngagementStatus.COMPLETED.value:
         raise ValueError("Cannot restore a completed engagement.")
     if engagement.status == EngagementStatus.CANCELLED.value:

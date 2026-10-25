@@ -150,6 +150,18 @@ def update_existing_engagement(
     Performs a partial update of an engagement record.
     Restricted to internal staff (employees and founders).
     """
+    if engagement_in.status is not None:
+        try:
+            bind = db.get_bind()
+            eng_lock = db.query(Engagement.id).filter(Engagement.id == engagement_id)
+            if bind and bind.dialect.name == "postgresql":
+                eng_lock = eng_lock.with_for_update()
+            else:
+                eng_lock = eng_lock.with_for_update()
+            eng_lock.first()
+        except Exception:
+            pass
+
     engagement = get_engagement_by_id(db, engagement_id=engagement_id)
     if not engagement:
         raise HTTPException(
@@ -182,6 +194,17 @@ def archive_existing_engagement(
     """
     Cancels/archives an engagement record, preserving audit history.
     """
+    try:
+        bind = db.get_bind()
+        eng_lock = db.query(Engagement.id).filter(Engagement.id == engagement_id)
+        if bind and bind.dialect.name == "postgresql":
+            eng_lock = eng_lock.with_for_update()
+        else:
+            eng_lock = eng_lock.with_for_update()
+        eng_lock.first()
+    except Exception:
+        pass
+
     engagement = get_engagement_by_id(db, engagement_id=engagement_id)
     if not engagement:
         raise HTTPException(

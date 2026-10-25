@@ -1,3 +1,4 @@
+import socket
 import uuid
 import pytest
 from fastapi import status
@@ -10,6 +11,25 @@ from app.models.asset import Asset
 from app.models.finding import Assessment
 from app.schemas.auth import UserCreate
 from app.services.auth_service import create_user
+
+
+@pytest.fixture(autouse=True)
+def mock_deterministic_dns(monkeypatch):
+    """
+    Deterministically resolves domain names to a public IP in tests,
+    ensuring test suites do not depend on external network DNS resolution.
+    Known metadata/loopback hostnames or direct IP literals pass through unmodified.
+    """
+    real_getaddrinfo = socket.getaddrinfo
+
+    def fake_getaddrinfo(host, port, *args, **kwargs):
+        # Deterministically resolve standard public domain targets to real IANA public IPv4
+        if host in ("example.com", "archived.testapp.io", "portal.securecorp.internal", "somewebsite.io"):
+            return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", port or 80))]
+        return real_getaddrinfo(host, port, *args, **kwargs)
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+    monkeypatch.setattr("app.core.security.socket.getaddrinfo", fake_getaddrinfo)
 
 
 @pytest.fixture
@@ -300,3 +320,93 @@ def test_submit_website_audit_founder_allowed_on_assigned_client(auth_client: Te
     resp = auth_client.post("/api/v1/engagements/website-audit", json=payload)
     assert resp.status_code == status.HTTP_201_CREATED
     assert resp.json()["status"] == "success"
+
+
+def test_submit_website_audit_ssrf_private_ip_resolved_blocked(auth_client: TestClient, active_client, monkeypatch):
+    """
+    Proves that a domain resolving via DNS to a private RFC 1918 address (e.g. 10.0.0.1)
+    is rejected with 400 Bad Request by SSRF protection.
+    """
+    def fake_private_dns(host, port, *args, **kwargs):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("10.0.0.1", port or 80))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_private_dns)
+    monkeypatch.setattr("app.core.security.socket.getaddrinfo", fake_private_dns)
+
+    payload = {
+        "url": "https://intranet.corporate.com",
+        "client_id": active_client.id,
+        "confirmed_authorization": True,
+    }
+    resp = auth_client.post("/api/v1/engagements/website-audit", json=payload)
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    detail = resp.json()["detail"].lower()
+    assert "private" in detail or "ssrf" in detail or "restricted" in detail
+
+
+def test_submit_website_audit_authorizes_before_dns_resolution(auth_client: TestClient, client: TestClient, db_session, monkeypatch):
+    """
+    Proves that client existence and employee-assignment authorization are enforced
+    BEFORE attempting any outbound DNS resolution.
+    Even when DNS resolution fails with socket.gaierror, unassigned employees receive 403
+    and nonexistent clients receive 404 without hitting DNS.
+    """
+    def broken_dns(host, port, *args, **kwargs):
+        raise socket.gaierror(-2, "Name or service not known")
+
+    monkeypatch.setattr(socket, "getaddrinfo", broken_dns)
+    monkeypatch.setattr("app.core.security.socket.getaddrinfo", broken_dns)
+
+    # 1. Nonexistent client returns 404 even with failing DNS
+    resp_404 = auth_client.post(
+        "/api/v1/engagements/website-audit",
+        json={
+            "url": "https://unresolvable-broken-domain-999.io",
+            "client_id": str(uuid.uuid4()),
+            "confirmed_authorization": True,
+        },
+    )
+    assert resp_404.status_code == status.HTTP_404_NOT_FOUND
+
+    # 2. Unassigned employee returns 403 even with failing DNS
+    emp1 = create_user(
+        db_session,
+        UserCreate(
+            email="emp-no-dns@lazynerds.com",
+            password="EmployeePassword2026!",
+            full_name="Emp No DNS",
+            role="employee",
+        ),
+    )
+    emp2 = create_user(
+        db_session,
+        UserCreate(
+            email="emp2-dns-owner@lazynerds.com",
+            password="EmployeePassword2026!",
+            full_name="Emp2 Owner",
+            role="employee",
+        ),
+    )
+    client_assigned = Client(
+        id=str(uuid.uuid4()),
+        company_name="DNS Isolated Org",
+        primary_contact_name="Lead",
+        primary_contact_email="lead@dns-isolated.io",
+        status="active",
+        assigned_employee_id=emp2.id,
+    )
+    db_session.add(client_assigned)
+    db_session.commit()
+
+    token1 = create_access_token(subject=emp1.id, extra_claims={"email": emp1.email, "role": emp1.role})
+    resp_403 = client.post(
+        "/api/v1/engagements/website-audit",
+        json={
+            "url": "https://unresolvable-broken-domain-999.io",
+            "client_id": client_assigned.id,
+            "confirmed_authorization": True,
+        },
+        headers={"Authorization": f"Bearer {token1}"},
+    )
+    assert resp_403.status_code == status.HTTP_403_FORBIDDEN
+    assert "not assigned to this client record" in resp_403.json()["detail"].lower()

@@ -282,7 +282,7 @@ def submit_website_audit(
 ):
     """
     Submits a website URL for automated security auditing and scanner dispatch.
-    Enforces strict SSRF protection, scope boundaries, and explicit written RoE authorization.
+    Enforces authorization, scope boundaries, and explicit written RoE before SSRF resolution.
     """
     # 1. Mandatory written authorization check
     if not req.confirmed_authorization:
@@ -291,18 +291,7 @@ def submit_website_audit(
             detail="Security testing requires confirmed written authorization from the domain owner.",
         )
 
-    # 2. Strict SSRF and URL validation (rejects localhost, private IPs, cloud metadata)
-    is_valid, err_msg = validate_target_url_ssrf(req.url, allow_lab_testing=False)
-    if not is_valid:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"URL validation failed: {err_msg}",
-        )
-
-    parsed = urlparse(req.url.strip())
-    hostname = parsed.hostname or req.url.strip()
-
-    # 3. Client existence & multi-tenant isolation
+    # 2. Client existence, status, & multi-tenant/employee authorization check
     client = db.query(Client).filter(Client.id == req.client_id).first()
     if not client:
         raise HTTPException(
@@ -333,7 +322,7 @@ def submit_website_audit(
             detail="Access denied: You are not assigned to this client record.",
         )
 
-    # 4. Resolve or create Engagement
+    # 3. Engagement scope check (if referencing existing engagement)
     if req.engagement_id:
         eng = db.query(Engagement).filter(Engagement.id == req.engagement_id).first()
         if not eng:
@@ -351,6 +340,22 @@ def submit_website_audit(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Cannot launch audit on an engagement with status '{eng.status}'.",
             )
+    else:
+        eng = None
+
+    # 4. Strict SSRF and URL validation (rejects localhost, private IPs, cloud metadata)
+    is_valid, err_msg = validate_target_url_ssrf(req.url, allow_lab_testing=False)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"URL validation failed: {err_msg}",
+        )
+
+    parsed = urlparse(req.url.strip())
+    hostname = parsed.hostname or req.url.strip()
+
+    # 5. Resolve or create Engagement
+    if eng:
         eng.authorization_status = "confirmed"
         if eng.status == "draft":
             eng.status = "in_progress"

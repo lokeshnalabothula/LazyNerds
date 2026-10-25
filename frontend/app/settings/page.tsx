@@ -233,9 +233,9 @@ export default function SettingsPage() {
         </div>
 
         {/* Conventional Master-Detail Layout */}
-        <div className="flex flex-col md:flex-row gap-6 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Desktop Left Sidebar Navigation */}
-          <aside id="settings-sidebar" className="hidden md:block w-64 shrink-0">
+          <aside id="settings-sidebar" className="hidden lg:block w-60 xl:w-64 shrink-0">
             <div className="sticky top-20 p-2 rounded-xl bg-zinc-50 dark:bg-[#111318] border border-zinc-200 dark:border-[#222630] space-y-1 shadow-xs">
               <div className="px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-bold">
                 Settings Navigation
@@ -264,8 +264,8 @@ export default function SettingsPage() {
             </div>
           </aside>
 
-          {/* Mobile Section Selector (Bulletproof Native Dropdown with High Touch Target) */}
-          <div className="w-full md:hidden">
+          {/* Mobile & Tablet Section Selector (Bulletproof Native Dropdown with High Touch Target) */}
+          <div className="w-full lg:hidden">
             <label htmlFor="mobile-settings-nav" className="block text-xs font-semibold text-zinc-700 dark:text-[#9CA3AF] mb-1.5">
               Settings Section
             </label>
@@ -435,7 +435,7 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                   <div className="space-y-3">
                     <label htmlFor="timezone-select" className="block text-xs font-medium text-zinc-700 dark:text-[#9CA3AF]">
                       Select Operational Time Zone
@@ -610,7 +610,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 text-xs">
                   {/* API Gateway Status */}
                   <div className="p-3.5 rounded-lg bg-zinc-50 dark:bg-[#161920] border border-zinc-200 dark:border-[#222630] space-y-1.5">
                     <span className="text-zinc-500 dark:text-[#9CA3AF] text-[11px] block">API Gateway</span>

@@ -134,43 +134,43 @@ export default function AssetsPage() {
         </div>
 
         {/* KPI Stat Chips */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF]">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-semibold">
               Total Assets
             </div>
-            <div className="text-xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] mt-1">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] mt-1 tracking-tight">
               {total}
             </div>
           </div>
-          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-semibold">
               In-Scope (Approved)
             </div>
-            <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 tracking-tight">
               {inScopeCount}
             </div>
           </div>
-          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-rose-500 dark:text-[#F43F5E]">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-rose-500 dark:text-[#F43F5E] font-semibold">
               Critical & High Impact
             </div>
-            <div className="text-xl font-bold font-mono text-rose-500 dark:text-[#F43F5E] mt-1">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-rose-500 dark:text-[#F43F5E] mt-1 tracking-tight">
               {criticalCount}
             </div>
           </div>
-          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-amber-500 dark:text-[#FBBF24]">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-amber-500 dark:text-[#FBBF24] font-semibold">
               Out-of-Scope (Restricted)
             </div>
-            <div className="text-xl font-bold font-mono text-amber-500 dark:text-[#FBBF24] mt-1">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-amber-500 dark:text-[#FBBF24] mt-1 tracking-tight">
               {outOfScopeCount}
             </div>
           </div>
         </div>
 
         {/* Filter Toolbar */}
-        <div className="p-3 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-xs">
+        <div className="cockpit-card specular-top p-3.5 sm:p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-md">
           <div className="flex-1 min-w-[200px] relative">
             <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-[#9CA3AF]" />
             <input
@@ -292,7 +292,7 @@ export default function AssetsPage() {
             {assets.map((asset) => (
               <div
                 key={asset.id}
-                className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs hover:border-[#F5C518]/40 dark:hover:border-[#F5C518]/40 transition-all flex flex-col justify-between gap-4"
+                className="cockpit-card cockpit-card-interactive specular-top p-5 shadow-md flex flex-col justify-between gap-4"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -379,7 +379,7 @@ export default function AssetsPage() {
           </div>
         ) : (
           /* Table View (Default on Desktop) */
-          <div className="border border-zinc-200 dark:border-[#222630] rounded-xl overflow-hidden bg-white dark:bg-[#111318] shadow-xs">
+          <div className="cockpit-card specular-top rounded-xl overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>

@@ -282,7 +282,7 @@ function RegistrationsContent() {
             {filteredItems.map((reg) => (
               <div
                 key={reg.id}
-                className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs hover:border-[#F5C518]/40 dark:hover:border-[#F5C518]/40 transition-all space-y-4"
+                className="cockpit-card cockpit-card-interactive specular-top p-5 shadow-md space-y-4"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="space-y-1">

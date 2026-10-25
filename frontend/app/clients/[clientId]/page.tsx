@@ -154,7 +154,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
         </div>
 
         {/* Profile Header */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="cockpit-card specular-top p-6 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
@@ -330,7 +330,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
             {/* Left 2 cols: Organization Details */}
             <div className="lg:col-span-2 space-y-6">
               {/* Profile Card */}
-              <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+              <div className="cockpit-card specular-top p-5 shadow-md space-y-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#9CA3AF] font-mono">
                   Organization Summary
                 </h3>
@@ -391,7 +391,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
               </div>
 
               {/* Internal Notes Card */}
-              <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+              <div className="cockpit-card specular-top p-5 shadow-md space-y-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#9CA3AF] font-mono">
                   Internal Engagement Notes
                 </h3>
@@ -409,7 +409,7 @@ export default function ClientProfilePage({ params }: ClientPageProps) {
 
             {/* Right 1 col: System Metadata & Future Readiness */}
             <div className="space-y-6">
-              <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+              <div className="cockpit-card specular-top p-5 shadow-md space-y-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#9CA3AF] font-mono">
                   Audit & Record Metadata
                 </h3>

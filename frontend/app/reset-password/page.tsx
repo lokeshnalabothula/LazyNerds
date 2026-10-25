@@ -116,8 +116,14 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090A0D] flex flex-col justify-center items-center p-4 sm:p-6">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen bg-[#090A0D] cyber-grid flex flex-col justify-center items-center p-4 sm:p-6 relative overflow-hidden">
+      {/* Ambient Cyber Top Glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[600px] max-w-full h-[320px] bg-gradient-to-b from-[#F5C518]/[0.06] via-[#F5C518]/[0.02] to-transparent blur-3xl z-0"
+      />
+
+      <div className="w-full max-w-sm space-y-6 relative z-10">
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
@@ -134,7 +140,7 @@ function ResetPasswordContent() {
         </div>
 
         {/* Form Card */}
-        <div className="rounded-xl border border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-2xl backdrop-blur-md">
+        <div className="cockpit-card specular-top p-6 sm:p-7 shadow-2xl">
           {!tokenValid ? (
             <div className="space-y-4 text-center">
               <div className="mx-auto w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">

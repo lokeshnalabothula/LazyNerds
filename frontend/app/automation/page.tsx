@@ -184,7 +184,7 @@ export default function AutomationPage() {
         </div>
 
         {/* Flagship Production Automation: Remediation Follow-up Engine */}
-        <div className="rounded-xl border border-[#F5C518]/30 bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+        <div className="cockpit-card specular-top border-[#F5C518]/30 p-5 sm:p-6 shadow-md space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200/60 dark:border-[#222630] pb-3">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-[#F5C518]/15 border border-[#F5C518]/40 flex items-center justify-center text-[#F5C518]">
@@ -329,10 +329,10 @@ export default function AutomationPage() {
               {rules.map((rule) => (
                 <div
                   key={rule.id}
-                  className={`p-4 rounded-xl border transition-all ${
+                  className={`cockpit-card cockpit-card-interactive specular-top p-4.5 transition-all shadow-md ${
                     rule.is_active
-                      ? "border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs hover:border-[#F5C518]/40 dark:hover:border-[#F5C518]/40"
-                      : "border-zinc-200/50 dark:border-[#222630]/40 bg-zinc-50/50 dark:bg-[#111318]/40 opacity-70"
+                      ? "hover:border-[#F5C518]/40"
+                      : "opacity-60"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -423,7 +423,7 @@ export default function AutomationPage() {
             Workflow Execution History & Telemetry
           </h2>
 
-          <div className="border border-zinc-200 dark:border-[#222630] rounded-xl overflow-hidden bg-white dark:bg-[#111318] shadow-xs">
+          <div className="cockpit-card specular-top overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>

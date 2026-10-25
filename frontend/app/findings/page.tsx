@@ -137,41 +137,41 @@ export default function FindingsPage() {
         </div>
 
         {/* 5 Severity KPI Stat Chips (Obsidian Precision) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-medium">Total Pipeline</span>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-mono">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-semibold">Total Pipeline</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-mono tracking-tight">
               {total}
             </div>
           </div>
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs border-l-4 border-l-[#F43F5E]">
-            <span className="text-[10px] font-mono uppercase text-[#F43F5E] block font-medium">Critical</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#F43F5E] mt-1 font-mono">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#F43F5E]">
+            <span className="text-[10px] font-mono uppercase text-[#F43F5E] block font-semibold">Critical</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#F43F5E] mt-1 font-mono tracking-tight">
               {criticalCount}
             </div>
           </div>
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs border-l-4 border-l-[#FB923C]">
-            <span className="text-[10px] font-mono uppercase text-[#FB923C] block font-medium">High</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#FB923C] mt-1 font-mono">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#FB923C]">
+            <span className="text-[10px] font-mono uppercase text-[#FB923C] block font-semibold">High</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#FB923C] mt-1 font-mono tracking-tight">
               {highCount}
             </div>
           </div>
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs border-l-4 border-l-[#FBBF24]">
-            <span className="text-[10px] font-mono uppercase text-[#FBBF24] block font-medium">In Remediation</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#FBBF24] mt-1 font-mono">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#FBBF24]">
+            <span className="text-[10px] font-mono uppercase text-[#FBBF24] block font-semibold">In Remediation</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#FBBF24] mt-1 font-mono tracking-tight">
               {inRemediationCount}
             </div>
           </div>
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs border-l-4 border-l-[#34D399]">
-            <span className="text-[10px] font-mono uppercase text-[#34D399] block font-medium">Verified Fixed</span>
-            <div className="text-xl sm:text-2xl font-bold text-[#34D399] mt-1 font-mono">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md border-l-4 border-l-[#34D399]">
+            <span className="text-[10px] font-mono uppercase text-[#34D399] block font-semibold">Verified Fixed</span>
+            <div className="text-xl sm:text-2xl font-bold text-[#34D399] mt-1 font-mono tracking-tight">
               {fixedCount}
             </div>
           </div>
         </div>
 
         {/* Filter Toolbar */}
-        <div className="p-3 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-xs">
+        <div className="cockpit-card specular-top p-3.5 sm:p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-md">
           <div className="flex-1 min-w-[200px] relative">
             <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-[#6B7280]" />
             <input
@@ -292,14 +292,14 @@ export default function FindingsPage() {
             {findings.map((finding) => (
               <div
                 key={finding.id}
-                className={`rounded-xl border bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs hover:border-zinc-300 dark:hover:border-[#F5C518]/30 transition-all flex flex-col justify-between gap-4 border-l-4 ${
+                className={`cockpit-card cockpit-card-interactive specular-top p-4 sm:p-5 shadow-md flex flex-col justify-between gap-4 border-l-4 ${
                   finding.severity === "critical"
-                    ? "border-l-[#F43F5E] border-zinc-200 dark:border-[#222630]"
+                    ? "border-l-[#F43F5E]"
                     : finding.severity === "high"
-                    ? "border-l-[#FB923C] border-zinc-200 dark:border-[#222630]"
+                    ? "border-l-[#FB923C]"
                     : finding.severity === "medium"
-                    ? "border-l-[#FBBF24] border-zinc-200 dark:border-[#222630]"
-                    : "border-l-[#60A5FA] border-zinc-200 dark:border-[#222630]"
+                    ? "border-l-[#FBBF24]"
+                    : "border-l-[#60A5FA]"
                 }`}
               >
                 <div className="space-y-3">
@@ -395,7 +395,7 @@ export default function FindingsPage() {
           </div>
         ) : (
           /* Table View (Default on Desktop) */
-          <div className="border border-zinc-200 dark:border-[#222630] rounded-xl overflow-hidden bg-white dark:bg-[#111318] shadow-xs">
+          <div className="cockpit-card specular-top rounded-xl overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>

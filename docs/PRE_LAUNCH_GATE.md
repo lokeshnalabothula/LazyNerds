@@ -12,6 +12,12 @@ This document represents the audited verification status of **Lazy Nerds FixOps 
 - [x] **No unwanted "Made with AI" or builder attribution remains:** Verified zero builder watermarks or AI tags across all components.
 - [x] **No fake testimonials, metrics, or customer logos exist:** Verified complete absence of fabricated stats or social proof.
 - [x] **No prohibited gradients, emoji icons, or unwanted animation exist:** Verified absence of purple gradients, pill buttons, or emoji UI icons; Lucide React icons used exclusively.
+- [x] **Obsidian Cyber Precision UI & Action Hierarchy (LNA-8):**
+  - **Shared Shell & Layout Architecture:** Implemented cohesive technical cockpit theme (`#090A0D` bedrock background, `.cyber-grid` micro-gridlines, atmospheric gold radial aura, `.specular-top` hairline highlights, and `.cockpit-card` surfaces) across `app-shell`, `sidebar`, and `topbar`.
+  - **Strict Action Hierarchy:** Exactly ONE dominant primary CTA button (`bg-[#F5C518] text-[#090A0D]`) per active screen state, with secondary controls visually subordinate (`bg-[#1A1E26] text-slate-300 border-[#2A2E3D]`) and destructive actions distinctly isolated.
+  - **High-Density Telemetry:** High-contrast KPI chips, live operational indicator dots, monospace status chips (`.badge-cyber`), and technical tabular/card layouts across `/overview`, `/clients`, `/engagements`, `/assets`, `/findings`, `/automation`, and `/reports`.
+  - **Zero Horizontal Overflow:** Automated browser audit verified **136 route and viewport combinations** (from 320px narrow mobile up to 1440px ultra-wide) with **0 horizontal scrollbar or element overflow defects**.
+  - **Visual Screenshot Evidence:** Captured desktop (1440x900) and mobile (390x844) high-resolution evidence across all core screens in `docs/visual-evidence/` with DOM computed telemetry in `inspection-summary.json`.
 
 ---
 

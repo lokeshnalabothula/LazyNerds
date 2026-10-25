@@ -182,7 +182,7 @@ function EngagementsContent() {
           </div>
         </div>
         {/* Search, Filter, Sort and Layout Controls */}
-        <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-4 shadow-xs">
+        <div className="cockpit-card specular-top p-4 shadow-md flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
@@ -357,7 +357,7 @@ function EngagementsContent() {
               return (
                 <div
                   key={eng.id}
-                  className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs hover:border-zinc-300 dark:hover:border-[#F5C518]/30 transition-all flex flex-col justify-between gap-4"
+                  className="cockpit-card cockpit-card-interactive specular-top p-5 shadow-md flex flex-col justify-between gap-4"
                 >
                   <div className="space-y-3">
                     {/* Top Row: Client & Status Badge */}
@@ -445,7 +445,7 @@ function EngagementsContent() {
           </div>
         ) : (
           /* Table View */
-          <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] overflow-hidden shadow-xs">
+          <div className="cockpit-card specular-top overflow-hidden shadow-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-zinc-50 dark:bg-[#161920] text-zinc-600 dark:text-[#9CA3AF] border-b border-zinc-200 dark:border-[#222630] font-mono text-[11px] uppercase tracking-wider">

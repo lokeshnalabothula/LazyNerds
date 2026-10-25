@@ -126,7 +126,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   };
 
   return (
-    <header className="h-14 border-b border-zinc-200 dark:border-[#222630] bg-white/80 dark:bg-[#090A0D]/90 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-14 border-b border-zinc-200 dark:border-[#222630] bg-white/80 dark:bg-[#090A0D]/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between sticky top-0 z-30 transition-colors">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={onToggleMobileNav}
@@ -166,6 +166,12 @@ export const Topbar: React.FC<TopbarProps> = ({
             </span>
           </div>
         )}
+
+        {/* Security Telemetry Status Indicator */}
+        <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#111318] border border-[#222630] text-[10px] font-mono text-[#9CA3AF] shrink-0">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span>SECURE OPERATIONAL BUS</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
@@ -191,7 +197,7 @@ export const Topbar: React.FC<TopbarProps> = ({
 
             {/* Notification Dropdown */}
             {isNotifOpen && (
-              <div className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-auto sm:mt-2 w-[calc(100vw-1rem)] sm:w-96 max-w-sm rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95">
+              <div className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-auto sm:mt-2 w-[calc(100vw-1rem)] sm:w-96 max-w-sm rounded-xl border border-zinc-200 dark:border-[#2E333F] bg-white dark:bg-[#111318] shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 specular-top">
                 <div className="px-3.5 py-2.5 border-b border-zinc-100 dark:border-[#222630] flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB]">

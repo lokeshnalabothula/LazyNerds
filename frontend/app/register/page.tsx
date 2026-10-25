@@ -113,8 +113,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090A0D] py-10 px-4 sm:px-6 flex flex-col items-center justify-center">
-      <div className="w-full max-w-2xl space-y-8">
+    <div className="min-h-screen bg-[#090A0D] cyber-grid py-10 px-4 sm:px-6 flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Ambient Top Glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[700px] max-w-full h-[320px] bg-gradient-to-b from-[#F5C518]/[0.05] via-[#F5C518]/[0.015] to-transparent blur-3xl z-0"
+      />
+
+      <div className="w-full max-w-2xl space-y-8 relative z-10">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
@@ -184,7 +190,7 @@ export default function RegisterPage() {
           </div>
         ) : (
           /* Registration Form Card */
-          <div className="rounded-xl border border-[#222630] bg-[#111318]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+          <div className="cockpit-card specular-top p-6 sm:p-8 shadow-2xl">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {serverError && (
                 <div className="p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">

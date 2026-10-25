@@ -143,10 +143,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2.5 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 px-2.5 py-3.5 space-y-1 overflow-y-auto overflow-x-hidden">
         {!isCollapsed && (
-          <div className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#6B7280] font-mono">
-            Core Workspace
+          <div className="px-2.5 pb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-[#6B7280] font-mono flex items-center justify-between">
+            <span>Workspace</span>
+            <span className="h-1 w-1 rounded-full bg-[#F5C518]/60" />
           </div>
         )}
 
@@ -170,7 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   : "gap-2.5 px-3 py-2",
                 isActive
                   ? "bg-[#F5C518]/10 dark:bg-[#F5C518]/15 text-zinc-900 dark:text-[#FFD84D] font-semibold shadow-xs border-l-2 border-[#F5C518]"
-                  : "text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920]"
+                  : "text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920]/80"
               )}
             >
               <item.icon
@@ -184,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {!isCollapsed && (
                 <>
-                  <span className="truncate flex-1">{item.name}</span>
+                  <span className="truncate flex-1 tracking-tight">{item.name}</span>
                   {"badge" in item && item.badge && (
                     <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 uppercase font-semibold shrink-0">
                       {item.badge}
@@ -214,23 +215,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             href="/settings"
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-zinc-200/60 dark:hover:bg-[#161920] transition-colors group",
+              "flex items-center gap-2.5 p-2 rounded-lg bg-transparent hover:bg-zinc-200/60 dark:hover:bg-[#161920] transition-colors group",
               isCollapsed ? "justify-center" : "justify-start"
             )}
             title={`Operator: ${user.full_name || user.email}`}
           >
-            <Avatar
-              fallbackText={user.full_name || user.email}
-              size="sm"
-              alt={user.full_name || "Operator"}
-            />
+            <div className="relative shrink-0">
+              <Avatar
+                fallbackText={user.full_name || user.email}
+                size="sm"
+                alt={user.full_name || "Operator"}
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border border-[#0B0D12]" title="Operational" />
+            </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 text-left">
                 <span className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] truncate group-hover:text-[#F5C518] transition-colors">
                   {user.full_name || user.email}
                 </span>
-                <span className="text-[10px] text-zinc-500 dark:text-[#9CA3AF] truncate capitalize font-mono">
-                  {user.role} operator
+                <span className="text-[10px] text-zinc-500 dark:text-[#9CA3AF] truncate capitalize font-mono flex items-center gap-1">
+                  <span>{user.role}</span>
+                  <span className="text-zinc-600 dark:text-zinc-500">•</span>
+                  <span className="text-emerald-500/90 dark:text-emerald-400">active</span>
                 </span>
               </div>
             )}

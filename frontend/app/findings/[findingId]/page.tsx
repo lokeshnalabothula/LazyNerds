@@ -77,7 +77,7 @@ export default function FindingDetailPage() {
         ) : (
           <div className="space-y-6">
             {/* Header Card */}
-            <div className="p-6 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs space-y-4">
+            <div className="cockpit-card specular-top p-6 shadow-md space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
@@ -176,7 +176,7 @@ export default function FindingDetailPage() {
             {/* Description, Impact & Remediation Guidance */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <div className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] space-y-2">
+                <div className="cockpit-card specular-top p-5 shadow-md space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     Vulnerability Description
                   </h3>
@@ -185,7 +185,7 @@ export default function FindingDetailPage() {
                   </p>
                 </div>
 
-                <div className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] space-y-2">
+                <div className="cockpit-card specular-top p-5 shadow-md space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     Business & Technical Impact
                   </h3>
@@ -196,7 +196,7 @@ export default function FindingDetailPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] space-y-2">
+                <div className="cockpit-card specular-top p-5 shadow-md space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     Remediation Recommendation
                   </h3>
@@ -206,7 +206,7 @@ export default function FindingDetailPage() {
                 </div>
 
                 {finding.evidence && (
-                  <div className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] space-y-2">
+                  <div className="cockpit-card specular-top p-5 shadow-md space-y-2">
                     <div className="flex items-center justify-between">
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                         Replication Evidence / PoC
@@ -231,7 +231,7 @@ export default function FindingDetailPage() {
             </div>
 
             {/* Verification History Timeline (Module E) */}
-            <div className="p-6 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs space-y-4">
+            <div className="cockpit-card specular-top p-6 shadow-md space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-100 dark:border-[#222630] pb-3">
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB] font-sans">

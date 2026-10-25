@@ -60,8 +60,14 @@ function RegistrationStatusContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090A0D] flex flex-col justify-center items-center p-4 sm:p-6">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen bg-[#090A0D] cyber-grid flex flex-col justify-center items-center p-4 sm:p-6 relative overflow-hidden">
+      {/* Ambient Cyber Top Glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[600px] max-w-full h-[320px] bg-gradient-to-b from-[#F5C518]/[0.06] via-[#F5C518]/[0.02] to-transparent blur-3xl z-0"
+      />
+
+      <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
@@ -78,7 +84,7 @@ function RegistrationStatusContent() {
         </div>
 
         {/* Card */}
-        <div className="rounded-xl border border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-2xl backdrop-blur-md space-y-5">
+        <div className="cockpit-card specular-top p-6 shadow-2xl space-y-5">
           <form onSubmit={handleSubmit} className="space-y-3">
             <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF]">
               Lookup by Corporate Email

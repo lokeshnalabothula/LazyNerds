@@ -71,27 +71,27 @@ export default function OverviewPage() {
     <AppShell title="Dashboard">
       <div className="space-y-6 max-w-7xl mx-auto pb-16">
         {/* Top Operations Header with Operational Telemetry Badge */}
-        <div className="rounded-xl border border-[#F5C518]/25 bg-white dark:bg-[#111318] p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="cockpit-card specular-top border-[#F5C518]/30 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] flex items-center justify-center shrink-0 text-[#F5C518]">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_12px_rgba(245,197,24,0.15),inset_0_1px_0_rgba(255,255,255,0.1)] flex items-center justify-center shrink-0 text-[#F5C518]">
               <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-[#F5C518]" />
             </div>
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
+            <div className="space-y-1.5 min-w-0">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="flex h-2 w-2 relative shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFD84D] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F5C518]"></span>
                 </span>
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50 font-mono">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-mono">
                   {isClient
                     ? "ORGANIZATION SECURITY POSTURE"
                     : "CYBERSECURITY OPERATIONS DASHBOARD"}
                 </h1>
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 shrink-0 font-bold">
+                <span className="badge-cyber bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border-[#F5C518]/35 shrink-0">
                   {user?.role || "Active"} Mode
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
+              <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] leading-relaxed max-w-2xl font-sans">
                 {isClient
                   ? "Real-time vulnerability tracking, automated remediation status, and verified compliance audit logs for your assets."
                   : "Continuous telemetry, tenant isolation, and automated remediation pipeline calculated from live database records."}
@@ -247,38 +247,39 @@ export default function OverviewPage() {
         ) : metrics ? (
           <>
             {/* Primary Metrics Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
               {/* Clients Card */}
               {!isClient ? (
                 <Link
                   href="/clients"
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
+                  className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                      <span className="text-[11px] font-mono uppercase tracking-wider">Clients</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Clients</span>
                       <Users className="h-4 w-4 text-[#F5C518]" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
+                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                       {metrics.clients_total}
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
-                    {metrics.clients_active} active accounts
+                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span>{metrics.clients_active} active</span>
                   </div>
                 </Link>
               ) : (
-                <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] flex flex-col justify-between shadow-xs">
+                <div className="telemetry-card specular-top p-4 flex flex-col justify-between shadow-md">
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                      <span className="text-[11px] font-mono uppercase tracking-wider">Security State</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Security State</span>
                       <Shield className="h-4 w-4 text-[#34D399]" />
                     </div>
-                    <div className="text-xl font-bold font-mono text-[#34D399]">
+                    <div className="text-xl font-bold font-mono text-[#34D399] tracking-tight">
                       PROTECTED
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
+                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono">
                     FixOps Agent Active
                   </div>
                 </div>
@@ -287,76 +288,80 @@ export default function OverviewPage() {
               {/* Engagements Card */}
               <Link
                 href="/engagements"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
+                className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                    <span className="text-[11px] font-mono uppercase tracking-wider">Engagements</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Engagements</span>
                     <Layers className="h-4 w-4 text-indigo-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                     {metrics.engagements_total}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
-                  {metrics.engagements_active} ongoing
+                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                  <span>{metrics.engagements_active} ongoing</span>
                 </div>
               </Link>
 
               {/* Assets Card */}
               <Link
                 href="/assets"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
+                className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                    <span className="text-[11px] font-mono uppercase tracking-wider">In-Scope Assets</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">In-Scope</span>
                     <Shield className="h-4 w-4 text-emerald-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                     {metrics.assets_in_scope}
                   </div>
                 </div>
-                <div className="text-[10px] text-emerald-600 dark:text-[#34D399] mt-2 truncate font-mono">
-                  {metrics.assets_total} registered total
+                <div className="text-[10px] text-emerald-600 dark:text-[#34D399] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span>{metrics.assets_total} total</span>
                 </div>
               </Link>
 
               {/* Open Findings Card */}
               <Link
                 href="/findings?status=open"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
+                className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                    <span className="text-[11px] font-mono uppercase tracking-wider">Open Findings</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Open Findings</span>
                     <FileCheck2 className="h-4 w-4 text-amber-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
+                  <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                     {metrics.findings_open}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
-                  {metrics.findings_total} total identified
+                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                  <span>{metrics.findings_total} identified</span>
                 </div>
               </Link>
 
               {/* Remediated Card */}
               <Link
                 href="/findings?status=verified_fixed"
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
+                className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                    <span className="text-[11px] font-mono uppercase tracking-wider">Remediated</span>
+                  <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                    <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Remediated</span>
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   </div>
-                  <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-[#34D399]">
+                  <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-[#34D399] tracking-tight">
                     {metrics.findings_verified_fixed}
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
-                  {metrics.findings_in_remediation} in progress
+                <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span>{metrics.findings_in_remediation} in progress</span>
                 </div>
               </Link>
 
@@ -364,36 +369,37 @@ export default function OverviewPage() {
               {!isClient ? (
                 <Link
                   href="/automation"
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
+                  className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                      <span className="text-[11px] font-mono uppercase tracking-wider">Automations</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Automations</span>
                       <Zap className="h-4 w-4 text-amber-400" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
+                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                       {metrics.automation_executions_total}
                     </div>
                   </div>
-                  <div className="text-[10px] text-amber-600 dark:text-[#FFD84D] mt-2 truncate font-mono">
-                    {metrics.automation_rules_active} rules active
+                  <div className="text-[10px] text-amber-600 dark:text-[#FFD84D] mt-2.5 truncate font-mono flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#F5C518]" />
+                    <span>{metrics.automation_rules_active} rules active</span>
                   </div>
                 </Link>
               ) : (
                 <Link
                   href="/reports"
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] hover:border-zinc-300 dark:hover:border-[#F5C518]/40 transition-all group flex flex-col justify-between shadow-xs"
+                  className="telemetry-card cockpit-card-interactive specular-top p-4 flex flex-col justify-between shadow-md group"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2">
-                      <span className="text-[11px] font-mono uppercase tracking-wider">Reports</span>
+                    <div className="flex items-center justify-between text-zinc-500 dark:text-[#9CA3AF] mb-2.5">
+                      <span className="text-[11px] font-mono uppercase tracking-wider font-semibold">Reports</span>
                       <FileText className="h-4 w-4 text-blue-400" />
                     </div>
-                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB]">
+                    <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-[#F9FAFB] tracking-tight">
                       Available
                     </div>
                   </div>
-                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2 truncate font-mono">
+                  <div className="text-[10px] text-zinc-400 dark:text-[#9CA3AF] mt-2.5 truncate font-mono">
                     Verified Deliverables
                   </div>
                 </Link>
@@ -401,7 +407,7 @@ export default function OverviewPage() {
             </div>
 
             {/* Quick Workflow Hub */}
-            <div className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs space-y-3">
+            <div className="cockpit-card specular-top p-5 space-y-3.5 shadow-md">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase font-mono tracking-wider text-zinc-500 dark:text-[#9CA3AF]">
                   Quick Workflow Shortcuts
@@ -410,7 +416,7 @@ export default function OverviewPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <Link
                   href="/findings"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
                     <UploadCloud className="h-4 w-4 text-[#F5C518]" />
@@ -421,7 +427,7 @@ export default function OverviewPage() {
 
                 <Link
                   href="/engagements"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-indigo-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-indigo-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
                     <Layers className="h-4 w-4 text-indigo-400" />
@@ -432,7 +438,7 @@ export default function OverviewPage() {
 
                 <Link
                   href="/automation"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
                     <Zap className="h-4 w-4 text-[#F5C518]" />
@@ -444,7 +450,7 @@ export default function OverviewPage() {
                 {isFounder ? (
                   <Link
                     href="/registrations"
-                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-amber-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-amber-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                   >
                     <div className="flex items-center gap-2.5">
                       <UserCheck className="h-4 w-4 text-amber-400" />
@@ -455,7 +461,7 @@ export default function OverviewPage() {
                 ) : (
                   <Link
                     href="/assets"
-                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-emerald-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                    className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-emerald-500/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                   >
                     <div className="flex items-center gap-2.5">
                       <Shield className="h-4 w-4 text-emerald-400" />
@@ -467,7 +473,7 @@ export default function OverviewPage() {
 
                 <Link
                   href="/reports"
-                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/60 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
+                  className="p-3 rounded-lg border border-zinc-200 dark:border-[#222630] bg-zinc-50 dark:bg-[#161920]/70 hover:border-[#F5C518]/50 hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors flex items-center justify-between group text-xs font-medium"
                 >
                   <div className="flex items-center gap-2.5">
                     <FileText className="h-4 w-4 text-blue-400" />
@@ -481,7 +487,7 @@ export default function OverviewPage() {
             {/* Severity Distribution & Activity Center */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Finding Severity Distribution */}
-              <div className="p-4 sm:p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] lg:col-span-1 shadow-xs space-y-4">
+              <div className="cockpit-card specular-top p-5 lg:col-span-1 shadow-md space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     Severity Breakdown
@@ -527,7 +533,7 @@ export default function OverviewPage() {
               </div>
 
               {/* Audit Trail & Live Activity */}
-              <div className="p-4 sm:p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] lg:col-span-2 shadow-xs space-y-4">
+              <div className="cockpit-card specular-top p-5 lg:col-span-2 shadow-md space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-[#222630] pb-2.5">
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#9CA3AF] font-mono">
                     Verified Activity & Audit Log

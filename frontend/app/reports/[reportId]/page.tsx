@@ -124,7 +124,7 @@ export default function ReportDetailPage() {
             {error || "Report deliverable not found."}
           </div>
         ) : (
-          <article className="p-8 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs space-y-6">
+          <article className="cockpit-card specular-top p-8 space-y-6 shadow-md">
             {/* Header Metadata */}
             <div className="border-b border-zinc-200 dark:border-[#222630] pb-6 space-y-3">
               <div className="flex flex-wrap items-center gap-2">

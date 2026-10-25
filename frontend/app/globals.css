@@ -149,6 +149,63 @@
   .glow-critical {
     box-shadow: 0 0 16px rgba(244, 63, 94, 0.25);
   }
+
+  /* Cockpit Layout & Composition Utilities (Obsidian Precision) */
+  .cyber-grid {
+    background-size: 32px 32px;
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  }
+
+  .cockpit-card {
+    background-color: #111318;
+    border: 1px solid #222630;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .cockpit-card-interactive {
+    transition: border-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+  }
+  .cockpit-card-interactive:hover {
+    border-color: rgba(245, 197, 24, 0.35);
+    box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.6), 0 0 16px -2px rgba(245, 197, 24, 0.08);
+  }
+
+  .specular-top {
+    position: relative;
+  }
+  .specular-top::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 197, 24, 0.5), transparent);
+    pointer-events: none;
+  }
+
+  .telemetry-card {
+    background: linear-gradient(180deg, #141720 0%, #101217 100%);
+    border: 1px solid #222630;
+    border-radius: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .badge-cyber {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

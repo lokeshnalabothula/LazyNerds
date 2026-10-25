@@ -94,7 +94,7 @@ export default function ReportsPage() {
             {reports.map((report) => (
               <div
                 key={report.id}
-                className="p-5 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs flex flex-col justify-between space-y-4 hover:border-[#F5C518]/40 dark:hover:border-[#F5C518]/40 transition-all min-w-0"
+                className="cockpit-card cockpit-card-interactive specular-top p-5 shadow-md flex flex-col justify-between space-y-4 min-w-0"
               >
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between text-xs">

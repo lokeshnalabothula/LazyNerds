@@ -300,35 +300,35 @@ function ClientsContent() {
         </div>
 
         {/* Quick KPI Stat Chips */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-medium">Total Directory</span>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-mono">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-semibold">Total Directory</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-[#F9FAFB] mt-1 font-mono tracking-tight">
               {total}
             </div>
           </div>
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <span className="text-[10px] font-mono uppercase text-emerald-600 dark:text-[#34D399] block font-medium">Active Accounts</span>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-[#34D399] mt-1 font-mono">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <span className="text-[10px] font-mono uppercase text-emerald-600 dark:text-[#34D399] block font-semibold">Active Accounts</span>
+            <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-[#34D399] mt-1 font-mono tracking-tight">
               {statusFilter === "active" ? clients.length : (statusFilter === "archived" ? "—" : clients.filter(c => c.status === "active").length)}
             </div>
           </div>
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-medium">Archived Scopes</span>
-            <div className="text-xl sm:text-2xl font-bold text-zinc-700 dark:text-zinc-300 mt-1 font-mono">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-[#9CA3AF] block font-semibold">Archived Scopes</span>
+            <div className="text-xl sm:text-2xl font-bold text-zinc-700 dark:text-zinc-300 mt-1 font-mono tracking-tight">
               {statusFilter === "archived" ? clients.length : (statusFilter === "active" ? "—" : clients.filter(c => c.status === "archived").length)}
             </div>
           </div>
-          <div className="p-3 sm:p-4 rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] shadow-xs">
-            <span className="text-[10px] font-mono uppercase text-amber-500 dark:text-[#FFD84D] block font-medium">Active Selection</span>
-            <div className="text-xl sm:text-2xl font-bold text-amber-500 dark:text-[#FFD84D] mt-1 font-mono">
+          <div className="telemetry-card cockpit-card-interactive specular-top p-3.5 sm:p-4 shadow-md">
+            <span className="text-[10px] font-mono uppercase text-amber-500 dark:text-[#FFD84D] block font-semibold">Active Selection</span>
+            <div className="text-xl sm:text-2xl font-bold text-amber-500 dark:text-[#FFD84D] mt-1 font-mono tracking-tight">
               {selectedClientIds.length}
             </div>
           </div>
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="cockpit-card specular-top p-3.5 sm:p-4 shadow-md flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           <div className="flex items-center gap-2 flex-1 max-w-md">
             <div className="relative w-full">
               <Search className="h-4 w-4 absolute left-3 top-2.5 text-zinc-400 dark:text-[#6B7280]" />
@@ -429,7 +429,7 @@ function ClientsContent() {
         </div>
 
         {/* Directory Content Table / Cards */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] overflow-hidden shadow-xs">
+        <div className="cockpit-card specular-top overflow-hidden shadow-md">
           {isLoading ? (
             viewMode === "cards" ? (
               <div className="p-4">
@@ -510,10 +510,10 @@ function ClientsContent() {
                 return (
                   <div
                     key={client.id}
-                    className={`rounded-xl border bg-white dark:bg-[#111318] p-4 space-y-3.5 shadow-xs transition-all flex flex-col justify-between group ${
+                    className={`cockpit-card cockpit-card-interactive specular-top p-4.5 space-y-3.5 shadow-md flex flex-col justify-between group ${
                       isSelected
                         ? "border-[#F5C518] ring-1 ring-[#F5C518]/50 bg-[#F5C518]/5 dark:bg-[#F5C518]/10"
-                        : "border-zinc-200 dark:border-[#222630] hover:border-zinc-300 dark:hover:border-[#F5C518]/30"
+                        : "hover:border-[#F5C518]/30"
                     }`}
                   >
                     <div className="space-y-2.5">

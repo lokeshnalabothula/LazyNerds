@@ -206,7 +206,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           </div>
         </div>
         {/* Header Hero Card */}
-        <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-6 shadow-xs space-y-4">
+        <div className="cockpit-card specular-top p-6 shadow-md space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -275,7 +275,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           {/* Main Info (Left 2 Columns) */}
           <div className="md:col-span-2 space-y-6">
             {/* Scope Summary */}
-            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+            <div className="cockpit-card specular-top p-5 shadow-md space-y-3">
               <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-[#F5C518]" />
                 Authorized Target Scope
@@ -292,7 +292,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
             </div>
 
             {/* Description / Rules of Engagement */}
-            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+            <div className="cockpit-card specular-top p-5 shadow-md space-y-3">
               <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-2">
                 <FileText className="h-4 w-4 text-[#F5C518]" />
                 Narrative & Context Notes
@@ -309,7 +309,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
             </div>
 
             {/* Associated Security Operations */}
-            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-4">
+            <div className="cockpit-card specular-top p-5 shadow-md space-y-4">
               <h3 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-2">
                 <Layers className="h-4 w-4 text-[#F5C518]" />
                 Associated Security Operations
@@ -374,7 +374,7 @@ export default function EngagementDetailPage({ params }: EngagementPageProps) {
           {/* Sidebar Metadata (Right Column) */}
           <div className="space-y-6">
             {/* Associated Client Profile Card */}
-            <div className="rounded-xl border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] p-5 shadow-xs space-y-3">
+            <div className="cockpit-card specular-top p-5 shadow-md space-y-3">
               <h4 className="text-xs font-semibold text-zinc-900 dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
                 Client Workspace

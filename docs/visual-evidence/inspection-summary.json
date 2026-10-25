@@ -1,0 +1,88 @@
+[
+  {
+    "route": "/overview",
+    "title": "Dashboard Telemetry",
+    "totalButtons": 9,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "New Engagement"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 1
+  },
+  {
+    "route": "/clients",
+    "title": "Client Directory",
+    "totalButtons": 33,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Add Client"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 6
+  },
+  {
+    "route": "/engagements",
+    "title": "Engagements LifeCycle",
+    "totalButtons": 16,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Create Engagement"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 2
+  },
+  {
+    "route": "/assets",
+    "title": "Target Assets Inventory",
+    "totalButtons": 8,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Register Asset"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 5
+  },
+  {
+    "route": "/findings",
+    "title": "Vulnerabilities & Triage",
+    "totalButtons": 10,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Launch Security Scan"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 6
+  },
+  {
+    "route": "/automation",
+    "title": "Workflow Automation",
+    "totalButtons": 11,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "New Workflow"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 3
+  },
+  {
+    "route": "/reports",
+    "title": "Reporting & Deliverables",
+    "totalButtons": 6,
+    "primaryButtonCount": 1,
+    "primaryButtonTexts": [
+      "Generate Report"
+    ],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 0
+  },
+  {
+    "route": "/registrations",
+    "title": "Founder Onboarding Queue",
+    "totalButtons": 12,
+    "primaryButtonCount": 0,
+    "primaryButtonTexts": [],
+    "bodyBackground": "rgb(9, 10, 13)",
+    "cockpitCardCount": 0
+  }
+]

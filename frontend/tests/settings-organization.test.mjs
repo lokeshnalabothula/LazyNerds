@@ -9,7 +9,7 @@ test.describe("Settings Page Organization & Telemetry Integrity (LNA-14)", () =>
     : path.join(process.cwd(), "frontend/app/settings/page.tsx");
   const settingsSource = fs.readFileSync(settingsPath, "utf-8");
 
-  test("Settings defines distinct sections for account, preferences, security, health, and audit", () => {
+  test("Settings defines distinct sections for account, preferences, security, health, audit, and all", () => {
     assert.match(settingsSource, /"account"/);
     assert.match(settingsSource, /"preferences"/);
     assert.match(settingsSource, /"security"/);
@@ -18,22 +18,29 @@ test.describe("Settings Page Organization & Telemetry Integrity (LNA-14)", () =>
     assert.match(settingsSource, /"all"/);
   });
 
-  test("Settings provides responsive wrapped grid navigation for full mobile and desktop discoverability", () => {
-    assert.match(settingsSource, /tab\.label/);
-    assert.match(settingsSource, /tab\.shortLabel/);
-    assert.match(settingsSource, /grid-cols-2/);
-    assert.match(settingsSource, /md:grid-cols-6/);
-    assert.match(settingsSource, /min-h-\[38px\]/);
+  test("Settings provides master-detail desktop sidebar without horizontal pill collisions", () => {
+    assert.match(settingsSource, /<aside className="hidden md:block w-64/);
+    assert.match(settingsSource, /Settings Navigation/);
+    assert.match(settingsSource, /min-h-\[40px\]/);
+    // Eliminates overflowing horizontal pill strips that caused desktop text collision
+    assert.doesNotMatch(settingsSource, /overflow-x-auto/);
+  });
+
+  test("Settings provides mobile select navigation for 100% discoverability at narrow widths", () => {
+    assert.match(settingsSource, /<div className="w-full md:hidden">/);
+    assert.match(settingsSource, /<select/);
+    assert.match(settingsSource, /id="mobile-settings-nav"/);
+    assert.match(settingsSource, /min-h-\[44px\]/);
   });
 
   test("Header workspace badges are dynamically sourced and avoid hardcoded static labels", () => {
     assert.doesNotMatch(settingsSource, /FIXOPS ENTERPRISE/);
     assert.doesNotMatch(settingsSource, /"v2\.1\.0"/);
     assert.match(settingsSource, /healthStatus\?\.environment/);
+    assert.match(settingsSource, /healthStatus\?\.version/);
   });
 
   test("Diagnostics are dynamically sourced from api.getHealth and do not hardcode fake operational version", () => {
-    // Verifies that healthStatus?.version and healthStatus?.service are used rather than hardcoded 'Operational (FixOps v2.0.0)'
     assert.doesNotMatch(settingsSource, /Operational \(FixOps v2\.0\.0\)/);
     assert.match(settingsSource, /healthStatus\?\.version/);
     assert.match(settingsSource, /healthStatus\?\.service/);
@@ -46,7 +53,6 @@ test.describe("Settings Page Organization & Telemetry Integrity (LNA-14)", () =>
   });
 
   test("Security tab maintains single prominent primary action for password update", () => {
-    // Only Update Password has btn-glossy-gold
     const glossyMatches = settingsSource.match(/btn-glossy-gold/g) || [];
     assert.equal(glossyMatches.length, 1);
     assert.match(settingsSource, /Update Password/);

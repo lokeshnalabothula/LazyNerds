@@ -17,6 +17,7 @@ import {
   Zap,
   UserPlus,
   Globe,
+  Radar,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -69,6 +70,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Globe,
       badge: "Scan",
       description: "Automated URL Security Assessment",
+    },
+    {
+      name: "Orbital Radar",
+      href: "/radar",
+      icon: Radar,
+      badge: "Live",
+      description: "Orbital Defense & Telemetry Stream",
     },
     {
       name: "Engagements",

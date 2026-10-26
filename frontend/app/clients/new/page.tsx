@@ -49,18 +49,26 @@ export default function NewClientPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0C10] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#00D2D3] border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-[#07080b] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-white/80 border-t-transparent animate-spin" />
       </div>
     );
   }
 
   return (
-    <div data-loading-state="complete" className="min-h-screen bg-[#0A0C10] text-[#F1F5F9] secops-grid-bg relative overflow-hidden font-sans">
-      {/* UNDERLAY: FULL FIXOPS CLIENT DIRECTORY WORKSPACE (EXACT STITCH SPECIFICATION) */}
+    <div data-loading-state="complete" className="min-h-screen bg-[#07080b] text-[#F1F5F9] relative overflow-hidden font-sans">
+      {/* Monochromatic Ambient Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-gradient-to-b from-white/[0.05] via-white/[0.02] to-transparent blur-[140px] rounded-full" />
+        <div className="absolute top-1/4 -left-48 w-[500px] h-[500px] bg-white/[0.025] blur-[130px] rounded-full" />
+        <div className="absolute bottom-10 left-1/3 w-[600px] h-[400px] bg-white/[0.02] blur-[140px] rounded-full" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
+      </div>
+
+      {/* UNDERLAY: FULL FIXOPS CLIENT DIRECTORY WORKSPACE */}
       <div
         aria-hidden="true"
-        className="min-h-screen w-full flex flex-col pointer-events-none select-none filter blur-[1.5px] opacity-85 transition-all"
+        className="min-h-screen w-full flex flex-col pointer-events-none select-none filter blur-[2px] opacity-70 transition-all relative z-10"
       >
         {/* Top App Navigation Bar */}
         <header className="w-full bg-[#11141A]/90 border-b border-[#232833] px-6 py-3 flex items-center justify-between">
@@ -316,10 +324,10 @@ export default function NewClientPage() {
         </div>
       </div>
 
-      {/* SUBTLE DARK GLASS OVERLAY (STITCH SPEC: bg-[#06080B]/60 backdrop-blur-[6px]) */}
+      {/* SUBTLE DARK GLASS OVERLAY (STITCH SPEC: bg-[#07080b]/75 backdrop-blur-[10px]) */}
       <div
         onClick={() => router.push("/clients")}
-        className="fixed inset-0 z-40 bg-[#06080B]/60 backdrop-blur-[6px] transition-all cursor-pointer"
+        className="fixed inset-0 z-40 bg-[#07080b]/75 backdrop-blur-[10px] transition-all cursor-pointer"
       />
 
       {/* CENTERED LIQUID GLASS SCOPING MODAL (EXACT STITCH ADD CLIENT SCREEN) */}

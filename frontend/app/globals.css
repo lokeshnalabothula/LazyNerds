@@ -30,26 +30,26 @@
   }
 
   .dark {
-    /* Stitch Liquid Glass Precision Tokens */
-    --background: 222 35% 4%;         /* #07090E deep bedrock */
-    --foreground: 210 20% 98%;        /* #F9FAFB crisp text */
-    --card: 222 25% 8%;               /* #0D1017 glass surface base */
-    --card-foreground: 210 20% 98%;   /* #F9FAFB */
-    --popover: 222 28% 10%;           /* #111520 elevated popover */
-    --popover-foreground: 210 20% 98%;/* #F9FAFB */
-    --primary: 47 92% 53%;            /* #F5C518 tactile amber gold */
-    --primary-foreground: 222 35% 4%; /* #07090E */
-    --secondary: 222 20% 12%;         /* #141824 secondary surface */
+    /* Stitch Liquid Glass Precision Tokens - Royal Monochrome & VisionOS Liquid Glass */
+    --background: 228 35% 3.5%;        /* #07080b deep obsidian void */
+    --foreground: 210 20% 98%;        /* #F1F5F9 crisp text */
+    --card: 228 25% 6%;               /* #0c0e14 liquid glass base */
+    --card-foreground: 210 20% 98%;   /* #F1F5F9 */
+    --popover: 228 28% 8%;            /* #10121a elevated popover */
+    --popover-foreground: 210 20% 98%;/* #F1F5F9 */
+    --primary: 0 0% 100%;             /* #FFFFFF high-contrast royal platinum */
+    --primary-foreground: 228 35% 4%; /* #07080b */
+    --secondary: 228 20% 10%;         /* #12151e secondary surface */
     --secondary-foreground: 210 20% 98%;
-    --muted: 222 20% 12%;             /* #141824 */
+    --muted: 228 20% 10%;             /* #12151e */
     --muted-foreground: 215 16% 68%;  /* #94A3B8 readable secondary */
-    --accent: 47 92% 53%;             /* #F5C518 */
-    --accent-foreground: 222 35% 4%;
+    --accent: 0 0% 100%;              /* #FFFFFF */
+    --accent-foreground: 228 35% 4%;
     --destructive: 350 89% 60%;       /* #F43F5E critical rose */
     --destructive-foreground: 0 0% 98%;
-    --border: 222 20% 16%;            /* #1E2433 structural hairline */
-    --input: 222 20% 16%;             /* #1E2433 */
-    --ring: 47 92% 53%;               /* #F5C518 */
+    --border: 228 15% 12%;            /* rgba(255, 255, 255, 0.08) */
+    --input: 228 15% 12%;
+    --ring: 0 0% 100%;
   }
 
   * {
@@ -263,11 +263,11 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
   }
   .glass-input:focus-within {
-    border-color: #F5C518;
-    box-shadow: 0 0 0 1px #F5C518, inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
   /* Subtle Top Rim Highlight for Cards */
@@ -281,26 +281,26 @@
     left: 8%;
     right: 8%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(245, 197, 24, 0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   }
 
   /* Controlled Glow Accents */
   .glow-yellow,
   .glow-gold {
-    box-shadow: 0 0 20px rgba(245, 197, 24, 0.28);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
   }
   .glow-critical {
     box-shadow: 0 0 20px rgba(244, 63, 94, 0.28);
   }
 
-  /* Atmospheric Liquid Glass Depth & Backdrop */
+  /* Atmospheric Liquid Glass Depth & Backdrop (Stitch Royal Monochrome) */
   .cyber-grid,
   .liquid-mesh,
   .glass-canvas {
     background-image:
-      radial-gradient(ellipse 80% 60% at 50% -15%, rgba(217, 119, 6, 0.12) 0%, rgba(10, 12, 16, 0) 70%),
-      radial-gradient(800px 500px at 90% 15%, rgba(56, 189, 248, 0.035) 0%, transparent 60%),
-      radial-gradient(700px 600px at 10% 75%, rgba(99, 102, 241, 0.025) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 60% at 50% -15%, rgba(255, 255, 255, 0.05) 0%, rgba(7, 8, 11, 0) 70%),
+      radial-gradient(800px 500px at 90% 15%, rgba(255, 255, 255, 0.02) 0%, transparent 60%),
+      radial-gradient(700px 600px at 10% 75%, rgba(255, 255, 255, 0.015) 0%, transparent 60%);
     background-attachment: fixed;
   }
 
@@ -309,13 +309,13 @@
   }
   .cockpit-card-interactive:hover {
     background: rgba(255, 255, 255, 0.055);
-    border-color: rgba(245, 197, 24, 0.35);
-    border-top-color: rgba(245, 197, 24, 0.65);
+    border-color: rgba(255, 255, 255, 0.25);
+    border-top-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-2px);
     box-shadow:
       0 24px 48px -12px rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22),
-      0 0 20px -2px rgba(245, 197, 24, 0.15);
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 20px -2px rgba(255, 255, 255, 0.1);
   }
 
   .specular-top {
@@ -539,25 +539,69 @@
     transform-origin: 300px 300px;
   }
 
+  /* Liquid Glass & Apple VisionOS Specular Reflections (Stitch Modern Parity) */
+  .liquid-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%), rgba(13, 15, 20, 0.65);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4),
+      0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  .liquid-glass-subtle {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(10, 12, 16, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .liquid-glass-button {
+    background: linear-gradient(180deg, #FFFFFF 0%, #D8DBE2 100%);
+    color: #07080B;
+    box-shadow: 
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
+      0 4px 16px -2px rgba(255, 255, 255, 0.2),
+      0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .liquid-glass-button:hover {
+    background: linear-gradient(180deg, #FFFFFF 0%, #E8EBF0 100%);
+    box-shadow: 
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+      0 6px 20px -2px rgba(255, 255, 255, 0.35);
+  }
+
+  .glow-radial {
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.07) 0%, rgba(0, 0, 0, 0) 70%);
+  }
+
+  .glow-radial-secondary {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0) 50%);
+  }
+
   /* Liquid Glass Modal Primitives (Stitch ADD CLIENT Exact Parity) */
   .secops-grid-bg {
-    background-color: #0A0C10;
+    background-color: #07080b;
     background-image: 
-      linear-gradient(to right, rgba(35, 40, 51, 0.35) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(35, 40, 51, 0.35) 1px, transparent 1px);
+      linear-gradient(to right, rgba(35, 40, 51, 0.25) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(35, 40, 51, 0.25) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 
   .liquid-glass-modal {
     backdrop-filter: blur(36px);
     -webkit-backdrop-filter: blur(36px);
-    background: rgba(18, 22, 31, 0.75);
+    background: rgba(13, 16, 22, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 
       inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
-      inset 0 0 20px 0 rgba(0, 210, 211, 0.04),
+      inset 0 0 20px 0 rgba(255, 255, 255, 0.02),
       0 25px 60px -15px rgba(0, 0, 0, 0.88),
-      0 0 45px -10px rgba(0, 210, 211, 0.15);
+      0 0 45px -10px rgba(255, 255, 255, 0.08);
   }
 
   .liquid-glass-pill {
@@ -571,9 +615,9 @@
   .liquid-glass-input {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    background: rgba(7, 9, 13, 0.65);
+    background: rgba(7, 9, 13, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.5);
   }
 }
 

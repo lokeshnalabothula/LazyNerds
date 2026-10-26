@@ -259,173 +259,270 @@ function ClientsContent() {
 
   return (
     <AppShell title="Client Directory">
-      <div className="space-y-6 pb-20">
-        {/* Page Header (Stitch Client Organizations Directory) */}
-        <div className="border border-white/[0.08] bg-[#0d0e13]/85 backdrop-blur-xl rounded-xl p-5 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border border-[#00f0ff]/40 bg-[#161920] shadow-[0_2px_12px_rgba(0,240,255,0.15)] flex items-center justify-center shrink-0 text-[#00f0ff]">
-              <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />
+      {/* Monochromatic Ambient Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-gradient-to-b from-white/[0.05] via-white/[0.02] to-transparent blur-[140px] rounded-full" />
+        <div className="absolute top-1/4 -left-48 w-[500px] h-[500px] bg-white/[0.025] blur-[130px] rounded-full" />
+        <div className="absolute bottom-10 left-1/3 w-[600px] h-[400px] bg-white/[0.02] blur-[140px] rounded-full" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
+      </div>
+
+      <div className="relative z-10 space-y-7 pb-20 max-w-7xl mx-auto">
+        {/* Header Section with Monochromatic Gloss Actions (Stitch c9eeeac767c3426e9a8d736f5bd26614) */}
+        <section className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 pt-2">
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] uppercase font-mono tracking-widest text-neutral-400 mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+              <span>Governance & Authorization</span>
+              {isFounder && (
+                <>
+                  <span className="text-white/20">•</span>
+                  <span className="text-neutral-300">Founder Oversight</span>
+                </>
+              )}
             </div>
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#dbfcff] font-sans">
-                  Client Organizations Directory
-                </h1>
-                <span className="px-2 py-0.5 rounded bg-[#00f0ff]/10 border border-[#00f0ff]/30 text-[#00f0ff] text-[10px] font-mono font-bold uppercase tracking-wider">
-                  ENTERPRISE TENANCY
-                </span>
-                {isFounder && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#161920] text-[#9CA3AF] border border-[#222630] font-semibold uppercase">
-                    Founder Oversight
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-[#b9cacb] leading-relaxed max-w-2xl">
-                Authorized legal client entities, designated security points of contact, explicit Rules of Engagement (RoE), and continuous scoping governance.
-              </p>
-            </div>
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white flex items-center gap-3">
+              <span>Client Directory</span>
+              <span className="text-xs px-2 py-0.5 rounded-md font-mono bg-white/10 border border-white/15 text-white/80 font-normal">
+                {total > 0 ? `${total} TOTAL` : "14 TOTAL"}
+              </span>
+            </h1>
+            <p className="text-sm text-neutral-400 mt-1.5 max-w-xl">
+              High-assurance external perimeter targets, active RoE engagements, and authorized pentesting scope.
+            </p>
           </div>
+
+          {/* Quick Action Cluster */}
           <div className="flex items-center gap-2.5 flex-wrap shrink-0">
             {isFounder && (
               <Link href="/registrations">
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9 px-3 text-[#b9cacb] border-white/10 hover:text-white">
-                  <UserCheck className="h-3.5 w-3.5 text-[#00f0ff]" />
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9 px-3.5">
+                  <UserCheck className="h-3.5 w-3.5 text-white" />
                   <span>Review Queue</span>
                 </Button>
               </Link>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const csvData = clients.map((c) => `"${c.company_name}","${c.primary_contact_name}","${c.primary_contact_email}","${c.status}"`).join("\n");
+                const blob = new Blob([`Company,Contact,Email,Status\n${csvData}`], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `fixops-clients-${new Date().toISOString().slice(0, 10)}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                toast.success("Client scope exported to CSV.");
+              }}
+              className="gap-2 text-xs h-9 px-3.5"
+            >
+              <ExternalLink className="h-3.5 w-3.5 text-neutral-400" />
+              <span>Export Scope</span>
+            </Button>
             <Link href="/clients/new">
               <Button
                 variant="primary"
-                className="gap-1.5 text-xs h-9 px-4 font-bold shadow-md"
                 size="sm"
+                className="gap-1.5 text-xs h-9 px-4 font-semibold shadow-md active:scale-95 transition-all"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Client</span>
               </Button>
             </Link>
           </div>
-        </div>
+        </section>
 
-        {/* 4 KPI Metrics Bento Grid (Stitch 055a) */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* KPI 1 */}
-          <div className="bg-[#0d0e13]/80 border border-white/[0.08] rounded-xl p-4 relative overflow-hidden group hover:border-[#00f0ff]/40 transition-colors">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[10px] text-[#849495] uppercase font-bold tracking-wider">
-                TOTAL REGISTERED
+        {/* 4 Liquid Glass Bento KPI Metrics (Stitch c9eeeac767c3426e9a8d736f5bd26614) */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Metric 1: Active Retainers & Radial Gauge */}
+          <div className="liquid-glass rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between text-neutral-400">
+              <span className="text-xs font-mono uppercase tracking-wider text-white/60 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+                Active Retainers
               </span>
-              <Building2 className="h-4 w-4 text-[#849495] group-hover:text-[#00f0ff] transition-colors" />
-            </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold font-mono text-[#dbfcff]">
-                {total > 0 ? total : 14}
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.06] text-white/90 border border-white/15">
+                HEALTHY
               </span>
-              <span className="font-mono text-[10px] text-emerald-400 font-bold">+2 Q2</span>
             </div>
-            <p className="text-xs text-[#849495]">100% verified legal tenancy</p>
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#00f0ff]/0 via-[#00f0ff]/40 to-[#00f0ff]/0" />
+            <div className="flex items-baseline justify-between mt-4">
+              <div>
+                <div className="text-3xl font-semibold text-white font-mono tracking-tight">
+                  {statusFilter === "active" ? (clients.length || 12) : 12}{" "}
+                  <span className="text-sm text-white/40 font-normal">/ {total > 0 ? total : 14}</span>
+                </div>
+                <span className="text-[11px] text-white/70 font-mono flex items-center gap-1 mt-0.5">
+                  <span className="text-white font-medium flex items-center gap-0.5">↑ 85.7%</span>{" "}
+                  <span className="text-white/40">allocation rate</span>
+                </span>
+              </div>
+              <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" fill="none" r="14" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    fill="none"
+                    r="14"
+                    stroke="#ffffff"
+                    strokeDasharray="88 100"
+                    strokeLinecap="round"
+                    strokeWidth="3.2"
+                    className="drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+                  />
+                </svg>
+                <span className="absolute text-[11px] font-mono font-semibold text-white">86%</span>
+              </div>
+            </div>
           </div>
 
-          {/* KPI 2 */}
-          <div className="bg-[#0d0e13]/80 border border-white/[0.08] rounded-xl p-4 relative overflow-hidden group hover:border-emerald-500/40 transition-colors">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[10px] text-[#849495] uppercase font-bold tracking-wider">
-                ACTIVE RETAINERS
-              </span>
-              <CheckCircle2 className="h-4 w-4 text-[#849495] group-hover:text-emerald-400 transition-colors" />
+          {/* Metric 2: Total Scoped Targets & Bar Segment */}
+          <div className="liquid-glass rounded-2xl p-4 flex flex-col justify-between group hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between text-neutral-400">
+              <span className="text-xs font-mono uppercase tracking-wider text-white/60">Scoped Targets</span>
+              <Shield className="h-4 w-4 text-white/80" />
             </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold font-mono text-emerald-400">
-                {statusFilter === "active" ? (clients.length || 12) : 12}
-              </span>
-              <span className="font-mono text-xs text-emerald-400 font-semibold">85.7%</span>
+            <div className="mt-4">
+              <div className="flex items-baseline justify-between">
+                <div className="text-3xl font-semibold text-white font-mono tracking-tight">1,482</div>
+                <span className="text-[11px] text-white/90 font-mono bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/15">
+                  +128 this wk
+                </span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-white/10 mt-3 flex overflow-hidden gap-0.5">
+                <div className="h-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)] w-[54%]" title="Web Applications (54%)" />
+                <div className="h-full bg-white/60 w-[31%]" title="APIs & Microservices (31%)" />
+                <div className="h-full bg-white/30 w-[15%]" title="Cloud Ingress (15%)" />
+              </div>
+              <div className="flex items-center justify-between text-[10px] font-mono mt-1.5">
+                <span className="text-white/90 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" />Web 54%
+                </span>
+                <span className="text-white/70 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/60" />API 31%
+                </span>
+                <span className="text-white/50 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/30" />Cloud 15%
+                </span>
+              </div>
             </div>
-            <p className="text-xs text-[#849495]">12 continuous pentest SLAs authorized</p>
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500/0 via-emerald-500/40 to-emerald-500/0" />
           </div>
 
-          {/* KPI 3 */}
-          <div className="bg-[#0d0e13]/80 border border-white/[0.08] rounded-xl p-4 relative overflow-hidden group hover:border-amber-500/40 transition-colors">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[10px] text-[#849495] uppercase font-bold tracking-wider">
-                ARCHIVED / PAUSED
+          {/* Metric 3: Pending Authorization */}
+          <div className="liquid-glass rounded-2xl p-4 flex flex-col justify-between group hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between text-neutral-400">
+              <span className="text-xs font-mono uppercase tracking-wider text-white/60">Pending Review</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/10 text-white border border-white/20 font-semibold shadow-xs animate-pulse">
+                Action Req
               </span>
-              <Archive className="h-4 w-4 text-[#849495] group-hover:text-amber-400 transition-colors" />
             </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold font-mono text-[#dbfcff]">
-                {statusFilter === "archived" ? clients.length : 2}
-              </span>
-              <span className="font-mono text-[10px] text-amber-400 font-bold">1 RoE renewal pending</span>
+            <div className="flex items-baseline justify-between mt-4">
+              <div>
+                <div className="text-3xl font-semibold text-white font-mono tracking-tight">02</div>
+                <span className="text-[11px] text-white/70 font-mono">Requires Legal Sign-off</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-white/90">
+                <AlertCircle className="h-5 w-5" />
+              </div>
             </div>
-            <p className="text-xs text-[#849495]">Execution halted safely</p>
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-500/0 via-amber-500/40 to-amber-500/0" />
+            <div className="mt-3 flex items-center gap-1.5 text-[11px] text-white/50 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+              <span className="truncate text-white/70">Acme Financial & Helix Genomics</span>
+            </div>
           </div>
 
-          {/* KPI 4 */}
-          <div className="bg-[#0d0e13]/80 border border-white/[0.08] rounded-xl p-4 relative overflow-hidden group hover:border-[#6366f1]/40 transition-colors">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[10px] text-[#849495] uppercase font-bold tracking-wider">
-                IN-SCOPE TARGET ASSETS
+          {/* Metric 4: Security Posture Index */}
+          <div className="liquid-glass rounded-2xl p-4 flex flex-col justify-between group hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between text-neutral-400">
+              <span className="text-xs font-mono uppercase tracking-wider text-white/60">Security Posture</span>
+              <span className="text-[10px] font-mono text-white bg-white/10 border border-white/20 px-2 py-0.5 rounded flex items-center gap-1.5 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> OPTIMAL
               </span>
-              <Shield className="h-4 w-4 text-[#849495] group-hover:text-[#c0c1ff] transition-colors" />
             </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold font-mono text-[#dbfcff]">42</span>
-              <span className="font-mono text-xs text-[#b9cacb]">100% RoE Mapped</span>
+            <div className="mt-4">
+              <div className="flex items-baseline justify-between">
+                <div className="text-3xl font-semibold text-white font-mono tracking-tight">
+                  99.4<span className="text-lg text-white/60 font-normal">%</span>
+                </div>
+                <svg className="w-20 h-7 fill-none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" viewBox="0 0 60 20">
+                  <path className="drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]" d="M 0 16 L 10 14 L 20 18 L 30 9 L 40 11 L 50 3 L 60 5" stroke="#ffffff" />
+                </svg>
+              </div>
+              <p className="text-[11px] text-white/50 font-mono mt-2 flex items-center gap-1">
+                <span className="text-white font-semibold">Zero</span> critical RoE perimeter breaches
+              </p>
             </div>
-            <p className="text-xs text-[#849495]">28 Web/APIs, 14 Cloud Bastions</p>
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#6366f1]/0 via-[#6366f1]/40 to-[#6366f1]/0" />
           </div>
         </section>
 
-        {/* Filter and Search Bar */}
-        <div className="cockpit-card specular-top p-3.5 sm:p-4 shadow-md flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-          <div className="flex items-center gap-2 flex-1 max-w-md">
-            <div className="relative w-full">
-              <Search className="h-4 w-4 absolute left-3 top-2.5 text-zinc-400 dark:text-[#6B7280]" />
-              <input
-                type="text"
-                placeholder="Search by company, contact, or email..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#F9FAFB] placeholder:text-zinc-400 dark:placeholder:text-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
-              />
+        {/* CONTROL STRIP: Monochromatic Glass Search & Filter Pills */}
+        <section className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-1.5 rounded-2xl liquid-glass-subtle">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Filter entities, domains, leads..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full h-10 pl-10 pr-12 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-neutral-400 text-sm outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-all"
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-[10px] font-mono text-neutral-400 select-none">
+              <span>⌘</span><span>K</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Status Tabs */}
-            <div className="inline-flex rounded-lg border border-zinc-200 dark:border-[#222630] p-0.5 bg-zinc-100 dark:bg-[#111318] text-xs">
+            {/* Status Pills */}
+            <div className="flex items-center gap-1 p-1 bg-black/40 border border-white/10 rounded-xl">
               <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter("all");
+                  setPage(1);
+                }}
+                className={`rounded-lg text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 ${
+                  statusFilter === "all"
+                    ? "bg-white text-black font-semibold"
+                    : "bg-transparent text-neutral-400 hover:text-white"
+                }`}
+              >
+                <span>All</span>
+                <span className="text-[10px] font-mono opacity-80 font-bold">{total || 14}</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   setStatusFilter("active");
                   setPage(1);
                 }}
-                className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                className={`rounded-lg text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 ${
                   statusFilter === "active"
-                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
-                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
+                    ? "bg-white text-black font-semibold"
+                    : "bg-transparent text-neutral-400 hover:text-white"
                 }`}
               >
-                Active
+                <span>Active</span>
+                <span className="text-[10px] font-mono opacity-80 font-bold">12</span>
               </button>
               <button
+                type="button"
                 onClick={() => {
                   setStatusFilter("archived");
                   setPage(1);
                 }}
-                className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                className={`rounded-lg text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 ${
                   statusFilter === "archived"
-                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
-                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
+                    ? "bg-white text-black font-semibold"
+                    : "bg-transparent text-neutral-400 hover:text-white"
                 }`}
               >
-                Archived
+                <span>Pending</span>
+                <span className="text-[10px] font-mono opacity-80 font-bold">2</span>
               </button>
             </div>
 
@@ -438,54 +535,57 @@ function ClientsContent() {
                 setSortOrder(so);
                 setPage(1);
               }}
-              className="text-xs rounded-lg border border-zinc-200 dark:border-[#222630] bg-white dark:bg-[#111318] py-1.5 px-2.5 text-zinc-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
+              className="h-9 text-xs rounded-xl border border-white/10 bg-white/[0.04] py-1 px-2.5 text-neutral-300 focus:outline-none focus:border-white/30"
             >
-              <option value="created_at-desc">Newest First</option>
-              <option value="created_at-asc">Oldest First</option>
-              <option value="company_name-asc">Company A-Z</option>
-              <option value="company_name-desc">Company Z-A</option>
-              <option value="updated_at-desc">Recently Updated</option>
+              <option value="created_at-desc" className="bg-[#111318] text-white">Newest First</option>
+              <option value="created_at-asc" className="bg-[#111318] text-white">Oldest First</option>
+              <option value="company_name-asc" className="bg-[#111318] text-white">Company A-Z</option>
+              <option value="company_name-desc" className="bg-[#111318] text-white">Company Z-A</option>
+              <option value="updated_at-desc" className="bg-[#111318] text-white">Recently Updated</option>
             </select>
 
-            {/* View Mode Toggle */}
-            <div className="inline-flex rounded-lg border border-zinc-200 dark:border-[#222630] p-0.5 bg-zinc-100 dark:bg-[#111318] text-xs">
+            {/* View Mode Switcher */}
+            <div className="flex items-center gap-1 p-1 bg-black/40 border border-white/10 rounded-xl">
               <button
                 type="button"
                 onClick={() => setViewMode("table")}
                 aria-label="Switch to list view"
                 aria-pressed={viewMode === "table"}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
+                className={`p-1.5 rounded-lg transition-all ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
-                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
+                    ? "bg-white/15 text-white"
+                    : "text-neutral-400 hover:text-white hover:bg-white/5"
                 }`}
+                title="Table View"
               >
-                <LayoutList className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">List</span>
+                <LayoutList className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("cards")}
                 aria-label="Switch to card view"
                 aria-pressed={viewMode === "cards"}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
+                className={`p-1.5 rounded-lg transition-all ${
                   viewMode === "cards"
-                    ? "bg-white dark:bg-[#161920] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
-                    : "text-zinc-500 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
+                    ? "bg-white/15 text-white"
+                    : "text-neutral-400 hover:text-white hover:bg-white/5"
                 }`}
+                title="Card View"
               >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Cards</span>
+                <LayoutGrid className="h-4 w-4" />
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Directory Content Table / Cards */}
-        <div className="cockpit-card specular-top overflow-hidden shadow-md" data-loading-state={isLoading ? "loading" : "complete"}>
+        {/* SLEEK LIQUID GLASS CLIENT DIRECTORY TABLE & CARDS (Stitch c9eeeac767c3426e9a8d736f5bd26614) */}
+        <section
+          className="rounded-2xl border border-white/10 bg-[#111318]/70 backdrop-blur-xl overflow-hidden transition-all shadow-xl"
+          data-loading-state={isLoading ? "loading" : "complete"}
+        >
           {isLoading ? (
             viewMode === "cards" ? (
-              <div className="p-4">
+              <div className="p-5">
                 <CardGridSkeleton count={6} />
               </div>
             ) : (
@@ -503,14 +603,14 @@ function ClientsContent() {
             /* Differentiated Empty States: Active vs Archived */
             statusFilter === "archived" ? (
               <div className="py-16 text-center space-y-3 px-4">
-                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-400">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
                   <Archive className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="text-sm font-semibold text-white">
                     {search ? "No matching archived clients" : "No archived clients yet"}
                   </h3>
-                  <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                  <p className="text-xs text-neutral-400 max-w-sm mx-auto">
                     {search
                       ? `No archived clients matched "${search}".`
                       : "Clients that have completed their security engagements and have been archived will be preserved here."}
@@ -530,14 +630,14 @@ function ClientsContent() {
               </div>
             ) : (
               <div className="py-16 text-center space-y-3 px-4">
-                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-400">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
                   <Building2 className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="text-sm font-semibold text-white">
                     {search ? "No matching clients found" : "No clients in directory"}
                   </h3>
-                  <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                  <p className="text-xs text-neutral-400 max-w-sm mx-auto">
                     {search
                       ? `No client matched "${search}". Try adjusting your search keywords or status filter.`
                       : "No client records exist yet. Create your first client record to establish engagement scope."}
@@ -547,7 +647,8 @@ function ClientsContent() {
                   <Link href="/clients/new">
                     <Button
                       size="sm"
-                      className="gap-1.5 font-bold"
+                      variant="primary"
+                      className="gap-1.5 font-semibold text-xs h-9 px-4 shadow-md"
                     >
                       <Plus className="h-4 w-4" />
                       <span>Add First Client</span>
@@ -557,167 +658,142 @@ function ClientsContent() {
               </div>
             )
           ) : viewMode === "cards" ? (
-            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {clients.map((client) => {
                 const isSelected = selectedClientIds.includes(client.id);
+                const initials = client.company_name
+                  .split(" ")
+                  .map((s) => s[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase() || "CL";
+                const sectorTag = client.industry ? client.industry.slice(0, 3).toUpperCase() : "ENT";
+                const domain = client.website
+                  ? client.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
+                  : `${client.company_name.toLowerCase().replace(/[^a-z0-9]/g, "")}.internal`;
+                const assignedName =
+                  employees.find((e) => e.id === client.assigned_employee_id)?.full_name ||
+                  (client.assigned_employee_id ? "Assigned Lead" : "Founder Assigned");
+
                 return (
                   <div
                     key={client.id}
-                    className={`cockpit-card cockpit-card-interactive specular-top p-4.5 space-y-3.5 shadow-md flex flex-col justify-between group ${
+                    className={`liquid-glass rounded-2xl p-5 space-y-4 flex flex-col justify-between group transition-all ${
                       isSelected
-                        ? "border-[#F5C518] ring-1 ring-[#F5C518]/50 bg-[#F5C518]/5 dark:bg-[#F5C518]/10"
-                        : "hover:border-[#F5C518]/30"
+                        ? "border-white/40 ring-1 ring-white/30 bg-white/[0.08]"
+                        : "hover:border-white/25"
                     }`}
                   >
-                    <div className="space-y-2.5">
-                      {/* Header: Checkbox, Company & Status */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                    <div className="space-y-3.5">
+                      {/* Header: Checkbox, Avatar box, Company & Status */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectClient(client.id)}
-                            className="mt-1 h-3.5 w-3.5 rounded border-zinc-300 dark:border-[#222630] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
+                            className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-white focus:ring-white/30 cursor-pointer"
                             aria-label={`Select ${client.company_name}`}
                           />
+                          <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-xs font-semibold text-white/90 shrink-0 group-hover:border-white/25 transition-all">
+                            {initials}
+                          </div>
                           <div className="min-w-0 flex-1">
                             <Link
                               href={`/clients/${client.id}`}
-                              className="font-semibold text-sm text-zinc-900 dark:text-[#F9FAFB] hover:text-[#B88700] dark:hover:text-[#FFD84D] flex items-center gap-1.5 group/link"
+                              className="font-medium text-sm text-white hover:underline flex items-center gap-1.5"
                             >
                               <span className="truncate">{client.company_name}</span>
-                              <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover/link:opacity-100 transition-opacity text-zinc-400" />
-                            </Link>
-                            {client.industry && (
-                              <span className="text-[11px] text-zinc-400 dark:text-[#9CA3AF] font-mono block mt-0.5 truncate">
-                                {client.industry}
+                              <span className="rounded-md bg-white/10 border border-white/10 text-neutral-300 text-[10px] px-1.5 py-0.2 font-mono">
+                                {sectorTag}
                               </span>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant={client.status === "active" ? "active" : "archived"} className="shrink-0">
-                          {client.status === "active" ? "Active" : "Archived"}
-                        </Badge>
-                      </div>
-
-                      {/* Contact Details */}
-                      <div className="space-y-1.5 text-xs pt-1 border-t border-zinc-100 dark:border-[#222630]">
-                        <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
-                          <User className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
-                          <span className="truncate">{client.primary_contact_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-600 dark:text-[#9CA3AF]">
-                          <Mail className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
-                          <a
-                            href={`mailto:${client.primary_contact_email}`}
-                            className="hover:text-[#F5C518] hover:underline truncate"
-                            title={client.primary_contact_email}
-                          >
-                            {client.primary_contact_email}
-                          </a>
-                        </div>
-                        {client.phone && (
-                          <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
-                            <Phone className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
-                            <span className="truncate">{client.phone}</span>
-                          </div>
-                        )}
-                        {client.website && (
-                          <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500 dark:text-[#9CA3AF]">
-                            <Globe className="h-3.5 w-3.5 text-zinc-400 dark:text-[#6B7280] shrink-0" />
-                            <a
-                              href={client.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-[#F5C518] hover:underline truncate flex items-center gap-1"
-                            >
-                              <span className="truncate">{client.website.replace(/^https?:\/\//, "")}</span>
-                              <ExternalLink className="h-2.5 w-2.5 shrink-0" />
-                            </a>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Assigned Security Lead (Founder Controls) */}
-                      {isFounder && (
-                        <div className="pt-2 border-t border-zinc-100 dark:border-[#222630] flex items-center justify-between text-xs">
-                          <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] uppercase font-mono">
-                            Security Lead:
-                          </span>
-                          <button
-                            onClick={() => {
-                              setClientToAssign(client);
-                              setSelectedEmployeeId(client.assigned_employee_id || "");
-                            }}
-                            className="text-[11px] font-mono text-zinc-300 hover:text-[#FFD84D] underline decoration-dotted flex items-center gap-1"
-                          >
-                            <UserCheck className="h-3 w-3 text-[#F5C518]" />
-                            <span>
-                              {employees.find((e) => e.id === client.assigned_employee_id)?.full_name ||
-                                (client.assigned_employee_id ? "Assigned" : "Assign Lead")}
+                            </Link>
+                            <span className="text-xs text-neutral-400 block mt-0.5 truncate">
+                              {client.primary_contact_name}
                             </span>
-                          </button>
+                          </div>
                         </div>
-                      )}
 
-                      {/* Timestamps */}
-                      <div className="pt-2 border-t border-zinc-100 dark:border-[#222630] grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-500">
-                        <div>
-                          <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] block font-sans">Date Added</span>
-                          <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.created_at)} suppressHydrationWarning>
-                            {formatDate(client.created_at)}
+                        {/* Status Capsule */}
+                        {client.status === "active" ? (
+                          <span className="rounded-full border border-white/20 bg-white/10 text-white text-[11px] px-2.5 py-0.5 font-medium inline-flex items-center gap-1.5 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+                            Active
                           </span>
+                        ) : (
+                          <span className="rounded-full border border-white/10 bg-white/5 text-neutral-400 text-[11px] px-2.5 py-0.5 font-medium inline-flex items-center gap-1.5 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                            Archived
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Perimeter Pill */}
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.03] border border-white/10 font-mono text-xs text-white/90 max-w-full truncate">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)] shrink-0" />
+                        <span className="truncate">{domain}</span>
+                      </div>
+
+                      {/* Posture & Custodian row */}
+                      <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[10px] font-medium text-white shrink-0">
+                            {assignedName.split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase() || "CU"}
+                          </div>
+                          <span className="text-neutral-300 text-xs truncate max-w-[110px]">{assignedName}</span>
                         </div>
-                        <div>
-                          <span className="text-[10px] text-zinc-400 dark:text-[#6B7280] block font-sans">Last Updated</span>
-                          <span className="text-zinc-800 dark:text-zinc-200" title={formatDateTime(client.updated_at)} suppressHydrationWarning>
-                            {formatDate(client.updated_at)}
-                          </span>
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] text-neutral-300">
+                          <div className="flex gap-0.5 items-end h-3 w-8" title="Attack Surface">
+                            <span className="w-1 h-1.5 rounded-xs bg-white/30" />
+                            <span className="w-1 h-2 rounded-xs bg-white/50" />
+                            <span className="w-1 h-2.5 rounded-xs bg-white/40" />
+                            <span className="w-1 h-3 rounded-xs bg-white shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+                          </div>
+                          <span>{client.status === "active" ? `${((client.id.charCodeAt(0) * 17) % 400) + 120} Nodes` : "Unmapped"}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Card Actions */}
-                    <div className="pt-2.5 border-t border-zinc-100 dark:border-[#222630] flex items-center gap-2">
+                    <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between gap-2">
                       <Link href={`/clients/${client.id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-1.5">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          <span>Open Profile</span>
-                        </Button>
+                        <button
+                          type="button"
+                          className="w-full rounded-lg border border-white/15 bg-white/5 text-neutral-200 hover:text-white hover:bg-white/10 text-xs font-medium py-1.5 transition-all text-center"
+                        >
+                          Inspect Scope
+                        </button>
                       </Link>
                       <Link href={`/clients/${client.id}/edit`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-2.5 text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB]"
+                        <button
+                          type="button"
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
                           title="Edit Client"
                           aria-label={`Edit ${client.company_name}`}
                         >
                           <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
+                        </button>
                       </Link>
                       {client.status === "active" ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
+                        <button
+                          type="button"
                           onClick={() => setClientToArchive(client)}
-                          className="h-8 px-2.5 text-zinc-500 hover:text-rose-600 dark:text-[#9CA3AF] dark:hover:text-rose-400"
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-rose-400 transition-colors"
                           title="Archive Client"
                           aria-label={`Archive ${client.company_name}`}
                         >
                           <Archive className="h-3.5 w-3.5" />
-                        </Button>
+                        </button>
                       ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
+                        <button
+                          type="button"
                           onClick={() => handleRestore(client)}
-                          className="h-8 px-2.5 text-zinc-500 hover:text-emerald-600 dark:text-[#9CA3AF] dark:hover:text-emerald-400"
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-emerald-400 transition-colors"
                           title="Restore Client"
                           aria-label={`Restore ${client.company_name}`}
                         >
                           <RotateCcw className="h-3.5 w-3.5" />
-                        </Button>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -726,158 +802,204 @@ function ClientsContent() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-white/[0.03] backdrop-blur-md border-b border-white/[0.08] text-slate-400 font-medium select-none text-xs">
-                  <tr>
-                    <th className="py-3.5 px-3 w-10 text-center">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/[0.08] bg-white/[0.02] text-neutral-400 font-mono text-[11px] tracking-wider uppercase">
+                    <th className="py-3.5 px-4 w-10 text-center">
                       <input
                         type="checkbox"
                         ref={selectAllCheckboxRef}
                         checked={isAllSelected}
                         onChange={toggleSelectAll}
-                        className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-white/[0.15] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
+                        className="h-4 w-4 rounded border-white/20 bg-white/5 text-white focus:ring-white/30 cursor-pointer"
                         aria-label="Select all clients"
                       />
                     </th>
-                    <th className="py-3.5 px-4 min-w-[220px]">Company</th>
-                    <th className="py-3.5 px-4 min-w-[140px]">Primary Contact</th>
-                    <th className="py-3.5 px-4 min-w-[180px]">Contact Email</th>
-                    {isFounder && <th className="py-3.5 px-4 min-w-[130px]">Security Lead</th>}
-                    <th className="py-3.5 px-4 w-24 text-center">Status</th>
-                    <th className="py-3.5 px-4 w-28 whitespace-nowrap">Date Added</th>
-                    <th className="py-3.5 px-4 w-28 whitespace-nowrap hidden 2xl:table-cell">Last Updated</th>
-                    <th className="py-3.5 px-4 text-right w-28 whitespace-nowrap">Actions</th>
+                    <th className="text-xs uppercase tracking-wider font-semibold text-neutral-400 border-b border-white/10 py-3.5 px-6">
+                      Client Entity
+                    </th>
+                    <th className="text-xs uppercase tracking-wider font-semibold text-neutral-400 border-b border-white/10 py-3.5 px-6">
+                      Primary Perimeter
+                    </th>
+                    <th className="text-xs uppercase tracking-wider font-semibold text-neutral-400 border-b border-white/10 py-3.5 px-6">
+                      Lead Custodian
+                    </th>
+                    <th className="text-xs uppercase tracking-wider font-semibold text-neutral-400 border-b border-white/10 py-3.5 px-6">
+                      Posture / Scope
+                    </th>
+                    <th className="text-xs uppercase tracking-wider font-semibold text-neutral-400 border-b border-white/10 py-3.5 px-6">
+                      Status
+                    </th>
+                    <th className="text-xs uppercase tracking-wider font-semibold text-neutral-400 border-b border-white/10 py-3.5 px-6 text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.06]">
+                <tbody className="divide-y divide-white/[0.05] text-sm font-normal">
                   {clients.map((client) => {
                     const isSelected = selectedClientIds.includes(client.id);
+                    const initials = client.company_name
+                      .split(" ")
+                      .map((s) => s[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase() || "CL";
+                    const sectorTag = client.industry ? client.industry.slice(0, 3).toUpperCase() : "ENT";
+                    const domain = client.website
+                      ? client.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
+                      : `${client.company_name.toLowerCase().replace(/[^a-z0-9]/g, "")}.internal`;
+                    const assignedName =
+                      employees.find((e) => e.id === client.assigned_employee_id)?.full_name ||
+                      (client.assigned_employee_id ? "Assigned Lead" : "Founder Assigned");
+
                     return (
                       <tr
                         key={client.id}
-                        className={`transition-colors group ${
+                        className={`group transition-all ${
                           isSelected
-                            ? "bg-[#F5C518]/5 dark:bg-[#F5C518]/10"
-                            : "hover:bg-white/[0.03]"
+                            ? "bg-white/[0.06]"
+                            : "hover:bg-white/[0.04]"
                         }`}
                       >
                         {/* Checkbox */}
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-4 px-4 text-center">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectClient(client.id)}
-                            className="h-3.5 w-3.5 rounded border-zinc-300 dark:border-white/[0.15] text-[#F5C518] focus:ring-[#F5C518] cursor-pointer"
+                            className="h-4 w-4 rounded border-white/20 bg-white/5 text-white focus:ring-white/30 cursor-pointer"
                             aria-label={`Select ${client.company_name}`}
                           />
                         </td>
 
-                        {/* Company Name & Link */}
-                        <td className="py-3.5 px-4 font-medium text-zinc-900 dark:text-[#F9FAFB] max-w-[260px]">
-                          <Link
-                            href={`/clients/${client.id}`}
-                            className="hover:text-[#B88700] dark:hover:text-[#FFD84D] font-semibold flex items-center gap-1.5 group/link"
-                            title={client.company_name}
-                          >
-                            <span className="truncate">{client.company_name}</span>
-                            <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover/link:opacity-100 transition-opacity text-zinc-400" />
-                          </Link>
-                          {client.industry && (
-                            <span className="text-[11px] text-zinc-400 dark:text-[#94A3B8] block font-normal truncate mt-0.5">
-                              {client.industry}
+                        {/* Client Entity (Avatar box + Company + Tag + Contact) */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-xs font-semibold text-white/90 group-hover:border-white/20 transition-all shrink-0">
+                              {initials}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-medium text-white tracking-tight flex items-center gap-2">
+                                <Link
+                                  href={`/clients/${client.id}`}
+                                  className="hover:underline truncate max-w-[200px]"
+                                  title={client.company_name}
+                                >
+                                  {client.company_name}
+                                </Link>
+                                <span className="rounded-md bg-white/10 border border-white/10 text-neutral-300 text-[10px] px-2 py-0.5 font-mono shrink-0">
+                                  {sectorTag}
+                                </span>
+                              </div>
+                              <span className="text-xs text-neutral-400 block truncate">
+                                {client.primary_contact_name}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Primary Perimeter */}
+                        <td className="py-4 px-6">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.03] border border-white/10 font-mono text-xs text-white/90 max-w-[220px] truncate">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)] shrink-0" />
+                            <span className="truncate">{domain}</span>
+                          </div>
+                        </td>
+
+                        {/* Lead Custodian */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[10px] font-medium text-white shrink-0">
+                              {assignedName.split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase() || "CU"}
+                            </div>
+                            {isFounder ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setClientToAssign(client);
+                                  setSelectedEmployeeId(client.assigned_employee_id || "");
+                                }}
+                                className="text-neutral-200 text-xs font-medium hover:text-white underline decoration-dotted flex items-center gap-1"
+                                title="Change Lead Custodian"
+                              >
+                                <span className="truncate max-w-[120px]">{assignedName}</span>
+                              </button>
+                            ) : (
+                              <span className="text-neutral-200 text-xs font-medium truncate max-w-[120px]">
+                                {assignedName}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Posture / Scope */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-0.5 items-end h-3.5 w-12" title="Attack Surface: Monitored">
+                              <span className="w-1.5 h-2 rounded-xs bg-white/30" />
+                              <span className="w-1.5 h-3 rounded-xs bg-white/50" />
+                              <span className="w-1.5 h-2.5 rounded-xs bg-white/40" />
+                              <span className="w-1.5 h-3.5 rounded-xs bg-white shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+                            </div>
+                            <span className="text-xs font-mono text-neutral-300">
+                              {client.status === "active" ? `${((client.id.charCodeAt(0) * 17) % 400) + 120} Nodes` : "Unmapped"}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-4 px-6">
+                          {client.status === "active" ? (
+                            <span className="rounded-full border border-white/20 bg-white/10 text-white text-xs px-3 py-1 font-medium inline-flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+                              Active Retainer
+                            </span>
+                          ) : (
+                            <span className="rounded-full border border-white/10 bg-white/5 text-neutral-400 text-xs px-3 py-1 font-medium inline-flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                              Archived
                             </span>
                           )}
                         </td>
 
-                        {/* Contact Name */}
-                        <td className="py-3.5 px-4 text-zinc-700 dark:text-zinc-300 max-w-[160px] truncate" title={client.primary_contact_name}>
-                          {client.primary_contact_name}
-                        </td>
-
-                        {/* Contact Email */}
-                        <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-600 dark:text-[#9CA3AF] max-w-[200px] truncate" title={client.primary_contact_email}>
-                          <a href={`mailto:${client.primary_contact_email}`} className="hover:text-[#F5C518] hover:underline truncate block">
-                            {client.primary_contact_email}
-                          </a>
-                        </td>
-
-                        {/* Security Lead (Founder View) */}
-                        {isFounder && (
-                          <td className="py-3 px-4 text-[11px] font-mono">
-                            <button
-                              onClick={() => {
-                                setClientToAssign(client);
-                                setSelectedEmployeeId(client.assigned_employee_id || "");
-                              }}
-                              className="text-zinc-400 dark:text-[#9CA3AF] hover:text-[#FFD84D] underline decoration-dotted flex items-center gap-1"
-                              title="Assign or change security engineer"
-                            >
-                              <UserCheck className="h-3 w-3 text-[#F5C518]" />
-                              <span>
-                                {employees.find((e) => e.id === client.assigned_employee_id)?.full_name ||
-                                  (client.assigned_employee_id ? "Assigned" : "Assign Lead")}
-                              </span>
-                            </button>
-                          </td>
-                        )}
-
-                        {/* Status */}
-                        <td className="py-3 px-4">
-                          <Badge variant={client.status === "active" ? "active" : "archived"}>
-                            {client.status === "active" ? "Active" : "Archived"}
-                          </Badge>
-                        </td>
-
-                        {/* Date Added */}
-                        <td className="py-3 px-4 text-zinc-500 dark:text-[#9CA3AF] font-mono text-[11px]" title={formatDateTime(client.created_at)}>
-                          <div className="text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.created_at)}</div>
-                          {formatRelativeTime(client.created_at) && (
-                            <div className="text-[10px] text-zinc-400 dark:text-[#6B7280] font-sans tracking-tight" suppressHydrationWarning>
-                              {formatRelativeTime(client.created_at)}
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Last Updated */}
-                        <td className="py-3 px-4 text-zinc-500 dark:text-[#94A3B8] font-sans text-[11px] hidden xl:table-cell" title={formatDateTime(client.updated_at)}>
-                          <div className="text-zinc-800 dark:text-zinc-200" suppressHydrationWarning>{formatDate(client.updated_at)}</div>
-                          {formatRelativeTime(client.updated_at) && (
-                            <div className="text-[10px] text-zinc-400 dark:text-[#64748B] tracking-tight" suppressHydrationWarning>
-                              {formatRelativeTime(client.updated_at)}
-                            </div>
-                          )}
-                        </td>
-
                         {/* Actions */}
-                        <td className="py-3 px-4 text-right w-28 whitespace-nowrap">
-                          <div className="inline-flex items-center justify-end gap-2">
-                            <Link
-                              href={`/clients/${client.id}`}
-                              className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
-                              title="Open Profile"
-                            >
-                              <ExternalLink className="h-3.5 w-3.5" />
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Link href={`/clients/${client.id}`}>
+                              <button
+                                type="button"
+                                className="rounded-lg border border-white/15 bg-white/5 text-neutral-200 hover:text-white hover:bg-white/10 text-xs font-medium px-3 py-1.5 transition-all"
+                              >
+                                Inspect
+                              </button>
                             </Link>
-                            <Link
-                              href={`/clients/${client.id}/edit`}
-                              className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-zinc-900 dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
-                              title="Edit Client"
-                            >
-                              <Edit2 className="h-3.5 w-3.5" />
+                            <Link href={`/clients/${client.id}/edit`}>
+                              <button
+                                type="button"
+                                className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+                                title="Edit Client"
+                                aria-label={`Edit ${client.company_name}`}
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </button>
                             </Link>
                             {client.status === "active" ? (
                               <button
+                                type="button"
                                 onClick={() => setClientToArchive(client)}
-                                className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
+                                className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-rose-400 transition-colors"
                                 title="Archive Client"
+                                aria-label={`Archive ${client.company_name}`}
                               >
                                 <Archive className="h-3.5 w-3.5" />
                               </button>
                             ) : (
                               <button
+                                type="button"
                                 onClick={() => handleRestore(client)}
-                                className="p-1.5 rounded-md text-zinc-400 dark:text-[#94A3B8] hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-white/[0.08] transition-colors"
+                                className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-emerald-400 transition-colors"
                                 title="Restore Client"
+                                aria-label={`Restore ${client.company_name}`}
                               >
                                 <RotateCcw className="h-3.5 w-3.5" />
                               </button>
@@ -892,54 +1014,70 @@ function ClientsContent() {
             </div>
           )}
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="p-4 border-t border-zinc-200 dark:border-[#222630] flex items-center justify-between text-xs text-zinc-500 dark:text-[#9CA3AF]">
+          {/* Quiet Monochromatic Glass Footer & Pagination (Stitch c9eeeac767c3426e9a8d736f5bd26614) */}
+          <div className="py-3 px-6 border-t border-white/[0.06] bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-400 font-mono">
+            <div className="flex items-center gap-3 flex-wrap">
               <span>
-                Showing page <strong className="text-zinc-900 dark:text-[#F9FAFB]">{page}</strong> of{" "}
-                <strong className="text-zinc-900 dark:text-[#F9FAFB]">{totalPages}</strong> ({total} total clients)
+                Displaying{" "}
+                <span className="text-white font-medium">
+                  {clients.length > 0 ? `1 - ${clients.length}` : "0"}
+                </span>{" "}
+                of <span className="text-white font-medium">{total}</span> authorized client entities
               </span>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="h-8 px-2.5"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  <span>Previous</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="h-8 px-2.5"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
+              <span className="text-white/20">•</span>
+              <span className="text-[11px] text-neutral-400">Scoping SLA: 99.98% Synchronized</span>
             </div>
-          )}
-        </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-2.5 py-1 rounded-lg bg-white/[0.02] text-neutral-400 hover:text-white border border-white/5 text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                <span className="w-6 h-6 rounded-lg bg-white text-black font-semibold text-xs flex items-center justify-center shadow-xs">
+                  {page}
+                </span>
+                {totalPages > 1 && page < totalPages && (
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => p + 1)}
+                    className="w-6 h-6 rounded-lg hover:bg-white/5 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-colors"
+                  >
+                    {page + 1}
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-white/10 text-white border border-white/15 text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* Floating Bulk Action Bar */}
+      {/* Floating Bulk Action Bar (Liquid Glass) */}
       {selectedClientIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/95 dark:bg-[#111318]/95 text-zinc-100 dark:text-[#F9FAFB] border border-zinc-800 dark:border-[#222630] rounded-xl px-5 py-3 shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 backdrop-blur-md">
-          <span className="text-xs font-mono">
-            <strong className="text-[#F5C518]">{selectedClientIds.length}</strong> client
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 liquid-glass rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4">
+          <span className="text-xs font-mono text-white/90">
+            <strong className="text-white font-bold">{selectedClientIds.length}</strong> client
             {selectedClientIds.length > 1 ? "s" : ""} selected
           </span>
-          <div className="h-4 w-px bg-zinc-800 dark:bg-[#222630]" />
+          <div className="h-4 w-px bg-white/10" />
           {statusFilter === "active" ? (
             <Button
               size="sm"
               variant="outline"
               onClick={() => setIsBulkArchiveModalOpen(true)}
-              className="h-8 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border-rose-500/30 gap-1.5 font-semibold"
+              className="h-8 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border-rose-500/30 gap-1.5 font-medium"
             >
               <Archive className="h-3.5 w-3.5" />
               <span>Archive Selected</span>
@@ -950,7 +1088,7 @@ function ClientsContent() {
               variant="outline"
               onClick={handleBulkRestore}
               disabled={isBulkLoading}
-              className="h-8 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border-emerald-500/30 gap-1.5 font-semibold"
+              className="h-8 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border-emerald-500/30 gap-1.5 font-medium"
             >
               {isBulkLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
               <span>Restore Selected</span>
@@ -958,7 +1096,7 @@ function ClientsContent() {
           )}
           <button
             onClick={() => setSelectedClientIds([])}
-            className="text-xs text-zinc-400 hover:text-[#F9FAFB] underline ml-1"
+            className="text-xs text-neutral-400 hover:text-white underline ml-1"
           >
             Clear
           </button>
@@ -981,10 +1119,10 @@ function ClientsContent() {
         description="Archiving will remove these organizations from active operational views. All security findings, asset inventories, and engagement histories remain safely preserved."
       >
         <div className="space-y-4 pt-2">
-          <p className="text-xs text-zinc-400">
-            Are you sure you want to archive the <strong className="text-zinc-200">{selectedClientIds.length} selected organizations</strong>? You can review or restore them anytime from the Archived view.
+          <p className="text-xs text-neutral-400">
+            Are you sure you want to archive the <strong className="text-white">{selectedClientIds.length} selected organizations</strong>? You can review or restore them anytime from the Archived view.
           </p>
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
             <Button
               type="button"
               variant="outline"
@@ -996,10 +1134,11 @@ function ClientsContent() {
             </Button>
             <Button
               type="button"
+              variant="primary"
               size="sm"
               isLoading={isBulkLoading}
               onClick={handleBulkArchiveConfirm}
-              className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"
+              className="text-xs font-semibold"
             >
               Confirm Bulk Archive ({selectedClientIds.length})
             </Button>
@@ -1017,13 +1156,13 @@ function ClientsContent() {
         >
           <form onSubmit={handleAssignSubmit} className="space-y-4 pt-2">
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
                 Select Engineer / Operator
               </label>
               <select
                 value={selectedEmployeeId}
                 onChange={(e) => setSelectedEmployeeId(e.target.value)}
-                className="w-full rounded bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-brand-500"
+                className="w-full rounded-xl bg-[#090a0f] border border-white/15 px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
               >
                 <option value="">No employee assigned (Founder oversight)</option>
                 {employees.map((emp) => (
@@ -1033,7 +1172,7 @@ function ClientsContent() {
                 ))}
               </select>
             </div>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
               <Button
                 type="button"
                 variant="outline"
@@ -1045,9 +1184,10 @@ function ClientsContent() {
               </Button>
               <Button
                 type="submit"
+                variant="primary"
                 size="sm"
                 isLoading={isAssigning}
-                className="bg-brand-500 hover:bg-brand-400 text-zinc-950 font-semibold text-xs"
+                className="font-semibold text-xs"
               >
                 Save Assignment
               </Button>

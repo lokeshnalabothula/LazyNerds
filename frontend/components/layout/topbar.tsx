@@ -7,7 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { Notification } from "@/types/notification";
-import { LogOut, Sun, Moon, Menu, Shield, Bell, CheckCheck, ExternalLink, Loader2, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LogOut, Sun, Moon, Menu, Shield, Bell, CheckCheck, ExternalLink, Loader2, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 
 interface TopbarProps {
   onToggleMobileNav?: () => void;
@@ -126,11 +126,11 @@ export const Topbar: React.FC<TopbarProps> = ({
   };
 
   return (
-    <header className="h-14 border-b border-white/[0.08] bg-[#0d0e13]/85 backdrop-blur-2xl px-2 sm:px-4 flex items-center justify-between sticky top-0 z-30 transition-colors shadow-[0_16px_32px_-10px_rgba(0,0,0,0.5)]">
+    <header className="h-14 border-b border-white/[0.08] bg-[#07080B]/85 backdrop-blur-2xl px-2 sm:px-4 flex items-center justify-between sticky top-0 z-30 transition-colors shadow-[0_16px_32px_-10px_rgba(0,0,0,0.5)]">
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
         <button
           onClick={onToggleMobileNav}
-          className="md:hidden p-1.5 sm:p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] min-h-[34px] min-w-[34px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518]"
+          className="md:hidden p-1.5 sm:p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] min-h-[34px] min-w-[34px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
           aria-label="Toggle navigation menu"
         >
           <Menu className="h-5 w-5" />
@@ -140,7 +140,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         {onToggleSidebar && (
           <button
             onClick={onToggleSidebar}
-            className="hidden md:flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#9CA3AF] dark:hover:text-[#F9FAFB] hover:bg-zinc-100 dark:hover:bg-[#161920] transition-colors min-h-[36px] min-w-[36px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] shrink-0"
+            className="hidden md:flex p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors min-h-[36px] min-w-[36px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 shrink-0"
             title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -153,24 +153,27 @@ export const Topbar: React.FC<TopbarProps> = ({
         )}
 
         <div className="md:hidden flex items-center gap-1 shrink-0">
-          <span className="font-bold text-[11px] sm:text-xs tracking-tight text-zinc-900 dark:text-[#F9FAFB]">Lazy Nerds</span>
-          <span className="text-[8px] sm:text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-bold font-mono">
+          <span className="font-bold text-[11px] sm:text-xs tracking-tight text-white">Lazy Nerds</span>
+          <span className="text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white border border-white/15 font-bold font-mono">
             FIXOPS
           </span>
         </div>
 
         {title && (
           <div className="hidden lg:flex items-center gap-2 min-w-0 truncate">
-            <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-[#F9FAFB] truncate">
+            <span className="text-xs sm:text-sm font-semibold text-white tracking-tight truncate">
               {title}
             </span>
           </div>
         )}
 
-        {/* Security Telemetry Status Indicator */}
-        <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#111318] border border-[#222630] text-[10px] font-mono text-[#9CA3AF] shrink-0">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>SECURE OPERATIONAL BUS</span>
+        {/* Stitch Core Online Status Indicator */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-[11px] text-white/90 shadow-xs font-mono shrink-0">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/60 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+          </span>
+          <span className="tracking-wide text-white/90 font-medium">CORE ONLINE</span>
         </div>
       </div>
 

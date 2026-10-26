@@ -135,14 +135,20 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
     setAssets(assets.filter((_, idx) => idx !== indexToRemove));
   };
 
+  const getAssetBadge = (val: string) => {
+    if (val.includes("/") || /^\d+\./.test(val)) return "CIDR Block";
+    if (val.includes("auth") || val.includes("login") || val.includes("vpn") || val.includes("sso")) return "Auth Gateway";
+    return "FQDN";
+  };
+
   const getAssetIcon = (val: string) => {
     if (val.includes("/") || /^\d+\./.test(val)) {
-      return <Network className="h-4 w-4 text-[#00D2D3] shrink-0" />;
+      return <Network className="h-4 w-4 text-white shrink-0" />;
     }
     if (val.includes("auth") || val.includes("login") || val.includes("vpn") || val.includes("sso")) {
-      return <Lock className="h-4 w-4 text-[#00D2D3] shrink-0" />;
+      return <Lock className="h-4 w-4 text-white shrink-0" />;
     }
-    return <Terminal className="h-4 w-4 text-[#00D2D3] shrink-0" />;
+    return <Terminal className="h-4 w-4 text-white shrink-0" />;
   };
 
   // Validate current step fields before advancing
@@ -227,68 +233,53 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
       className="w-full max-w-2xl mx-auto liquid-glass-modal rounded-2xl p-6 sm:p-10 space-y-7 relative transition-all animate-in fade-in zoom-in-95 duration-200"
       onKeyDown={handleKeyDown}
     >
-      {/* Top Progress Bar & Step Badge */}
+      {/* Top Progress Bar & Step Badge (Stitch Royal Monochrome) */}
       <div className="space-y-4 -mb-1">
-        {/* 4 Segmented Status Bar */}
-        <div className="grid grid-cols-4 gap-2.5 w-full">
-          {[0, 1, 2, 3].map((idx) => {
-            if (idx < currentStep) {
-              return (
-                <div
-                  key={idx}
-                  className="h-1.5 rounded-full bg-[#00D2D3] shadow-[0_0_8px_rgba(0,210,211,0.5)] transition-all duration-300"
-                />
-              );
-            }
-            if (idx === currentStep) {
-              return (
-                <div
-                  key={idx}
-                  className="h-1.5 rounded-full bg-[#00D2D3] relative overflow-hidden shadow-[0_0_8px_rgba(0,210,211,0.5)] transition-all duration-300"
-                >
-                  <div className="absolute inset-0 bg-white/40 animate-pulse" />
-                </div>
-              );
-            }
-            return (
-              <div
-                key={idx}
-                className="h-1.5 rounded-full bg-white/10 transition-all duration-300"
-              />
-            );
-          })}
-        </div>
-
         {/* Step Indicator Beacon & Close Button */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D2D3] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00D2D3] shadow-[0_0_8px_#00d2d3]" />
-            </span>
-            <span className="font-mono uppercase text-[#00D2D3] tracking-wider font-semibold text-[11px]">
-              {`STEP ${currentStep + 1} OF 4 • ${STEPS[currentStep].stageTag}`}
-            </span>
+        <div className="flex items-center justify-between">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono font-medium tracking-wider uppercase text-neutral-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+            <span>{`STEP ${currentStep + 1} OF 4 • ${STEPS[currentStep].stageTag}`}</span>
           </div>
           {onCancel && (
             <button
               aria-label="Close modal"
               type="button"
               onClick={onCancel}
-              className="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white transition-all duration-150 focus:outline-none"
+              className="rounded-xl p-2 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors flex items-center justify-center focus:outline-none"
             >
               <X className="h-4 w-4" />
             </button>
           )}
         </div>
+
+        {/* 4 Segmented Status Bar */}
+        <nav aria-label="Step progress" className="grid grid-cols-4 gap-2 w-full mb-6">
+          {[0, 1, 2, 3].map((idx) => {
+            if (idx <= currentStep) {
+              return (
+                <div
+                  key={idx}
+                  className="h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)] transition-all duration-300"
+                />
+              );
+            }
+            return (
+              <div
+                key={idx}
+                className="h-1.5 rounded-full bg-white/15 transition-all duration-300"
+              />
+            );
+          })}
+        </nav>
       </div>
 
       {/* Title Section */}
-      <div className="space-y-1.5 pt-1">
-        <h1 className="text-[26px] sm:text-[28px] font-semibold text-[#F1F5F9] tracking-tight">
+      <div className="space-y-1 pt-1">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
           {STEPS[currentStep].title}
         </h1>
-        <p className="text-[13px] text-zinc-400">
+        <p className="text-sm text-neutral-400">
           {STEPS[currentStep].subtitle}
         </p>
       </div>
@@ -310,44 +301,47 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
         {currentStep === 0 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-zinc-300">
-                Company or Organization Name <span className="text-[#F43F5E]">*</span>
+              <label className="block text-xs font-medium text-neutral-400">
+                Company or Organization Name <span className="text-rose-400">*</span>
               </label>
               <div className="relative flex items-center">
-                <div className="absolute left-4 flex items-center pointer-events-none text-zinc-500">
-                  <Building2 className="h-4 w-4" />
+                <div className="absolute left-4 flex items-center pointer-events-none text-neutral-400 font-mono text-sm">
+                  <span>&gt;_</span>
                 </div>
                 <input
                   type="text"
                   placeholder="e.g. Acme Sentinel Technologies Inc."
                   autoFocus
                   className={cn(
-                    "w-full liquid-glass-input text-[#F1F5F9] rounded-xl py-3.5 pl-12 pr-4 font-mono text-[14px] placeholder-zinc-500 focus:border-[#00D2D3] focus:ring-1 focus:ring-[#00D2D3]/50 focus:outline-none transition-all shadow-inner",
-                    errors.company_name && "border-[#F43F5E] focus:border-[#F43F5E]"
+                    "w-full rounded-xl bg-white/[0.04] border border-white/10 text-white pl-12 pr-4 py-3.5 font-mono text-sm placeholder-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all shadow-inner",
+                    errors.company_name && "border-rose-500 focus:border-rose-500"
                   )}
                   {...register("company_name")}
                 />
               </div>
               {errors.company_name && (
-                <p className="text-[11px] font-medium text-[#F43F5E] pt-1">
+                <p className="text-[11px] font-medium text-rose-400 pt-1">
                   {errors.company_name.message}
                 </p>
               )}
-              <p className="text-[11px] text-zinc-500 pt-0.5">
+              <p className="text-[11px] text-neutral-500 pt-0.5">
                 Official corporate or entity name used across scopes, engagements, and reports.
               </p>
             </div>
           </div>
         )}
 
-        {/* Step 2 (Stage 2): Target Asset Scope & Primary Security Contact */}
+        {/* Step 2 (Stage 2): Target Asset Scope & Primary Security Contact (Stitch 0e64ccd307a64826b7fb972706a21c8e) */}
         {currentStep === 1 && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            {/* Clean Input & Asset Tag List (Exact Stitch Specification) */}
+            {/* Input & Asset Tag List */}
             <div className="space-y-3">
-              <div className="relative flex items-center">
-                <div className="absolute left-4 flex items-center pointer-events-none text-zinc-500">
-                  <Terminal className="h-4 w-4 text-[#00D2D3]" />
+              <label className="block text-xs font-medium text-neutral-400" htmlFor="asset-input">
+                Add Domain, Subdomain or Network Block
+              </label>
+              <div className="relative flex items-center rounded-xl bg-white/[0.04] border border-white/10 transition-all">
+                <div className="absolute left-4 flex items-center pointer-events-none text-neutral-400 font-mono text-sm">
+                  <span>&gt;_</span>
                 </div>
                 <input
                   id="asset-input"
@@ -356,96 +350,116 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                   value={assetInput}
                   onChange={(e) => setAssetInput(e.target.value)}
                   placeholder="e.g. api.domain.corp"
-                  className="w-full liquid-glass-input text-[#F1F5F9] rounded-xl py-3.5 pl-12 pr-24 font-mono text-[14px] placeholder-zinc-500 focus:border-[#00D2D3] focus:ring-1 focus:ring-[#00D2D3]/50 focus:outline-none transition-all shadow-inner"
+                  className="w-full bg-transparent border-0 pl-11 pr-24 py-3.5 text-sm font-mono text-white placeholder-neutral-500 focus:ring-0 focus:outline-none"
                 />
-                <button
-                  type="button"
-                  onClick={handleAddAsset}
-                  className="absolute right-2.5 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-[#F1F5F9] font-medium border border-white/15 transition-all shadow-sm active:scale-95 text-[13px]"
-                >
-                  Add
-                </button>
+                <div className="absolute right-2">
+                  <button
+                    type="button"
+                    onClick={handleAddAsset}
+                    className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all border border-white/10"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Scoped Inventory Status Bar */}
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-neutral-400">Scoped Inventory</span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+                  {assets.length} Targets Active
+                </span>
               </div>
 
               {/* Scope Tags */}
-              <div className="flex flex-col gap-2.5 pt-1" id="assets-list">
+              <div className="space-y-2.5 pt-1" id="assets-list">
                 {assets.map((asset, idx) => (
                   <div
                     key={idx}
-                    className="w-full flex items-center justify-between liquid-glass-pill rounded-xl px-4 py-3 text-[#F1F5F9] font-mono text-[13px] transition-all hover:border-white/25"
+                    className="rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center justify-between text-sm font-mono transition-all hover:border-white/25"
                   >
-                    <div className="flex items-center gap-2.5">
-                      {getAssetIcon(asset)}
-                      <span>{asset}</span>
+                    <div className="flex items-center space-x-3.5 min-w-0">
+                      <div className="text-white p-1.5 rounded-lg bg-white/5 border border-white/10 flex-shrink-0">
+                        {getAssetIcon(asset)}
+                      </div>
+                      <div className="truncate">
+                        <span className="tracking-wide font-medium text-white">{asset}</span>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      aria-label={`Remove asset ${asset}`}
-                      onClick={() => handleRemoveAsset(idx)}
-                      className="text-zinc-500 hover:text-[#F43F5E] p-1 transition-colors flex items-center rounded"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center space-x-3 flex-shrink-0 ml-3">
+                      <span className="text-xs px-2.5 py-1 rounded-md bg-white/10 text-neutral-300 font-sans border border-white/10">
+                        {getAssetBadge(asset)}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`Remove asset ${asset}`}
+                        onClick={() => handleRemoveAsset(idx)}
+                        className="text-neutral-400 hover:text-white transition-colors p-1"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Authorized Security Point of Contact Section */}
-            <div className="pt-2 border-t border-white/10 space-y-4">
+            <div className="pt-4 border-t border-white/10 space-y-4">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-[#00D2D3]" />
-                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-neutral-300">
                   Authorized Security Point of Contact
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-zinc-300">
-                    Primary Contact Full Name <span className="text-[#F43F5E]">*</span>
+                  <label className="block text-xs font-medium text-neutral-400">
+                    Primary Contact Full Name <span className="text-rose-400">*</span>
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <div className="absolute left-3.5 flex items-center pointer-events-none text-neutral-500">
                       <User className="h-4 w-4" />
                     </div>
                     <input
                       type="text"
                       placeholder="e.g. Alex Mercer"
                       className={cn(
-                        "w-full liquid-glass-input text-[#F1F5F9] rounded-xl py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-zinc-500 focus:border-[#00D2D3] focus:ring-1 focus:ring-[#00D2D3]/50 focus:outline-none transition-all shadow-inner",
-                        errors.primary_contact_name && "border-[#F43F5E]"
+                        "w-full rounded-xl bg-white/[0.04] border border-white/10 text-white py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all shadow-inner",
+                        errors.primary_contact_name && "border-rose-500"
                       )}
                       {...register("primary_contact_name")}
                     />
                   </div>
                   {errors.primary_contact_name && (
-                    <p className="text-[11px] font-medium text-[#F43F5E]">
+                    <p className="text-[11px] font-medium text-rose-400">
                       {errors.primary_contact_name.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-zinc-300">
-                    Primary Contact Email <span className="text-[#F43F5E]">*</span>
+                  <label className="block text-xs font-medium text-neutral-400">
+                    Primary Contact Email <span className="text-rose-400">*</span>
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <div className="absolute left-3.5 flex items-center pointer-events-none text-neutral-500">
                       <Mail className="h-4 w-4" />
                     </div>
                     <input
                       type="email"
                       placeholder="e.g. alex@acme.com"
                       className={cn(
-                        "w-full liquid-glass-input text-[#F1F5F9] rounded-xl py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-zinc-500 focus:border-[#00D2D3] focus:ring-1 focus:ring-[#00D2D3]/50 focus:outline-none transition-all shadow-inner",
-                        errors.primary_contact_email && "border-[#F43F5E]"
+                        "w-full rounded-xl bg-white/[0.04] border border-white/10 text-white py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all shadow-inner",
+                        errors.primary_contact_email && "border-rose-500"
                       )}
                       {...register("primary_contact_email")}
                     />
                   </div>
                   {errors.primary_contact_email && (
-                    <p className="text-[11px] font-medium text-[#F43F5E]">
+                    <p className="text-[11px] font-medium text-rose-400">
                       {errors.primary_contact_email.message}
                     </p>
                   )}
@@ -454,50 +468,50 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-zinc-300">
+                  <label className="block text-xs font-medium text-neutral-400">
                     Company Website
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <div className="absolute left-3.5 flex items-center pointer-events-none text-neutral-500">
                       <Globe className="h-4 w-4" />
                     </div>
                     <input
                       type="url"
                       placeholder="https://acme.com"
                       className={cn(
-                        "w-full liquid-glass-input text-[#F1F5F9] rounded-xl py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-zinc-500 focus:border-[#00D2D3] focus:ring-1 focus:ring-[#00D2D3]/50 focus:outline-none transition-all shadow-inner",
-                        errors.website && "border-[#F43F5E]"
+                        "w-full rounded-xl bg-white/[0.04] border border-white/10 text-white py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all shadow-inner",
+                        errors.website && "border-rose-500"
                       )}
                       {...register("website")}
                     />
                   </div>
                   {errors.website && (
-                    <p className="text-[11px] font-medium text-[#F43F5E]">
+                    <p className="text-[11px] font-medium text-rose-400">
                       {errors.website.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-zinc-300">
+                  <label className="block text-xs font-medium text-neutral-400">
                     Contact Phone
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <div className="absolute left-3.5 flex items-center pointer-events-none text-neutral-500">
                       <Phone className="h-4 w-4" />
                     </div>
                     <input
                       type="tel"
                       placeholder="+1 (555) 019-2834"
                       className={cn(
-                        "w-full liquid-glass-input text-[#F1F5F9] rounded-xl py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-zinc-500 focus:border-[#00D2D3] focus:ring-1 focus:ring-[#00D2D3]/50 focus:outline-none transition-all shadow-inner",
-                        errors.phone && "border-[#F43F5E]"
+                        "w-full rounded-xl bg-white/[0.04] border border-white/10 text-white py-2.5 pl-10 pr-3 font-mono text-[13px] placeholder-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all shadow-inner",
+                        errors.phone && "border-rose-500"
                       )}
                       {...register("phone")}
                     />
                   </div>
                   {errors.phone && (
-                    <p className="text-[11px] font-medium text-[#F43F5E]">
+                    <p className="text-[11px] font-medium text-rose-400">
                       {errors.phone.message}
                     </p>
                   )}
@@ -507,17 +521,17 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
           </div>
         )}
 
-        {/* Step 3 (Stage 3): Industry & Context */}
+        {/* Step 3 (Stage 3): Industry & Context (Stitch 108b91754eb3464cb6a9c71a56ddfcce) */}
         {currentStep === 2 && (
           <div className="space-y-5 animate-in fade-in duration-200">
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-300">
+              <label className="block text-xs font-medium text-neutral-400">
                 Industry Sector
               </label>
               <div
                 role="radiogroup"
                 aria-label="Industry Sector Selection"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
+                className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-2"
               >
                 {INDUSTRY_ITEMS.map((item) => {
                   const Icon = item.icon;
@@ -531,39 +545,27 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                       aria-checked={isSelected}
                       onClick={() => setValue("industry", item.value, { shouldValidate: true })}
                       className={cn(
-                        "p-3 rounded-xl border text-left transition-all duration-150 flex items-start gap-3 relative cursor-pointer",
+                        "rounded-xl p-4 border transition-all text-left flex flex-col justify-between relative group cursor-pointer",
                         isSelected
-                          ? "liquid-glass-pill border-[#00D2D3] bg-[#00D2D3]/10 shadow-[0_0_15px_rgba(0,210,211,0.25)] ring-1 ring-[#00D2D3]"
-                          : "liquid-glass-pill hover:border-white/25 hover:bg-white/[0.06]"
+                          ? "bg-white/10 border-white text-white shadow-lg"
+                          : "bg-white/[0.03] border-white/10 text-neutral-300 hover:bg-white/[0.06] hover:border-white/20"
                       )}
                     >
-                      <div
-                        className={cn(
-                          "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors",
-                          isSelected
-                            ? "bg-[#00D2D3] text-[#0A0C10]"
-                            : "bg-white/5 border border-white/10 text-zinc-400"
-                        )}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={cn(
-                              "text-xs font-semibold block truncate",
-                              isSelected ? "text-[#00D2D3]" : "text-[#F1F5F9]"
-                            )}
-                          >
-                            {item.label}
-                          </span>
+                      <div>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-white flex-shrink-0">
+                            <Icon className="h-5 w-5" />
+                          </div>
                           {isSelected && (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-[#00D2D3] shrink-0 ml-1" />
+                            <CheckCircle2 className="h-4 w-4 text-white shrink-0 ml-1" />
                           )}
                         </div>
-                        <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-2 leading-relaxed">
+                        <div className="text-sm font-semibold text-white leading-snug">
+                          {item.label}
+                        </div>
+                        <div className="text-[11px] text-neutral-400 leading-normal mt-1">
                           {item.desc}
-                        </p>
+                        </div>
                       </div>
                     </button>
                   );
@@ -573,40 +575,40 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
 
             {/* Business Context & Scoping Notes */}
             <div className="pt-2">
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+              <label className="block text-xs font-medium text-neutral-400 mb-1.5" htmlFor="notes">
                 Confidential Scoping Notes & Rules of Engagement
               </label>
               <textarea
                 id="notes"
                 rows={3}
                 placeholder="Include compliance requirements (e.g. SOC 2 Type II, ISO 27001, PCI-DSS), testing window restrictions, or specialized infrastructure parameters..."
-                className="w-full liquid-glass-input text-[#F1F5F9] rounded-xl p-3.5 font-mono text-[13px] placeholder-zinc-500 focus:border-[#00D2D3] focus:ring-1 focus:ring-[#00D2D3]/50 focus:outline-none transition-all shadow-inner"
+                className="w-full rounded-xl bg-white/[0.04] border border-white/10 text-white p-3.5 font-mono text-[13px] placeholder-neutral-500 focus:border-white/30 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all shadow-inner"
                 {...register("notes")}
               />
-              <p className="text-[11px] text-zinc-500 mt-1">
+              <p className="text-[11px] text-neutral-500 mt-1">
                 {`Optional operational notes. Stored securely and visible to authorized assessors (${formData.notes?.length || 0}/5000 chars)`}
               </p>
             </div>
           </div>
         )}
 
-        {/* Step 4 (Stage 4): Review & Confirm */}
+        {/* Step 4 (Stage 4): Review & Confirm (Stitch 868c8d7ea2bd400390651e386cdda121) */}
         {currentStep === 3 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Organization Profile */}
-              <div className="liquid-glass-pill rounded-xl p-4 border border-white/12 space-y-2.5">
+              <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4 space-y-2.5">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-[#00D2D3]" />
-                    <span className="text-xs font-semibold text-[#F1F5F9] uppercase tracking-wider font-mono">
+                    <Building2 className="h-4 w-4 text-white" />
+                    <span className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
                       Organization Profile
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(0)}
-                    className="text-[11px] text-[#00D2D3] hover:underline flex items-center gap-1 font-semibold"
+                    className="text-[11px] text-white hover:underline flex items-center gap-1 font-semibold"
                   >
                     <Edit3 className="h-3 w-3" />
                     <span>Edit</span>
@@ -614,14 +616,14 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                 </div>
                 <div className="space-y-1.5 text-xs">
                   <div>
-                    <span className="text-[11px] text-zinc-400 block font-mono">Company Name:</span>
-                    <span className="font-semibold text-[#F1F5F9] text-sm">
+                    <span className="text-[11px] text-neutral-400 block font-mono">Company Name:</span>
+                    <span className="font-semibold text-white text-sm">
                       {formData.company_name || "—"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-zinc-400 block font-mono">Industry Sector:</span>
-                    <span className="text-zinc-300 font-medium">
+                    <span className="text-[11px] text-neutral-400 block font-mono">Industry Sector:</span>
+                    <span className="text-neutral-300 font-medium">
                       {formData.industry || "Not specified (General Enterprise)"}
                     </span>
                   </div>
@@ -629,35 +631,35 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
               </div>
 
               {/* Target Asset Scope */}
-              <div className="liquid-glass-pill rounded-xl p-4 border border-white/12 space-y-2.5">
+              <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4 space-y-2.5">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2">
-                    <Terminal className="h-4 w-4 text-[#00D2D3]" />
-                    <span className="text-xs font-semibold text-[#F1F5F9] uppercase tracking-wider font-mono">
+                    <Terminal className="h-4 w-4 text-white" />
+                    <span className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
                       Target Asset Scope
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(1)}
-                    className="text-[11px] text-[#00D2D3] hover:underline flex items-center gap-1 font-semibold"
+                    className="text-[11px] text-white hover:underline flex items-center gap-1 font-semibold"
                   >
                     <Edit3 className="h-3 w-3" />
                     <span>Edit</span>
                   </button>
                 </div>
                 <div className="space-y-1.5 text-xs">
-                  <span className="text-[11px] text-zinc-400 block font-mono">
+                  <span className="text-[11px] text-neutral-400 block font-mono">
                     {assets.length} In-Scope Boundary Endpoints:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {assets.slice(0, 3).map((a, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[11px] text-[#00D2D3]">
+                      <span key={i} className="px-2 py-0.5 rounded bg-white/10 border border-white/15 font-mono text-[11px] text-white">
                         {a}
                       </span>
                     ))}
                     {assets.length > 3 && (
-                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-[11px] text-zinc-400 font-mono">
+                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-[11px] text-neutral-400 font-mono">
                         +{assets.length - 3} more
                       </span>
                     )}
@@ -666,18 +668,18 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
               </div>
 
               {/* Primary Contact Summary */}
-              <div className="liquid-glass-pill rounded-xl p-4 border border-white/12 space-y-2.5">
+              <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4 space-y-2.5">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-[#00D2D3]" />
-                    <span className="text-xs font-semibold text-[#F1F5F9] uppercase tracking-wider font-mono">
+                    <User className="h-4 w-4 text-white" />
+                    <span className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
                       Security Contact
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(1)}
-                    className="text-[11px] text-[#00D2D3] hover:underline flex items-center gap-1 font-semibold"
+                    className="text-[11px] text-white hover:underline flex items-center gap-1 font-semibold"
                   >
                     <Edit3 className="h-3 w-3" />
                     <span>Edit</span>
@@ -685,24 +687,24 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                 </div>
                 <div className="space-y-1.5 text-xs">
                   <div>
-                    <span className="text-[11px] text-zinc-400 block font-mono">Full Name:</span>
-                    <span className="font-semibold text-[#F1F5F9]">
+                    <span className="text-[11px] text-neutral-400 block font-mono">Full Name:</span>
+                    <span className="font-semibold text-white">
                       {formData.primary_contact_name || "—"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-zinc-300">
-                    <Mail className="h-3.5 w-3.5 text-[#00D2D3] shrink-0" />
+                  <div className="flex items-center gap-1.5 text-neutral-300">
+                    <Mail className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
                     <span className="font-mono text-[11px]">{formData.primary_contact_email || "—"}</span>
                   </div>
                   {formData.website && (
-                    <div className="flex items-center gap-1.5 text-zinc-300">
-                      <Globe className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-neutral-300">
+                      <Globe className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
                       <span className="font-mono text-[11px] truncate">{formData.website}</span>
                     </div>
                   )}
                   {formData.phone && (
-                    <div className="flex items-center gap-1.5 text-zinc-300">
-                      <Phone className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-neutral-300">
+                      <Phone className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
                       <span className="font-mono text-[11px]">{formData.phone}</span>
                     </div>
                   )}
@@ -710,24 +712,24 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
               </div>
 
               {/* Scoping & RoE Context Summary */}
-              <div className="liquid-glass-pill rounded-xl p-4 border border-white/12 space-y-2.5">
+              <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4 space-y-2.5">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-[#00D2D3]" />
-                    <span className="text-xs font-semibold text-[#F1F5F9] uppercase tracking-wider font-mono">
+                    <Shield className="h-4 w-4 text-white" />
+                    <span className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
                       Scoping & RoE Context
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
-                    className="text-[11px] text-[#00D2D3] hover:underline flex items-center gap-1 font-semibold"
+                    className="text-[11px] text-white hover:underline flex items-center gap-1 font-semibold"
                   >
                     <Edit3 className="h-3 w-3" />
                     <span>Edit</span>
                   </button>
                 </div>
-                <p className="text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed line-clamp-3">
+                <p className="text-xs text-neutral-300 whitespace-pre-wrap leading-relaxed line-clamp-3">
                   {formData.notes || "No special scoping constraints or confidential context provided."}
                 </p>
               </div>
@@ -737,16 +739,15 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
       </div>
 
       {/* Bottom Navigation Controls (Exact Stitch Specification) */}
-      <div className="pt-5 border-t border-white/10 flex items-center justify-between gap-4">
+      <div className="pt-6 border-t border-white/10 flex items-center justify-between gap-4">
         <Button
           type="button"
           variant="outline"
           onClick={handleBack}
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 border-0 !bg-transparent font-medium text-[14px] transition-all duration-150"
+          className="px-5 py-2.5 text-sm font-medium"
         >
-          <ChevronLeft className="h-4 w-4" />
-          <span>{currentStep === 0 ? "Cancel" : "Back"}</span>
+          <span>← Back</span>
         </Button>
 
         {currentStep < 3 ? (
@@ -754,10 +755,9 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
             type="button"
             variant="primary"
             onClick={handleNext}
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-xl !bg-[#00D2D3] !bg-none hover:!bg-[#00D2D3]/90 active:!bg-[#00D2D3]/80 !text-[#0A0C10] font-semibold tracking-tight transition-all duration-150 shadow-[0_0_20px_rgba(0,210,211,0.35)] hover:shadow-[0_0_25px_rgba(0,210,211,0.5)] active:scale-[0.98] text-[15px] border-0"
+            className="px-6 py-2.5 font-semibold text-sm shadow-md"
           >
-            <span>Continue</span>
-            <ArrowRight className="h-4 w-4" />
+            <span>Continue →</span>
           </Button>
         ) : (
           <Button
@@ -765,7 +765,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
             variant="primary"
             disabled={isSubmitting}
             onClick={handleSubmit(handleFormSubmit)}
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-xl !bg-[#00D2D3] !bg-none hover:!bg-[#00D2D3]/90 active:!bg-[#00D2D3]/80 !text-[#0A0C10] font-semibold tracking-tight transition-all duration-150 shadow-[0_0_20px_rgba(0,210,211,0.35)] hover:shadow-[0_0_25px_rgba(0,210,211,0.5)] active:scale-[0.98] text-[15px] border-0"
+            className="px-6 py-2.5 font-semibold text-sm shadow-md"
           >
             {isSubmitting ? (
               <>
@@ -773,10 +773,7 @@ export const ClientWizard: React.FC<ClientWizardProps> = ({
                 <span>Registering Client…</span>
               </>
             ) : (
-              <>
-                <span>{submitLabel}</span>
-                <ArrowRight className="h-4 w-4" />
-              </>
+              <span>{submitLabel}</span>
             )}
           </Button>
         )}

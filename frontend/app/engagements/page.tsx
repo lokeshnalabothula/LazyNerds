@@ -162,20 +162,30 @@ function EngagementsContent() {
   return (
     <AppShell title="Engagements">
       <div className="space-y-6">
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-[#222630] pb-5">
-          <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB]">
-              Engagements
-            </h1>
-            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
-              Penetration Testing & Security Audits — Configure scoping parameters, rules of engagement, and assessor assignments.
-            </p>
+        {/* Page Header (Stitch Obsidian Precision) */}
+        <div className="cockpit-card specular-top border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_12px_rgba(245,197,24,0.15)] flex items-center justify-center shrink-0 text-[#F5C518]">
+              <Layers className="h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#F9FAFB] font-sans">
+                  Security Audits &amp; Engagements
+                </h1>
+                <span className="badge-cyber bg-[#F5C518]/15 text-[#FFD84D] border-[#F5C518]/30 text-[10px] font-mono">
+                  Continuous Operations
+                </span>
+              </div>
+              <p className="text-xs text-[#9CA3AF] leading-relaxed max-w-2xl">
+                Penetration testing &amp; security assessments — Scoping parameters, rules of engagement (RoE), and lead assessor assignments.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 shrink-0">
             <Link href="/engagements/new">
-              <Button variant="primary" size="sm" className="gap-1.5 text-xs">
-                <Plus className="h-4 w-4" />
+              <Button variant="primary" size="sm" className="gap-1.5 text-xs h-9 px-4 font-bold shadow-md">
+                <Plus className="h-3.5 w-3.5" />
                 <span>Create Engagement</span>
               </Button>
             </Link>

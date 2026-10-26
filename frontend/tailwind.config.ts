@@ -45,6 +45,20 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // Direct Stitch aliases for Obsidian Cyber Precision
+        surface: {
+          DEFAULT: "#111318",
+          subtle: "#1B1E24",
+          elevated: "#161920",
+          highlight: "#262A32",
+          dim: "#121316",
+          base: "#0A0C10",
+        },
+        "border-subtle": "#222630",
+        "border-strong": "#2E333F",
+        "text-primary": "#F9FAFB",
+        "text-secondary": "#9CA3AF",
+        "text-muted": "#6B7280",
         // Obsidian Cyber Precision palette
         obsidian: {
           bg: "#090A0D",

@@ -173,37 +173,42 @@ function RegistrationsContent() {
   return (
     <AppShell title="Client Registrations">
       <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-        {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 dark:border-[#222630] pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-[#F9FAFB] font-mono tracking-tight">
-                CLIENT REGISTRATION QUEUE
-              </h1>
-              {pendingCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F5C518]/20 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
-                  {pendingCount} PENDING
-                </span>
-              )}
+        {/* Cockpit Header Card (Stitch Obsidian Precision) */}
+        <div className="cockpit-card specular-top border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_12px_rgba(245,197,24,0.15)] flex items-center justify-center shrink-0 text-[#F5C518]">
+              <UserCheck className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
-            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
-              Review, verify scope, approve tenant workspaces, and assign operational security engineers.
-            </p>
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold text-[#F9FAFB] font-sans tracking-tight">
+                  Client Registration Queue
+                </h1>
+                {pendingCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F5C518]/20 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
+                    {pendingCount} PENDING
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#9CA3AF] leading-relaxed max-w-2xl">
+                Review, verify scope, approve tenant workspaces, and assign operational security engineers.
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="text-xs h-9 border-zinc-200 dark:border-[#222630] dark:bg-[#161920]"
+              className="text-xs h-9 border-[#222630] bg-[#161920]"
             >
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? "animate-spin" : ""}`} />
               <span>Refresh</span>
             </Button>
             <Link href="/clients">
-              <Button variant="outline" size="sm" className="text-xs h-9 border-zinc-200 dark:border-[#222630] dark:bg-[#161920]">
+              <Button variant="outline" size="sm" className="text-xs h-9 border-[#222630] bg-[#161920]">
                 <Building2 className="h-3.5 w-3.5 mr-1.5" />
                 <span>Client Directory</span>
               </Button>

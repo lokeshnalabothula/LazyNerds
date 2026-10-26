@@ -46,23 +46,33 @@ export default function ReportsPage() {
 
   return (
     <AppShell title="Reporting & Evidence">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
-              Assessment Reports & Deliverables
-            </h1>
-            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1">
-              Client-facing assessment reports, executive summaries, and downloadable deliverables derived from real assessment data.
-            </p>
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+        {/* Cockpit Header Card (Stitch Obsidian Precision) */}
+        <div className="cockpit-card specular-top border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_12px_rgba(245,197,24,0.15)] flex items-center justify-center shrink-0 text-[#F5C518]">
+              <PieChart className="h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#F9FAFB] font-sans">
+                  Assessment Reports &amp; Deliverables
+                </h1>
+                <span className="badge-cyber bg-[#F5C518]/15 text-[#FFD84D] border-[#F5C518]/30 text-[10px] font-mono">
+                  Verified Audit Trails
+                </span>
+              </div>
+              <p className="text-xs text-[#9CA3AF] leading-relaxed max-w-2xl">
+                Client-facing assessment reports, executive summaries, and downloadable deliverables derived from real assessment data.
+              </p>
+            </div>
           </div>
 
           <Button
             variant="primary"
             size="sm"
             onClick={() => setIsModalOpen(true)}
-            className="text-xs h-9 gap-1.5 shrink-0"
+            className="text-xs h-9 px-4 gap-1.5 shrink-0 font-bold shadow-md"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Generate Report</span>

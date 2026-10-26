@@ -260,28 +260,36 @@ function ClientsContent() {
   return (
     <AppShell title="Client Directory">
       <div className="space-y-6 pb-20">
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-[#222630] pb-5">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB]">
-                Clients
-              </h1>
-              {isFounder && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30 font-semibold uppercase">
-                  Founder Oversight
-                </span>
-              )}
+        {/* Page Header (Stitch Obsidian Precision) */}
+        <div className="cockpit-card specular-top border-[#222630] bg-[#111318]/90 p-5 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_12px_rgba(245,197,24,0.15)] flex items-center justify-center shrink-0 text-[#F5C518]">
+              <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
-            <p className="text-xs text-zinc-500 dark:text-[#9CA3AF]">
-              Client Directory & Scoping Workspace — Manage organization profiles, authorized security points of contact, and linked assessments.
-            </p>
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#F9FAFB] font-sans">
+                  Client Organizations Directory
+                </h1>
+                <span className="badge-cyber bg-[#F5C518]/15 text-[#FFD84D] border-[#F5C518]/30 text-[10px] font-mono">
+                  Enterprise Tenancy
+                </span>
+                {isFounder && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#161920] text-[#9CA3AF] border border-[#222630] font-semibold uppercase">
+                    Founder Oversight
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#9CA3AF] leading-relaxed max-w-2xl">
+                Authorized legal client entities, designated security points of contact, explicit Rules of Engagement (RoE), and continuous scoping governance.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap shrink-0">
             {isFounder && (
               <Link href="/registrations">
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                  <UserCheck className="h-4 w-4 text-[#F5C518]" />
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9 px-3">
+                  <UserCheck className="h-3.5 w-3.5 text-[#F5C518]" />
                   <span>Review Queue</span>
                 </Button>
               </Link>
@@ -289,7 +297,7 @@ function ClientsContent() {
             <Link href="/clients/new">
               <Button
                 variant="primary"
-                className="gap-1.5 text-xs"
+                className="gap-1.5 text-xs h-9 px-4 font-bold shadow-md"
                 size="sm"
               >
                 <Plus className="h-3.5 w-3.5" />

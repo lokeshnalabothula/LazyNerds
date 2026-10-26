@@ -234,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 size="sm"
                 alt={user.full_name || "Operator"}
               />
-              <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border border-[#0B0D12]" title="Operational" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 green-beacon-pulse border border-[#0B0D12]" title="Operational" />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 text-left">

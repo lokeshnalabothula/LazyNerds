@@ -88,22 +88,123 @@
 @layer utilities {
   /* Tactile Glossy Yellow Gold Primary Button (Stitch Match) */
   .gloss-yellow-btn,
-  .btn-glossy-gold {
-    background-image: linear-gradient(180deg, #FFD84D 0%, #F5C518 55%, #DDAA07 100%);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 0 16px rgba(245, 197, 24, 0.2);
-    border: 1px solid rgba(255, 216, 77, 0.5);
-    color: #090A0D;
+  .btn-glossy-gold,
+  .btn-gold-gloss {
+    background-image: linear-gradient(180deg, #FFD84D 0%, #F5C518 55%, #B88700 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 0 12px rgba(245, 197, 24, 0.15);
+    border: 1px solid rgba(245, 197, 24, 0.6);
+    color: #111318;
     font-weight: 700;
+    transition: all 0.15s ease-in-out;
   }
   .gloss-yellow-btn:hover,
-  .btn-glossy-gold:hover {
+  .btn-glossy-gold:hover,
+  .btn-gold-gloss:hover {
     background-image: linear-gradient(180deg, #FFE588 0%, #FFD84D 50%, #F5C518 100%);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 0 24px rgba(245, 197, 24, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 0 18px rgba(245, 197, 24, 0.3);
+    filter: brightness(1.04);
   }
   .gloss-yellow-btn:active,
-  .btn-glossy-gold:active {
+  .btn-glossy-gold:active,
+  .btn-gold-gloss:active {
     background-image: linear-gradient(180deg, #DDAA07 0%, #B88700 100%);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Stitch Beacon Pulse Rings */
+  .gold-beacon-pulse {
+    box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.6);
+    animation: gold-pulse-ring 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  }
+  @keyframes gold-pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(245, 197, 24, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0); }
+  }
+
+  .green-beacon-pulse {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
+    animation: green-pulse-ring 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  }
+  @keyframes green-pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+    70% { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  }
+
+  /* Stitch BorderBeam Plate */
+  .border-beam-plate,
+  .border-beam-container {
+    position: relative;
+  }
+  .border-beam-plate::before,
+  .border-beam-container::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(115deg, rgba(245, 197, 24, 0.6) 0%, rgba(99, 102, 241, 0.4) 40%, rgba(255, 255, 255, 0.02) 70%, rgba(245, 197, 24, 0.3) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Stitch ThinkingOrb Construct */
+  .thinking-orb {
+    position: relative;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .orb-layer-outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    filter: blur(14px);
+    opacity: 0.65;
+  }
+  .orb-layer-core {
+    position: relative;
+    border-radius: 9999px;
+    width: 75%;
+    height: 75%;
+    animation: rotate-conic 3s linear infinite;
+  }
+  .orb-layer-inner {
+    position: absolute;
+    width: 45%;
+    height: 45%;
+    border-radius: 9999px;
+    background: radial-gradient(circle, #ffffff 0%, rgba(255, 255, 255, 0.2) 60%, transparent 100%);
+    animation: counter-rotate-conic 2s linear infinite, pulse-subtle 1.8s ease-in-out infinite;
+  }
+  @keyframes rotate-conic {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes counter-rotate-conic {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  @keyframes pulse-subtle {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); }
+  }
+  .orb-searching .orb-layer-outer {
+    background: radial-gradient(circle, #f5c518 0%, #3131c0 70%, transparent 100%);
+  }
+  .orb-searching .orb-layer-core {
+    background: conic-gradient(from 0deg, #f5c518, #3131c0, #ffd84d, #f5c518);
+  }
+  .orb-working .orb-layer-outer {
+    background: radial-gradient(circle, #f5c518 0%, #b88700 70%, transparent 100%);
+  }
+  .orb-working .orb-layer-core {
+    background: conic-gradient(from 0deg, #ffd84d, #b88700, #f5c518);
   }
 
   /* Secondary Glass Button */

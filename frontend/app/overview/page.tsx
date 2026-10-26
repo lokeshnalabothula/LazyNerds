@@ -70,8 +70,8 @@ export default function OverviewPage() {
   return (
     <AppShell title="Dashboard">
       <div className="space-y-6 max-w-7xl mx-auto pb-16" data-loading-state={loading && !metrics ? "loading" : "complete"}>
-        {/* Top Operations Header with Operational Telemetry Badge */}
-        <div className="cockpit-card specular-top border-[#F5C518]/30 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all">
+        {/* Top Operations Header with Operational Telemetry Badge (Stitch Command Center) */}
+        <div className="cockpit-card specular-top border-[#222630] bg-[#111318]/90 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all shadow-[0_20px_40px_-15px_rgba(0,0,0,0.65)]">
           <div className="flex items-center gap-4 min-w-0">
             <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_12px_rgba(245,197,24,0.15),inset_0_1px_0_rgba(255,255,255,0.1)] flex items-center justify-center shrink-0 text-[#F5C518]">
               <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-[#F5C518]" />
@@ -82,19 +82,23 @@ export default function OverviewPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFD84D] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F5C518]"></span>
                 </span>
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#F9FAFB] font-sans">
                   {isClient
                     ? "Organization Security Posture"
-                    : "Cybersecurity Operations Dashboard"}
+                    : "Security Operations"}
                 </h1>
-                <span className="badge-cyber bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border-[#F5C518]/35 shrink-0">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#F5C518]/10 border border-[#F5C518]/30 text-[#FFD84D] text-[10px] font-mono font-medium shadow-[0_0_10px_rgba(245,197,24,0.15)] flex items-center gap-1.5 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F5C518] animate-pulse" />
+                  <span>LIVE TELEMETRY</span>
+                </span>
+                <span className="badge-cyber bg-[#161920] text-[#9CA3AF] border-[#222630] shrink-0 font-mono text-[10px]">
                   {user?.role || "Active"} Mode
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] leading-relaxed max-w-2xl font-sans">
+              <p className="text-xs text-[#9CA3AF] leading-relaxed max-w-2xl font-sans">
                 {isClient
-                  ? "Real-time vulnerability tracking, automated remediation status, and verified compliance audit logs for your assets."
-                  : "Continuous telemetry, tenant isolation, and automated remediation pipeline calculated from live database records."}
+                  ? "Continuous vulnerability assessment, automated SLA guardrails, and staged patch telemetry for your organization."
+                  : "Continuous vulnerability assessment, automated SLA guardrails, and staged patch telemetry calculated from live database records."}
               </p>
             </div>
           </div>
@@ -160,35 +164,39 @@ export default function OverviewPage() {
           </div>
         )}
 
-        {/* Urgent Attention / Action Banners */}
+        {/* Urgent Attention / Action Banners (Stitch SLA Escalation Alert) */}
         {metrics && (
           <div className="space-y-3">
-            {/* Critical Findings Alert */}
+            {/* Critical Findings Alert matching Stitch Command Center */}
             {hasCriticalAlerts && (
-              <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-950/20 text-zinc-100 flex flex-col xl:flex-row xl:items-center justify-between gap-3 shadow-lg">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400 shrink-0">
+              <section className="rounded-xl p-4 md:p-5 border border-rose-500/30 bg-rose-500/[0.04] backdrop-blur-xl relative overflow-hidden shadow-[inset_0_1px_0_0_rgba(244,63,94,0.3),0_12px_30px_-10px_rgba(244,63,94,0.15)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start md:items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0 shadow-[inset_0_1px_0_0_rgba(244,63,94,0.3)]">
                     <Flame className="h-5 w-5" />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-semibold text-rose-300 font-sans tracking-normal">
-                      Urgent Attention: Unmitigated Critical & High Vulnerabilities
-                    </h3>
-                    <p className="text-xs text-zinc-300 mt-0.5">
-                      There are currently{" "}
-                      <strong className="text-rose-400">{metrics.critical_findings_open} Critical</strong> and{" "}
-                      <strong className="text-orange-400">{metrics.high_findings_open} High</strong> severity
-                      findings requiring remediation verification.
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded border border-rose-500/20">
+                        BREACH WARNING
+                      </span>
+                      <span className="text-xs sm:text-sm font-semibold text-[#F9FAFB] font-sans">
+                        {metrics.critical_findings_open} Critical Finding{metrics.critical_findings_open > 1 ? "s" : ""} breach 48h Remediation SLA
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#9CA3AF]">
+                      Impacted Scope: <strong className="text-[#F9FAFB] font-semibold">{metrics.assets_in_scope} in-scope assets</strong> • Escalated to Lead Response Unit.
                     </p>
                   </div>
                 </div>
-                <Link href="/findings?status=open" className="shrink-0">
-                  <Button variant="outline" size="sm" className="border-rose-500/40 text-rose-300 hover:bg-rose-500/20 text-xs font-semibold h-8 w-full xl:w-auto">
-                    <span>Review Critical Vulnerabilities</span>
-                    <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-                  </Button>
-                </Link>
-              </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link href="/findings?severity=critical" className="shrink-0">
+                    <Button variant="destructive" size="sm" className="text-xs font-semibold h-8 w-full md:w-auto">
+                      <span>Inspect Critical Findings</span>
+                      <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                    </Button>
+                  </Link>
+                </div>
+              </section>
             )}
 
             {/* Founder Client Registration Queue Alert */}

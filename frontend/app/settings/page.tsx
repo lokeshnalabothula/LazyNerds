@@ -211,17 +211,22 @@ export default function SettingsPage() {
     <AppShell title="Settings & Administration">
       <div data-loading-state="complete" className="max-w-5xl space-y-6 mx-auto">
         {/* Header Strip with Accurate Sourced Badges */}
-        <div className="border-b border-zinc-200 dark:border-[#222630] pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
-                Platform Settings & Administration
-              </h1>
-              <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 leading-relaxed">
-                Operator profile, localized preferences, credential lifecycle, and live platform telemetry.
-              </p>
+        <div className="cockpit-card specular-top border-[#F5C518]/30 p-5 sm:p-6 shadow-xl relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_12px_rgba(245,197,24,0.15)] flex items-center justify-center shrink-0 text-[#F5C518]">
+                <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
+              <div>
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
+                  Platform Settings & Administration
+                </h1>
+                <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] mt-1 leading-relaxed">
+                  Operator profile, localized preferences, credential lifecycle, and live platform telemetry.
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border border-[#F5C518]/30">
                 {healthStatus?.environment ? `${healthStatus.environment.toUpperCase()} WORKSPACE` : "FIXOPS WORKSPACE"}
               </span>

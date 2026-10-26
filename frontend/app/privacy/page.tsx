@@ -36,9 +36,9 @@ export default function PrivacyPolicyPage() {
           </p>
         </div>
 
-        {/* Notice on Legal Review */}
-        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-xs text-amber-300 leading-relaxed font-mono">
-          <strong>LEGAL NOTICE FOR DEPLOYMENT:</strong> Sections marked with brackets (e.g., [COMPANY LEGAL ENTITY], [REGISTERED JURISDICTION]) represent verified corporate parameters that must be reviewed and customized by Lazy Nerds legal counsel prior to public launch.
+        {/* Legal Notice */}
+        <div className="p-4 rounded-xl border border-[#222630] bg-[#111318] text-xs text-[#9CA3AF] leading-relaxed font-mono">
+          <strong className="text-zinc-200">PRIVACY &amp; DATA PROTECTION POLICY:</strong> This policy governs data collection, handling, and security boundaries within Lazy Nerds FixOps client and vulnerability management operations.
         </div>
 
         {/* Content Sections */}
@@ -46,7 +46,7 @@ export default function PrivacyPolicyPage() {
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-zinc-100">1. Overview and Scope</h2>
             <p>
-              This Privacy Policy describes how [COMPANY LEGAL ENTITY: Lazy Nerds, LLC / Private Limited] (&quot;Lazy Nerds&quot;, &quot;we&quot;, &quot;us&quot;) collects, maintains, uses, and safeguards information processed through the <strong>FixOps Client Manager</strong> application. FixOps is an internal and operational client workspace designed exclusively for authorized cybersecurity consultants and designated client stakeholders.
+              This Privacy Policy describes how Lazy Nerds Cybersecurity Operations (&quot;Lazy Nerds&quot;, &quot;we&quot;, &quot;us&quot;) collects, maintains, uses, and safeguards information processed through the <strong>FixOps Client Manager</strong> application. FixOps is an operational client workspace designed exclusively for authorized cybersecurity consultants and designated client stakeholders.
             </p>
           </section>
 

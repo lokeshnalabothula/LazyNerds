@@ -1,4 +1,15 @@
+packages:
+  - '.'
+  - 'frontend'
+allowBuilds:
+  unrs-resolver: true
 minimumReleaseAgeExclude:
   - '@neon/config@1.9.1'
   - '@neon/env@1.6.1'
   - '@neon/sdk@7.2.0'
+overrides:
+  postcss: '>=8.5.12'
+  postcss-selector-parser: '>=7.1.6'
+
+
+

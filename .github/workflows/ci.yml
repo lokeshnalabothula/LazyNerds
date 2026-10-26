@@ -1,0 +1,67 @@
+name: Lazy Nerds FixOps CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend Quality & Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack & Setup pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install Frontend Dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Frontend ESLint Check
+        run: npm --prefix frontend run lint
+
+      - name: Frontend TypeScript Typecheck
+        run: cd frontend && npx tsc --noEmit
+
+      - name: Frontend Unit & Integration Tests (105 Tests)
+        run: npm --prefix frontend test
+
+      - name: Frontend Production Build
+        run: npm --prefix frontend run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  backend:
+    name: Backend Test Suite & Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Backend Pytest Suite
+        run: |
+          PYTHONPATH=backend pytest backend/tests -k "not integration and not live" -q
+        env:
+          ENVIRONMENT: testing
+          ALLOW_LAB_TESTING: "true"
+          SECRET_KEY: ci-test-secret-key-lazy-nerds-fixops-2026-very-secure

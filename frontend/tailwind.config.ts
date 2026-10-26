@@ -45,6 +45,16 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // Stitch Aetherial Cyber Command Deck Tokens
+        void: "#090a0f",
+        panel: "#0e1017",
+        panelAlt: "#131620",
+        surfaceBorder: "rgba(255, 255, 255, 0.06)",
+        cyanGlow: "#00f0ff",
+        indigoGlow: "#6366f1",
+        emeraldGlow: "#10b981",
+        amberGlow: "#f59e0b",
+        roseGlow: "#f43f5e",
         // Direct Stitch aliases for Obsidian Cyber Precision
         surface: {
           DEFAULT: "#111318",
@@ -121,6 +131,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
+          "Geist",
+          "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
           '"Segoe UI"',
@@ -130,6 +142,7 @@ const config: Config = {
           "sans-serif",
         ],
         mono: [
+          '"JetBrains Mono"',
           "ui-monospace",
           "SFMono-Regular",
           '"SF Mono"',

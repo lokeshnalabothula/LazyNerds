@@ -21,6 +21,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const checkAuth = useCallback(async () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fixops_token") : null;
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
     try {
       const currentUser = await api.getCurrentUser();
       setUser(currentUser);

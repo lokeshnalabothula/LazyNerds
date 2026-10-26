@@ -218,6 +218,12 @@ export default function SettingsPage() {
                 <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-sm tracking-tight text-[#dbfcff]">Lazy Nerds</span>
+                  <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#00f0ff]/15 text-[#00f0ff] border border-[#00f0ff]/30 font-bold font-mono">
+                    FIXOPS
+                  </span>
+                </div>
                 <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] font-sans">
                   Platform Settings & Administration
                 </h1>

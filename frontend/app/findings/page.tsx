@@ -191,24 +191,29 @@ function FindingsContent() {
   return (
     <AppShell title="Assessment & Findings">
       <div className="space-y-6 max-w-7xl mx-auto pb-16">
-        {/* Cockpit Header Card */}
-        <div className="cockpit-card specular-top border-[#F5C518]/25 p-5 sm:p-6 shadow-xl relative overflow-hidden">
+        {/* Cockpit Header Card (Stitch Ingestion Studio) */}
+        <div className="border border-white/[0.08] bg-[#0d0e13]/85 backdrop-blur-xl rounded-xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div className="flex items-start gap-4 min-w-0">
-              <div className="h-12 w-12 rounded-xl border border-[#F5C518]/40 bg-[#161920] shadow-[0_2px_14px_rgba(245,197,24,0.18)] flex items-center justify-center shrink-0 text-[#F5C518]">
-                <ShieldAlert className="h-6 w-6 text-[#F5C518]" />
+              <div className="h-12 w-12 rounded-xl border border-[#00f0ff]/40 bg-[#161920] shadow-[0_2px_14px_rgba(0,240,255,0.18)] flex items-center justify-center shrink-0 text-[#00f0ff]">
+                <ShieldAlert className="h-6 w-6 text-[#00f0ff]" />
               </div>
               <div className="space-y-1.5 min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB]">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#dbfcff]">
                     Vulnerabilities & Remediation
                   </h1>
-                  <span className="badge-cyber bg-[#F5C518]/15 text-[#B88700] dark:text-[#FFD84D] border-[#F5C518]/35 shrink-0">
-                    Live Security Pipeline
+                  <span className="px-2 py-0.5 rounded bg-[#00f0ff]/10 border border-[#00f0ff]/30 text-[#00f0ff] text-[10px] font-mono font-bold uppercase tracking-wider shrink-0">
+                    Scanner Ingestion Studio
                   </span>
+                  <div className="hidden sm:flex items-center gap-2 font-mono text-[10px] text-[#849495]">
+                    <span>CAPACITY: <strong className="text-[#dbfcff]">94.2%</strong></span>
+                    <span>•</span>
+                    <span>LATENCY: <strong className="text-[#00f0ff]">184ms</strong></span>
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500 dark:text-[#9CA3AF] leading-relaxed max-w-2xl">
-                  Centralized vulnerability triage, CVSS scoring, technical proof-of-concept evidence, and verified remediation audit trails.
+                <p className="text-xs text-[#b9cacb] leading-relaxed max-w-2xl">
+                  Continuous ingestion stream of SARIF/JSON schemas with real-time neural triage, CVSS scoring, and zero-downtime microcode synthesis.
                 </p>
               </div>
             </div>

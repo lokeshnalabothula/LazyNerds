@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { ThinkingOrb } from "@/components/stitch/ThinkingOrb";
+import { BorderBeam } from "@/components/stitch/BorderBeam";
 import {
   Shield,
   ShieldAlert,
@@ -194,8 +196,13 @@ export default function HomePage() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="max-w-3xl mx-auto text-center space-y-6">
+              {/* ThinkingOrb Floating Cognitive Construct (Stitch) */}
+              <div className="flex flex-col items-center mb-1">
+                <ThinkingOrb size="lg" state="searching" showBadge label="COGNITIVE COCKPIT // ZERO-TRUST DEFENSE" />
+              </div>
+
               {/* Eyebrow Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#F5C518]/30 bg-[#F5C518]/[0.06] text-[#F5C518] text-[11px] font-mono uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/[0.06] text-[#00f0ff] text-[11px] font-mono uppercase tracking-wider">
                 <Activity className="h-3 w-3 animate-pulse" />
                 <span>OPERATIONAL PLATFORM v1.0.0 • VERIFIABLE ROE FENCES</span>
               </div>

@@ -9,14 +9,16 @@ import { ScanTelemetryModal } from "@/components/findings/scan-telemetry-modal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { Client } from "@/types/client";
-import { Engagement, WebsiteAuditResponse } from "@/types/engagement";
-import { Finding } from "@/types/finding";
+import { WebsiteAuditResponse } from "@/types/engagement";
+import { Finding, SeverityType } from "@/types/finding";
+import { interpretFinding, HumanFindingReport } from "@/lib/finding-interpreter";
 import {
   Globe,
   Shield,
   ShieldAlert,
   ShieldCheck,
   AlertTriangle,
+  AlertCircle,
   CheckCircle2,
   Lock,
   Layers,
@@ -30,9 +32,78 @@ import {
   Clock,
   Sparkles,
   Zap,
+  Copy,
+  Check,
+  HelpCircle,
+  Wrench,
+  FileCode,
+  Filter,
+  CheckCheck,
 } from "lucide-react";
 
 const ACTIVE_AUDIT_STORAGE_KEY = "fixops_active_website_audit";
+
+// Severity styling configuration for consistent visual hierarchy
+const SEVERITY_CONFIG: Record<
+  string,
+  {
+    label: string;
+    badgeBg: string;
+    border: string;
+    text: string;
+    rowBg: string;
+    icon: any;
+  }
+> = {
+  critical: {
+    label: "Critical",
+    badgeBg: "bg-rose-500/15",
+    border: "border-rose-500/30",
+    text: "text-rose-400",
+    rowBg: "bg-rose-950/10 hover:bg-rose-950/20",
+    icon: ShieldAlert,
+  },
+  high: {
+    label: "High",
+    badgeBg: "bg-orange-500/15",
+    border: "border-orange-500/30",
+    text: "text-orange-400",
+    rowBg: "bg-orange-950/10 hover:bg-orange-950/20",
+    icon: AlertTriangle,
+  },
+  medium: {
+    label: "Medium",
+    badgeBg: "bg-amber-500/15",
+    border: "border-amber-500/30",
+    text: "text-amber-400",
+    rowBg: "bg-amber-950/10 hover:bg-amber-950/20",
+    icon: AlertCircle,
+  },
+  low: {
+    label: "Low",
+    badgeBg: "bg-sky-500/15",
+    border: "border-sky-500/30",
+    text: "text-sky-400",
+    rowBg: "bg-sky-950/10 hover:bg-sky-950/20",
+    icon: ShieldCheck,
+  },
+  info: {
+    label: "Info",
+    badgeBg: "bg-slate-500/15",
+    border: "border-slate-500/30",
+    text: "text-slate-400",
+    rowBg: "bg-slate-900/20 hover:bg-slate-900/30",
+    icon: Info,
+  },
+};
+
+const SEVERITY_ORDER: Record<string, number> = {
+  critical: 5,
+  high: 4,
+  medium: 3,
+  low: 2,
+  info: 1,
+};
 
 export default function WebsiteAuditPage() {
   const { user } = useAuth();
@@ -61,16 +132,22 @@ export default function WebsiteAuditPage() {
   const [currentStatusMessage, setCurrentStatusMessage] = useState<string>("");
   const [scanLogs, setScanLogs] = useState<Array<{ timestamp: string; phase: string; agent?: string; message: string }>>([]);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [scanCompletionTime, setScanCompletionTime] = useState<string | null>(null);
 
   // In-Page Real Findings State
   const [findings, setFindings] = useState<Finding[]>([]);
   const [isLoadingFindings, setIsLoadingFindings] = useState(false);
-  const [auditMetadata, setAuditMetadata] = useState<any>(null);
-  const [expandedEvidence, setExpandedEvidence] = useState<Record<string, boolean>>({});
+
+  // UX Interactive States: Filter & Expand drawers
+  const [selectedSeverityFilter, setSelectedSeverityFilter] = useState<string>("all");
+  const [expandedFindingIds, setExpandedFindingIds] = useState<Record<string, boolean>>({});
+  const [activePlatformTabs, setActivePlatformTabs] = useState<Record<string, string>>({});
+  const [expandedTechDetails, setExpandedTechDetails] = useState<Record<string, boolean>>({});
+  const [expandedRawEvidence, setExpandedRawEvidence] = useState<Record<string, boolean>>({});
+  const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
 
   // Telemetry Modal for advanced inspection
   const [isTelemetryModalOpen, setIsTelemetryModalOpen] = useState(false);
-  const [isLogsExpanded, setIsLogsExpanded] = useState(false);
 
   // Polling ref
   const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -282,12 +359,12 @@ export default function WebsiteAuditPage() {
       setProgressPhase(summaryObj.phase || assessment.status);
       setCurrentStatusMessage(summaryObj.current_status || `Scan status: ${assessment.status}`);
       setScanLogs(summaryObj.logs || []);
-      setAuditMetadata(summaryObj);
 
       if (assessment.status === "completed") {
         setScanStatus("completed");
         setProgressPercent(100);
         setCurrentStatusMessage(summaryObj.current_status || "Assessment complete. Genuine findings synthesized.");
+        setScanCompletionTime(new Date().toLocaleTimeString());
         localStorage.removeItem(ACTIVE_AUDIT_STORAGE_KEY);
         if (pollingTimerRef.current) {
           clearInterval(pollingTimerRef.current);
@@ -362,6 +439,8 @@ export default function WebsiteAuditPage() {
     setProgressPhase("queued");
     setCurrentStatusMessage("Dispatching automated security scanner against web target...");
     setScanLogs([]);
+    setSelectedSeverityFilter("all");
+    setExpandedFindingIds({});
 
     const submittedTarget = url.trim();
 
@@ -426,10 +505,24 @@ export default function WebsiteAuditPage() {
     setFindings([]);
     setScanError(null);
     setSubmitError(null);
+    setSelectedSeverityFilter("all");
+    setExpandedFindingIds({});
     localStorage.removeItem(ACTIVE_AUDIT_STORAGE_KEY);
   };
 
-  // Severity count badges
+  // Interpret raw findings into plain-English human reports
+  const interpretedReports: HumanFindingReport[] = useMemo(() => {
+    return findings.map((f) => interpretFinding(f, activeTargetUrl || ""));
+  }, [findings, activeTargetUrl]);
+
+  // Sort findings by severity priority: Critical -> High -> Medium -> Low -> Info
+  const sortedReports = useMemo(() => {
+    return [...interpretedReports].sort(
+      (a, b) => (SEVERITY_ORDER[b.severity] || 0) - (SEVERITY_ORDER[a.severity] || 0)
+    );
+  }, [interpretedReports]);
+
+  // Severity count badges derived from actual results
   const severityCounts = useMemo(() => {
     const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
     for (const f of findings) {
@@ -441,14 +534,39 @@ export default function WebsiteAuditPage() {
     return counts;
   }, [findings]);
 
-  const toggleEvidence = (id: string) => {
-    setExpandedEvidence((prev) => ({ ...prev, [id]: !prev[id] }));
+  // Filtered reports by active pill
+  const filteredReports = useMemo(() => {
+    if (selectedSeverityFilter === "all") return sortedReports;
+    return sortedReports.filter((r) => r.severity === selectedSeverityFilter);
+  }, [sortedReports, selectedSeverityFilter]);
+
+  // Interactive toggle actions
+  const toggleFindingDetails = (id: string) => {
+    setExpandedFindingIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleTechDetails = (id: string) => {
+    setExpandedTechDetails((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleRawEvidence = (id: string) => {
+    setExpandedRawEvidence((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const copyToClipboard = (text: string, id: string) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedSnippetId(id);
+      setTimeout(() => setCopiedSnippetId(null), 2000);
+    }
   };
 
   return (
     <AppShell title="Website Audit">
       <div className="space-y-6 max-w-4xl mx-auto pb-20">
-        {/* Clean Page Title Strip */}
+        {/* ========================================================================= */}
+        {/* A. SCAN HEADER                                                           */}
+        {/* ========================================================================= */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-5">
           <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-[#F9FAFB] flex items-center gap-2.5">
@@ -600,10 +718,8 @@ export default function WebsiteAuditPage() {
         </form>
 
         {/* ========================================================================= */}
-        {/* DIRECT IN-PAGE RESULTS SECTION (Directly below the input)                */}
+        {/* ACTIVE SCANNING PROGRESS STATE                                            */}
         {/* ========================================================================= */}
-
-        {/* 1. ACTIVE SCANNING PROGRESS STATE */}
         {scanStatus === "running" && (
           <div className="cockpit-card specular-top p-6 rounded-2xl border border-[#F5C518]/30 bg-[#07090E]/90 shadow-2xl space-y-5 animate-fadeIn">
             <div className="flex items-start justify-between gap-4">
@@ -675,7 +791,9 @@ export default function WebsiteAuditPage() {
           </div>
         )}
 
-        {/* 2. SCAN FAILED STATE */}
+        {/* ========================================================================= */}
+        {/* SCAN FAILED STATE                                                         */}
+        {/* ========================================================================= */}
         {scanStatus === "failed" && (
           <div className="cockpit-card specular-top p-6 rounded-2xl border border-rose-500/30 bg-rose-950/20 shadow-xl space-y-4 animate-fadeIn">
             <div className="flex items-start gap-3.5">
@@ -687,7 +805,7 @@ export default function WebsiteAuditPage() {
                   Security Audit Failed
                 </h3>
                 <p className="text-xs text-zinc-300 leading-relaxed font-mono">
-                  {scanError || "An unexpected error occurred during scan execution."}
+                  {scanError || "An unexpected error occurred during scan execution. The target website may be offline or rejecting connections."}
                 </p>
               </div>
             </div>
@@ -704,25 +822,31 @@ export default function WebsiteAuditPage() {
           </div>
         )}
 
-        {/* 3. COMPLETED SCAN RESULTS (RENDERED DIRECTLY BELOW INPUT) */}
+        {/* ========================================================================= */}
+        {/* B. SCAN SUMMARY & RESULTS SECTION                                         */}
+        {/* ========================================================================= */}
         {scanStatus === "completed" && (
           <div className="space-y-5 animate-fadeIn">
-            {/* Scan Summary Banner */}
+            {/* Scan Summary Card */}
             <div className="cockpit-card specular-top p-6 rounded-2xl border border-white/[0.08] bg-[#07090E]/95 shadow-xl space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                     <h2 className="text-base font-bold text-zinc-100">
-                      Audit Results
+                      Website Audit Summary
                     </h2>
                     <Badge variant="active" className="border-emerald-500/40 text-emerald-300 text-[10px] font-mono">
                       Completed
                     </Badge>
                   </div>
-                  <p className="text-xs text-zinc-400">
-                    Target: <strong className="font-mono text-zinc-200">{activeTargetUrl}</strong>
-                  </p>
+                  <div className="flex items-center gap-3 text-xs text-zinc-400 flex-wrap">
+                    <span>Target: <strong className="font-mono text-zinc-200">{activeTargetUrl}</strong></span>
+                    {scanCompletionTime && (
+                      <span className="text-zinc-500">• Finished at {scanCompletionTime}</span>
+                    )}
+                    <span>• Verified Findings: <strong className="text-[#F5C518] font-mono">{findings.length}</strong></span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -747,34 +871,125 @@ export default function WebsiteAuditPage() {
                 </div>
               </div>
 
-              {/* Severity Summary Pills */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-1">
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-rose-400 block">Critical</span>
-                  <span className="text-lg font-mono font-bold text-rose-300">{severityCounts.critical}</span>
+              {/* Severity Breakdown & Interactive Filter Bar */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-zinc-400">
+                  <div className="flex items-center gap-1.5 font-medium">
+                    <Filter className="h-3.5 w-3.5 text-[#F5C518]" />
+                    <span>Filter Findings by Risk Level</span>
+                  </div>
+                  <span className="text-[11px] text-zinc-500">
+                    Showing {filteredReports.length} of {findings.length} findings
+                  </span>
                 </div>
-                <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-center">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-orange-400 block">High</span>
-                  <span className="text-lg font-mono font-bold text-orange-300">{severityCounts.high}</span>
+
+                <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+                  {/* All Findings Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSeverityFilter("all")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      selectedSeverityFilter === "all"
+                        ? "border-[#F5C518] bg-[#F5C518]/15 ring-1 ring-[#F5C518]/50 text-white"
+                        : "border-white/[0.08] bg-white/[0.02] text-zinc-300 hover:bg-white/[0.05]"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-bold tracking-wider block text-zinc-400">All</span>
+                    <span className="text-base font-mono font-bold">{findings.length}</span>
+                  </button>
+
+                  {/* Critical Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSeverityFilter(selectedSeverityFilter === "critical" ? "all" : "critical")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      selectedSeverityFilter === "critical"
+                        ? "border-rose-500 bg-rose-500/20 ring-1 ring-rose-500/50 text-rose-200"
+                        : "border-rose-500/20 bg-rose-500/5 text-rose-300 hover:bg-rose-500/10"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-bold tracking-wider block text-rose-400">Critical</span>
+                    <span className="text-base font-mono font-bold text-rose-300">{severityCounts.critical}</span>
+                  </button>
+
+                  {/* High Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSeverityFilter(selectedSeverityFilter === "high" ? "all" : "high")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      selectedSeverityFilter === "high"
+                        ? "border-orange-500 bg-orange-500/20 ring-1 ring-orange-500/50 text-orange-200"
+                        : "border-orange-500/20 bg-orange-500/5 text-orange-300 hover:bg-orange-500/10"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-bold tracking-wider block text-orange-400">High</span>
+                    <span className="text-base font-mono font-bold text-orange-300">{severityCounts.high}</span>
+                  </button>
+
+                  {/* Medium Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSeverityFilter(selectedSeverityFilter === "medium" ? "all" : "medium")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      selectedSeverityFilter === "medium"
+                        ? "border-amber-500 bg-amber-500/20 ring-1 ring-amber-500/50 text-amber-200"
+                        : "border-amber-500/20 bg-amber-500/5 text-amber-300 hover:bg-amber-500/10"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-bold tracking-wider block text-amber-400">Medium</span>
+                    <span className="text-base font-mono font-bold text-amber-300">{severityCounts.medium}</span>
+                  </button>
+
+                  {/* Low Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSeverityFilter(selectedSeverityFilter === "low" ? "all" : "low")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      selectedSeverityFilter === "low"
+                        ? "border-sky-500 bg-sky-500/20 ring-1 ring-sky-500/50 text-sky-200"
+                        : "border-sky-500/20 bg-sky-500/5 text-sky-300 hover:bg-sky-500/10"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-bold tracking-wider block text-sky-400">Low</span>
+                    <span className="text-base font-mono font-bold text-sky-300">{severityCounts.low}</span>
+                  </button>
+
+                  {/* Info Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSeverityFilter(selectedSeverityFilter === "info" ? "all" : "info")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      selectedSeverityFilter === "info"
+                        ? "border-slate-400 bg-slate-500/20 ring-1 ring-slate-400/50 text-slate-200"
+                        : "border-slate-500/20 bg-slate-500/5 text-slate-300 hover:bg-slate-500/10"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-bold tracking-wider block text-slate-400">Info</span>
+                    <span className="text-base font-mono font-bold text-slate-300">{severityCounts.info}</span>
+                  </button>
                 </div>
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 block">Medium</span>
-                  <span className="text-lg font-mono font-bold text-amber-300">{severityCounts.medium}</span>
+              </div>
+
+              {/* Scope & Grounded Honesty Disclosure */}
+              <div className="p-3.5 rounded-xl border border-white/[0.06] bg-[#030407]/60 text-xs text-zinc-400 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-zinc-300 font-semibold text-[11px]">
+                  <CheckCheck className="h-3.5 w-3.5 text-[#F5C518]" />
+                  <span>Verified Perimeter Scope</span>
                 </div>
-                <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-center">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-yellow-400 block">Low</span>
-                  <span className="text-lg font-mono font-bold text-yellow-300">{severityCounts.low}</span>
-                </div>
-                <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center col-span-2 sm:col-span-1">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-blue-400 block">Info</span>
-                  <span className="text-lg font-mono font-bold text-blue-300">{severityCounts.info}</span>
-                </div>
+                <p className="text-[11px] leading-relaxed text-zinc-400">
+                  This automated audit performed active checks on SSL/TLS transport, HSTS enforcement, Content Security Policy, Clickjacking protection (X-Frame-Options), MIME sniffing (X-Content-Type-Options), Referrer-Policy, CORS access controls, and session cookie flags.
+                </p>
+                <p className="text-[10px] text-zinc-500 pt-1 border-t border-white/[0.04]">
+                  <strong>Scope Limitation:</strong> Automated perimeter scanning inspects public transport and response headers. It does not perform authenticated business logic testing, source code review, or zero-day discovery.
+                </p>
               </div>
             </div>
 
-            {/* Findings List or Empty State */}
+            {/* ========================================================================= */}
+            {/* C. FINDINGS OVERVIEW & DETAILS                                            */}
+            {/* ========================================================================= */}
             {isLoadingFindings ? (
-              <div className="cockpit-card p-8 rounded-2xl text-center space-y-3">
+              <div className="cockpit-card p-10 rounded-2xl text-center space-y-3">
                 <div className="h-6 w-6 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-xs text-zinc-400">Loading verified security findings...</p>
               </div>
@@ -789,7 +1004,7 @@ export default function WebsiteAuditPage() {
                     No vulnerabilities detected by the checks performed
                   </h3>
                   <p className="text-xs text-zinc-300 leading-relaxed">
-                    The automated scan completed successfully without identifying configuration flaws or exposed perimeter vulnerabilities.
+                    The automated scan completed successfully without identifying configuration flaws or exposed perimeter vulnerabilities on the targeted endpoint.
                   </p>
                 </div>
 
@@ -810,11 +1025,25 @@ export default function WebsiteAuditPage() {
                   </div>
                 </div>
               </div>
+            ) : filteredReports.length === 0 ? (
+              /* Filter resulted in 0 findings */
+              <div className="cockpit-card p-6 rounded-2xl border border-white/[0.08] text-center space-y-2">
+                <p className="text-xs text-zinc-300">No findings matched the selected severity filter.</p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSeverityFilter("all")}
+                  className="text-xs text-[#F5C518] hover:underline font-semibold"
+                >
+                  Show all {findings.length} findings
+                </button>
+              </div>
             ) : (
-              /* Genuine Findings Cards List */
-              <div className="space-y-3">
+              /* Genuine Human-Understandable Findings Cards List */
+              <div className="space-y-4">
                 <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
-                  <span>Detected {findings.length} security observation(s)</span>
+                  <span>
+                    Priority Order: {filteredReports.length} finding{filteredReports.length === 1 ? "" : "s"} listed by severity
+                  </span>
                   {activeEngagementId && (
                     <Link
                       href={`/findings?engagement_id=${activeEngagementId}`}
@@ -826,112 +1055,395 @@ export default function WebsiteAuditPage() {
                   )}
                 </div>
 
-                {findings.map((f) => {
-                  const isExpanded = !!expandedEvidence[f.id];
-                  const severityClass =
-                    f.severity === "critical"
-                      ? "border-rose-500/30 bg-rose-950/15"
-                      : f.severity === "high"
-                      ? "border-orange-500/30 bg-orange-950/15"
-                      : f.severity === "medium"
-                      ? "border-amber-500/30 bg-amber-950/15"
-                      : f.severity === "low"
-                      ? "border-yellow-500/30 bg-yellow-950/15"
-                      : "border-blue-500/30 bg-blue-950/15";
+                {filteredReports.map((report) => {
+                  const isExpanded = !!expandedFindingIds[report.id];
+                  const sevStyle = SEVERITY_CONFIG[report.severity] || SEVERITY_CONFIG.low;
+                  const SevIcon = sevStyle.icon;
+                  const configExamples = report.recommendedFix.configExamples;
 
-                  const badgeClass =
-                    f.severity === "critical"
-                      ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
-                      : f.severity === "high"
-                      ? "bg-orange-500/20 text-orange-300 border-orange-500/30"
-                      : f.severity === "medium"
-                      ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                      : f.severity === "low"
-                      ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
-                      : "bg-blue-500/20 text-blue-300 border-blue-500/30";
+                  // Active platform tab for this specific finding
+                  const selectedPlatform =
+                    activePlatformTabs[report.id] ||
+                    (configExamples.length > 0 ? configExamples[0].platform : "Nginx");
+                  const activeConfig = configExamples.find((c) => c.platform === selectedPlatform);
+
+                  const isTechExpanded = !!expandedTechDetails[report.id];
+                  const isEvidenceExpanded = !!expandedRawEvidence[report.id];
 
                   return (
                     <div
-                      key={f.id}
-                      className={`cockpit-card specular-top p-5 rounded-2xl border shadow-md space-y-3 transition-all ${severityClass}`}
+                      key={report.id}
+                      className={`cockpit-card specular-top rounded-2xl border transition-all duration-200 overflow-hidden shadow-lg ${sevStyle.border} ${sevStyle.rowBg}`}
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                        <div className="space-y-1 min-w-0">
+                      {/* FINDINGS OVERVIEW ROW */}
+                      <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                        <div className="space-y-1.5 min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider font-mono border ${badgeClass}`}>
-                              {f.severity}
+                            {/* Severity Badge */}
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono border ${sevStyle.badgeBg} ${sevStyle.border} ${sevStyle.text}`}
+                            >
+                              <SevIcon className="h-3 w-3" />
+                              <span>{report.severityLabel}</span>
                             </span>
-                            {f.cve_id && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono border border-white/[0.12] bg-white/[0.04] text-zinc-300">
-                                {f.cve_id}
-                              </span>
-                            )}
-                            <h3 className="text-sm font-semibold text-zinc-100">
-                              {f.title}
+
+                            {/* Affected Location Badge */}
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono border border-white/[0.08] bg-white/[0.03] text-zinc-400">
+                              <Globe className="h-2.5 w-2.5 text-zinc-500" />
+                              <span>{report.whereIsTheProblem.location}</span>
+                            </span>
+
+                            {/* Finding Title */}
+                            <h3 className="text-sm font-bold text-zinc-100 leading-snug">
+                              {report.simpleTitle}
                             </h3>
                           </div>
-                          {f.description && (
-                            <p className="text-xs text-zinc-300 leading-relaxed pt-1">
-                              {f.description}
-                            </p>
-                          )}
+
+                          {/* One-sentence risk summary */}
+                          <p className="text-xs text-zinc-300 leading-relaxed font-normal">
+                            {report.quickRiskSummary}
+                          </p>
                         </div>
 
-                        <div className="shrink-0 flex items-center gap-2">
-                          <Link href={`/findings/${f.id}`}>
-                            <Button variant="outline" size="sm" className="text-[11px] h-7 px-2.5 border-white/[0.12] text-zinc-300 hover:text-white">
-                              <span>Inspect</span>
-                              <ExternalLink className="h-3 w-3 ml-1" />
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleFindingDetails(report.id)}
+                            className={`text-xs h-8 px-3 gap-1.5 border-white/[0.12] transition-colors ${
+                              isExpanded
+                                ? "bg-[#F5C518]/15 border-[#F5C518]/40 text-[#F5C518]"
+                                : "text-zinc-200 hover:text-white"
+                            }`}
+                          >
+                            <span>{isExpanded ? "Hide Details" : "View Details"}</span>
+                            {isExpanded ? (
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            )}
+                          </Button>
+
+                          <Link href={`/findings/${report.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs h-8 px-2.5 border-white/[0.12] text-zinc-400 hover:text-zinc-100"
+                              title="Inspect full raw dossier"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
                             </Button>
                           </Link>
                         </div>
                       </div>
 
-                      {/* Impact */}
-                      {f.impact && (
-                        <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs space-y-1">
-                          <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider">
-                            Observed Impact
-                          </span>
-                          <p className="text-zinc-300 text-[11px] leading-relaxed">{f.impact}</p>
+                      {/* ========================================================================= */}
+                      {/* D. EXPANDED FINDING DETAILS SECTION (The 7 Core Questions)                 */}
+                      {/* ========================================================================= */}
+                      {isExpanded && (
+                        <div className="border-t border-white/[0.08] bg-[#030407]/80 p-5 sm:p-6 space-y-5 animate-fadeIn">
+                          {/* 1. What is the problem? */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                              <HelpCircle className="h-3.5 w-3.5 text-[#F5C518]" />
+                              <span>1. What is the problem?</span>
+                            </div>
+                            <p className="text-xs text-zinc-300 leading-relaxed pl-5">
+                              {report.problemExplanation}
+                            </p>
+                          </div>
+
+                          {/* 2. Why should I care? */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider">
+                              <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
+                              <span>2. Why should I care?</span>
+                            </div>
+                            <p className="text-xs text-zinc-300 leading-relaxed pl-5">
+                              {report.whyShouldICare}
+                            </p>
+                          </div>
+
+                          {/* 3. How serious is it? */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                              <Shield className="h-3.5 w-3.5 text-[#F5C518]" />
+                              <span>3. How serious is it?</span>
+                            </div>
+                            <div className="pl-5 space-y-1">
+                              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-200">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold ${sevStyle.badgeBg} ${sevStyle.text}`}>
+                                  {report.severityLabel}
+                                </span>
+                              </div>
+                              <p className="text-xs text-zinc-400 leading-relaxed">
+                                {report.howSeriousIsIt}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* 4. Where is the problem? */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                              <Globe className="h-3.5 w-3.5 text-[#F5C518]" />
+                              <span>4. Where is the problem?</span>
+                            </div>
+                            <div className="pl-5 space-y-1 text-xs">
+                              <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] font-mono text-zinc-300 flex items-center justify-between flex-wrap gap-2">
+                                <span>{report.whereIsTheProblem.targetUrl}</span>
+                                {report.whereIsTheProblem.specificLocation && (
+                                  <span className="text-zinc-500 text-[11px]">
+                                    Location: {report.whereIsTheProblem.specificLocation}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 5. What did the scanner find? */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                              <Terminal className="h-3.5 w-3.5 text-[#F5C518]" />
+                              <span>5. What did the scanner find?</span>
+                            </div>
+                            <div className="pl-5 space-y-2">
+                              <p className="text-xs text-zinc-300 leading-relaxed">
+                                {report.evidenceSummary}
+                              </p>
+
+                              {/* Collapsible raw scanner evidence */}
+                              {report.rawEvidence && (
+                                <div className="pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleRawEvidence(report.id)}
+                                    className="text-[11px] text-[#F5C518] hover:underline flex items-center gap-1 font-mono font-medium"
+                                  >
+                                    <span>
+                                      {isEvidenceExpanded
+                                        ? "Hide Raw Scanner Evidence"
+                                        : "View Raw Scanner Evidence & Response"}
+                                    </span>
+                                    {isEvidenceExpanded ? (
+                                      <ChevronUp className="h-3 w-3" />
+                                    ) : (
+                                      <ChevronDown className="h-3 w-3" />
+                                    )}
+                                  </button>
+
+                                  {isEvidenceExpanded && (
+                                    <pre className="mt-1.5 p-3 rounded-xl bg-[#010204] border border-white/[0.08] text-[11px] font-mono text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                                      {report.rawEvidence}
+                                    </pre>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 6. How can I fix it? */}
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                              <Wrench className="h-3.5 w-3.5" />
+                              <span>6. How can I fix it?</span>
+                            </div>
+                            <div className="pl-5 space-y-3">
+                              <p className="text-xs text-zinc-300 leading-relaxed">
+                                {report.recommendedFix.overview}
+                              </p>
+
+                              {/* Ordered Steps */}
+                              <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-300">
+                                {report.recommendedFix.steps.map((step, idx) => (
+                                  <li key={idx} className="leading-relaxed">
+                                    <span className="text-zinc-200">{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+
+                              {/* Platform Configuration Examples */}
+                              {configExamples.length > 0 && (
+                                <div className="pt-2 space-y-2">
+                                  <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                                    Platform-Specific Configuration Examples:
+                                  </div>
+
+                                  {/* Platform Selector Tabs */}
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    {configExamples.map((ex) => (
+                                      <button
+                                        key={ex.platform}
+                                        type="button"
+                                        onClick={() =>
+                                          setActivePlatformTabs((prev) => ({
+                                            ...prev,
+                                            [report.id]: ex.platform,
+                                          }))
+                                        }
+                                        className={`px-3 py-1 text-xs rounded-lg font-medium transition-all cursor-pointer ${
+                                          selectedPlatform === ex.platform
+                                            ? "bg-[#F5C518] text-[#090A0D] font-bold shadow"
+                                            : "bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08] border border-white/[0.06]"
+                                        }`}
+                                      >
+                                        {ex.platform}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {/* Active Platform Snippet */}
+                                  {activeConfig && (
+                                    <div className="rounded-xl border border-white/[0.08] bg-[#020305] overflow-hidden">
+                                      <div className="p-2.5 px-3 bg-white/[0.03] border-b border-white/[0.06] flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-1.5 font-mono text-zinc-400 text-[11px]">
+                                          <FileCode className="h-3.5 w-3.5 text-[#F5C518]" />
+                                          <span>{activeConfig.filenameOrLocation}</span>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            copyToClipboard(
+                                              activeConfig.snippet,
+                                              `${report.id}-${activeConfig.platform}`
+                                            )
+                                          }
+                                          className="text-[11px] font-mono text-[#F5C518] hover:underline flex items-center gap-1"
+                                        >
+                                          {copiedSnippetId === `${report.id}-${activeConfig.platform}` ? (
+                                            <>
+                                              <Check className="h-3 w-3 text-emerald-400" />
+                                              <span className="text-emerald-400">Copied!</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Copy className="h-3 w-3" />
+                                              <span>Copy Snippet</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      </div>
+                                      <pre className="p-3.5 text-[11px] font-mono text-zinc-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                                        {activeConfig.snippet}
+                                      </pre>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 7. How to verify your fix */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-wider">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              <span>7. How to verify your fix</span>
+                            </div>
+                            <div className="pl-5 space-y-2 text-xs text-zinc-300">
+                              <p className="leading-relaxed">
+                                {report.verificationSteps.instructions}
+                              </p>
+
+                              {report.verificationSteps.command && (
+                                <div className="p-2.5 rounded-xl bg-[#020305] border border-white/[0.08] flex items-center justify-between gap-2 font-mono text-[11px]">
+                                  <span className="text-zinc-200 select-all overflow-x-auto">
+                                    {report.verificationSteps.command}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        report.verificationSteps.command!,
+                                        `${report.id}-verify`
+                                      )
+                                    }
+                                    className="shrink-0 text-[#F5C518] hover:underline flex items-center gap-1 text-[11px]"
+                                  >
+                                    {copiedSnippetId === `${report.id}-verify` ? (
+                                      <>
+                                        <Check className="h-3 w-3 text-emerald-400" />
+                                        <span className="text-emerald-400">Copied</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="h-3 w-3" />
+                                        <span>Copy</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+
+                              <p className="text-[11px] text-zinc-400">
+                                <strong>Expected Result:</strong> {report.verificationSteps.expectedResult}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* 8. What happens if I ignore it? */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                              <AlertTriangle className="h-3.5 w-3.5 text-zinc-400" />
+                              <span>8. What happens if I ignore it?</span>
+                            </div>
+                            <div className="pl-5 space-y-1 text-xs text-zinc-400 leading-relaxed">
+                              <p className="text-zinc-300">{report.whatHappensIfIIgnoreIt.realisticImpact}</p>
+                              <p className="text-[11px] text-zinc-500">
+                                <em>Note: {report.whatHappensIfIIgnoreIt.limitations}</em>
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* 9. Advanced Technical Details (Collapsed by default for security pros) */}
+                          <div className="pt-2 border-t border-white/[0.06] pl-5">
+                            <button
+                              type="button"
+                              onClick={() => toggleTechDetails(report.id)}
+                              className="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 font-mono"
+                            >
+                              <span>
+                                {isTechExpanded
+                                  ? "Hide Advanced Technical & Compliance Details"
+                                  : "View Advanced Technical & Compliance Details"}
+                              </span>
+                              {isTechExpanded ? (
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              ) : (
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+
+                            {isTechExpanded && (
+                              <div className="mt-3 p-3.5 rounded-xl border border-white/[0.08] bg-[#020305] text-[11px] font-mono space-y-2 text-zinc-400">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {report.technicalDetails.cweId && (
+                                    <div>
+                                      <span className="text-zinc-500 block">Vulnerability Standard:</span>
+                                      <span className="text-zinc-200 font-semibold">{report.technicalDetails.cweId}</span>
+                                    </div>
+                                  )}
+                                  {report.technicalDetails.cvssScore !== undefined && (
+                                    <div>
+                                      <span className="text-zinc-500 block">CVSS v3.1 Score:</span>
+                                      <span className="text-zinc-200 font-semibold">{report.technicalDetails.cvssScore} / 10.0</span>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <span className="text-zinc-500 block">Detection Source:</span>
+                                    <span className="text-zinc-300">{report.technicalDetails.detectionSource}</span>
+                                  </div>
+                                  {report.technicalDetails.standardsReference && (
+                                    <div>
+                                      <span className="text-zinc-500 block">RFC / Standard:</span>
+                                      <span className="text-[#F5C518] break-all">{report.technicalDetails.standardsReference}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
-
-                      {/* Remediation Guidance */}
-                      {f.remediation_guidance && (
-                        <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs space-y-1">
-                          <span className="text-[10px] uppercase font-bold text-emerald-400 block tracking-wider">
-                            Recommended Remediation
-                          </span>
-                          <p className="text-zinc-200 text-[11px] leading-relaxed">{f.remediation_guidance}</p>
-                        </div>
-                      )}
-
-                      {/* Scanner Evidence (Collapsible) */}
-                      {f.evidence && (
-                        <div className="space-y-1 pt-1">
-                          <button
-                            type="button"
-                            onClick={() => toggleEvidence(f.id)}
-                            className="text-[11px] text-[#F5C518] hover:underline flex items-center gap-1 font-mono font-medium"
-                          >
-                            <Terminal className="h-3 w-3" />
-                            <span>{isExpanded ? "Hide Scanner Evidence" : "View Verified Scanner Evidence"}</span>
-                            {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                          </button>
-                          {isExpanded && (
-                            <pre className="p-3 rounded-xl bg-[#030407] border border-white/[0.08] text-[11px] font-mono text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed mt-1">
-                              {f.evidence}
-                            </pre>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Footer Attribution */}
-                      <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-zinc-500 font-mono">
-                        <span>{f.remediation_notes || "[Source: FixOps Web Security Auditor]"}</span>
-                        <span>{f.created_at ? new Date(f.created_at).toLocaleDateString() : ""}</span>
-                      </div>
                     </div>
                   );
                 })}
@@ -940,7 +1452,9 @@ export default function WebsiteAuditPage() {
           </div>
         )}
 
-        {/* 4. INITIAL EMPTY STATE (Before first scan) */}
+        {/* ========================================================================= */}
+        {/* INITIAL EMPTY STATE (Before first scan)                                   */}
+        {/* ========================================================================= */}
         {scanStatus === "idle" && (
           <div className="cockpit-card specular-top p-10 rounded-2xl border border-white/[0.08] bg-[#07090E]/60 text-center space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-[#F5C518]/10 text-[#F5C518] flex items-center justify-center mx-auto border border-[#F5C518]/25 shadow-md">

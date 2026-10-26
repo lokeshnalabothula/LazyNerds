@@ -22,10 +22,9 @@ jobs:
       - name: Enable Corepack & Setup pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
 
       - name: Install Frontend Dependencies
-        run: pnpm install --frozen-lockfile=false
+        run: pnpm install --frozen-lockfile
 
       - name: Frontend ESLint Check
         run: npm --prefix frontend run lint
@@ -57,6 +56,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
+
+      - name: Verify Database Migrations (Schema & Alembic Revisions)
+        run: |
+          PYTHONPATH=backend pytest backend/tests/test_migration.py -v
+        env:
+          ENVIRONMENT: testing
+          ALLOW_LAB_TESTING: "true"
+          SECRET_KEY: ci-test-secret-key-lazy-nerds-fixops-2026-very-secure
 
       - name: Run Backend Pytest Suite
         run: |

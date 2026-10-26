@@ -1,6 +1,7 @@
 {
   "name": "lazynerds-fixops",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "npm --prefix frontend run build",
     "test": "npm --prefix frontend run test",
@@ -9,5 +10,11 @@
   "dependencies": {
     "@neon/config": "^1.9.1",
     "@neon/env": "^1.6.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": ">=8.5.12",
+      "postcss-selector-parser": ">=7.1.6"
+    }
   }
 }

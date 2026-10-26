@@ -466,9 +466,11 @@ def test_live_scan_fails_honestly_when_no_ai_credits(db_session, test_client_rec
     assert len(findings) == 0
 
 
+@pytest.mark.integration
 def test_real_nuclei_execution_in_docker(db_session, test_client_record):
     import shutil
     import subprocess
+    import urllib.request
     docker_bin = shutil.which("docker")
     if not docker_bin:
         pytest.skip("Docker is not installed on this host")
@@ -478,6 +480,13 @@ def test_real_nuclei_execution_in_docker(db_session, test_client_record):
             pytest.skip("Docker daemon is not responsive; skipping live container test")
     except Exception:
         pytest.skip("Docker daemon health check timed out; skipping live container test")
+
+    # Verify lab target server is actively reachable prior to launching real container scan
+    try:
+        req = urllib.request.Request("http://127.0.0.1:8888", headers={"User-Agent": "FixOps-Probe"})
+        urllib.request.urlopen(req, timeout=2)
+    except Exception:
+        pytest.skip("Local lab test server at http://127.0.0.1:8888 is not running or unreachable")
 
     eng = Engagement(
         client_id=test_client_record.id,

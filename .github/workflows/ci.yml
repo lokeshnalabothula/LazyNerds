@@ -64,13 +64,26 @@ jobs:
           ENVIRONMENT: testing
           ALLOW_LAB_TESTING: "true"
           WORKER_DISPATCH_MODE: "distributed"
+          DATABASE_URL: "sqlite:////tmp/migration_test.db"
           SECRET_KEY: ci-test-secret-key-lazy-nerds-fixops-2026-very-secure
 
       - name: Run Backend Pytest Suite
         run: |
-          PYTHONPATH=backend pytest backend/tests -k "not integration and not live" -v --tb=short
+          set -o pipefail
+          PYTHONPATH=backend pytest backend/tests -k "not integration and not live" -v --tb=short 2>&1 | tee pytest_output.log
         env:
           ENVIRONMENT: testing
           ALLOW_LAB_TESTING: "true"
           WORKER_DISPATCH_MODE: "distributed"
+          DATABASE_URL: "sqlite:////tmp/ci_test.db"
           SECRET_KEY: ci-test-secret-key-lazy-nerds-fixops-2026-very-secure
+
+      - name: Publish Test Summary
+        if: always()
+        run: |
+          if [ -f pytest_output.log ]; then
+            echo "## Backend Pytest Output" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 120 pytest_output.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

@@ -23,6 +23,7 @@ TEST_DB_URL = _test_db_url
 # Ensure test environment
 os.environ["ENVIRONMENT"] = "testing"
 os.environ["ALLOW_LAB_TESTING"] = "true"
+os.environ["WORKER_DISPATCH_MODE"] = "distributed"
 os.environ["DATABASE_URL"] = TEST_DB_URL
 os.environ["SECRET_KEY"] = "test-secret-key-lazy-nerds-fixops-super-secure-2026"
 
@@ -41,6 +42,7 @@ from app.services.auth_service import create_user
 
 # Bind settings and database session modules to the isolated test database
 settings.DATABASE_URL = TEST_DB_URL
+settings.WORKER_DISPATCH_MODE = "distributed"
 
 test_engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)

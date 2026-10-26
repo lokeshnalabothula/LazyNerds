@@ -63,12 +63,14 @@ jobs:
         env:
           ENVIRONMENT: testing
           ALLOW_LAB_TESTING: "true"
+          WORKER_DISPATCH_MODE: "distributed"
           SECRET_KEY: ci-test-secret-key-lazy-nerds-fixops-2026-very-secure
 
       - name: Run Backend Pytest Suite
         run: |
-          PYTHONPATH=backend pytest backend/tests -k "not integration and not live" -q
+          PYTHONPATH=backend pytest backend/tests -k "not integration and not live" -v --tb=short
         env:
           ENVIRONMENT: testing
           ALLOW_LAB_TESTING: "true"
+          WORKER_DISPATCH_MODE: "distributed"
           SECRET_KEY: ci-test-secret-key-lazy-nerds-fixops-2026-very-secure

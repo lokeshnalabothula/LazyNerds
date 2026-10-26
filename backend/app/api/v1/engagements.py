@@ -421,6 +421,7 @@ def submit_website_audit(
         db.flush()
 
     # 6. Launch or register scan via existing scanner pipeline
+    is_test_env = getattr(settings, "ENVIRONMENT", "").lower() in ("testing", "test")
     try:
         assessment = scanner_service.launch_scan(
             db=db,
@@ -429,6 +430,7 @@ def submit_website_audit(
             scan_mode=req.scan_mode,
             source_repo=req.source_repo,
             current_user=current_user,
+            sync_execution=is_test_env and getattr(settings, "WORKER_DISPATCH_MODE", "") == "embedded",
         )
     except Exception as e:
         db.rollback()

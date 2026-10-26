@@ -90,6 +90,7 @@ def get_findings(
     db: Session,
     engagement_id: Optional[str] = None,
     asset_id: Optional[str] = None,
+    assessment_id: Optional[str] = None,
     severity: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
@@ -104,6 +105,8 @@ def get_findings(
         query = query.filter(Finding.engagement_id == engagement_id)
     if asset_id:
         query = query.filter(Finding.asset_id == asset_id)
+    if assessment_id:
+        query = query.filter(Finding.assessment_id == assessment_id)
     if severity:
         query = query.filter(Finding.severity == severity)
     if status:

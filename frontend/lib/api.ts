@@ -424,6 +424,7 @@ export const api = {
     page_size?: number;
     engagement_id?: string;
     asset_id?: string;
+    assessment_id?: string;
     severity?: string;
     status?: string;
     search?: string;
@@ -433,6 +434,7 @@ export const api = {
     if (params.page_size) query.set("page_size", params.page_size.toString());
     if (params.engagement_id) query.set("engagement_id", params.engagement_id);
     if (params.asset_id) query.set("asset_id", params.asset_id);
+    if (params.assessment_id) query.set("assessment_id", params.assessment_id);
     if (params.severity) query.set("severity", params.severity);
     if (params.status) query.set("status", params.status);
     if (params.search) query.set("search", params.search);

@@ -435,3 +435,50 @@ def test_submit_website_audit_authorizes_before_dns_resolution(auth_client: Test
     )
     assert resp_403.status_code == status.HTTP_403_FORBIDDEN
     assert "not assigned to this client record" in resp_403.json()["detail"].lower()
+
+
+def test_website_audit_end_to_end_genuine_findings_retrieval(auth_client: TestClient, active_client, monkeypatch, db_session):
+    """
+    Verifies the complete end-to-end Website Audit pipeline:
+    1. User submits target URL to /api/v1/engagements/website-audit.
+    2. Scanner executes real checks (HTTP response, TLS, security headers).
+    3. Assessment completes with real execution summary.
+    4. GET /api/v1/findings?assessment_id=... returns genuine findings directly for in-page display.
+    """
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "ALLOW_LAB_TESTING", True)
+    monkeypatch.setattr(settings, "WORKER_DISPATCH_MODE", "embedded")
+
+    payload = {
+        "url": "http://127.0.0.1:8888",
+        "client_id": active_client.id,
+        "scan_mode": "blackbox",
+        "confirmed_authorization": True,
+        "notes": "Automated end-to-end integration test.",
+    }
+    resp = auth_client.post("/api/v1/engagements/website-audit", json=payload)
+    assert resp.status_code == 201, resp.text
+    audit_data = resp.json()
+    assessment_id = audit_data["assessment_id"]
+
+    check_resp = auth_client.get(f"/api/v1/findings/assessments/{assessment_id}")
+    assert check_resp.status_code == 200
+    assessment_data = check_resp.json()
+    assert assessment_data["status"] == "completed"
+    assert assessment_data["findings_count"] > 0
+
+    # Retrieve findings specifically for this assessment
+    findings_resp = auth_client.get(f"/api/v1/findings?assessment_id={assessment_id}")
+    assert findings_resp.status_code == 200
+    findings_list = findings_resp.json()
+    assert findings_list["total"] == assessment_data["findings_count"]
+
+    # Verify that findings are genuine security observations
+    titles = [f["title"] for f in findings_list["items"]]
+    assert any("Content-Security-Policy" in t for t in titles)
+    assert any("X-Frame-Options" in t or "Clickjacking" in t for t in titles)
+    for f in findings_list["items"]:
+        assert f["evidence"] is not None and len(f["evidence"]) > 0
+        assert f["remediation_guidance"] is not None
+        assert "[Source:" in f["remediation_notes"]
+

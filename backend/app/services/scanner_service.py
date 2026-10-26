@@ -27,6 +27,7 @@ from app.services.scan_adapters import (
 )
 from app.services.automation_engine import dispatch_event
 from app.core.ai_provider import validate_ai_provider_preflight, sanitize_ai_error
+from app.services.web_audit_engine import audit_web_target
 
 logger = logging.getLogger("fixops.scanner")
 
@@ -546,118 +547,109 @@ def execute_scan_worker_job(
 
         if scan_mode == "blackbox":
             # -------------------------------------------------------------
-            # Black-Box Web Scanner Branch (Native Nuclei Adapter)
+            # Black-Box Web Scanner Branch (Native Engine + Optional Nuclei)
             # -------------------------------------------------------------
-            update_assessment_progress(
-                assessment_id=assessment_id,
-                phase="recon",
-                progress_percent=25,
-                message="Discovering exposed HTTP services, headers, and attack surface...",
-                active_agent="nuclei-crawler",
-                log_line=f"Target {target_url} online. Initializing blackbox perimeter checks.",
-                db=db,
-            )
+            def progress_cb(phase: str, pct: int, msg: str, agent: Optional[str] = None):
+                update_assessment_progress(
+                    assessment_id=assessment_id,
+                    phase=phase,
+                    progress_percent=pct,
+                    message=msg,
+                    active_agent=agent,
+                    log_line=msg,
+                    db=db,
+                )
 
-            update_assessment_progress(
-                assessment_id=assessment_id,
-                phase="vuln_analysis",
-                progress_percent=60,
-                message="Executing Nuclei vulnerability checks across perimeter...",
-                active_agent="nuclei-engine",
-                log_line="Running community and custom security verification templates",
-                db=db,
-            )
+            allow_lab = is_lab_testing_authorized()
+            try:
+                native_findings, audit_meta = audit_web_target(
+                    target_url=target_url,
+                    allow_lab=allow_lab,
+                    progress_callback=progress_cb,
+                )
+            except Exception as audit_err:
+                logger.error(f"Audit failure for {target_url}: {audit_err}")
+                update_assessment_progress(
+                    assessment_id=assessment_id,
+                    phase="failed",
+                    progress_percent=100,
+                    message=f"Scan failed: {str(audit_err)}",
+                    log_line=f"Audit execution aborted: {str(audit_err)}",
+                    db=db,
+                )
+                assessment.status = "failed"
+                assessment.completed_at = datetime.now(timezone.utc)
+                db.commit()
+                return
 
-            if is_mock_run:
-                nuclei_records = generate_lab_blackbox_nuclei(target_url=target_url)
-                parsed_findings = parse_nuclei_records(nuclei_records)
-                raw_output_obj = nuclei_records
-            else:
-                workspace_dir = get_scan_workspace_dir(assessment_id)
-                output_file = os.path.join(workspace_dir, "nuclei_output.json")
+            parsed_findings = list(native_findings)
+            raw_output_obj = audit_meta
+
+            if not is_mock_run:
+                # Optional safe Nuclei perimeter execution if Docker/Nuclei is present and responsive
                 nuclei_bin = shutil.which("nuclei")
                 docker_bin = shutil.which("docker")
+                workspace_dir = get_scan_workspace_dir(assessment_id)
+                output_file = os.path.join(workspace_dir, "nuclei_output.json")
 
                 if nuclei_bin:
-                    cmd = [
-                        nuclei_bin,
-                        "-u", target_url,
-                        "-json-export", output_file,
-                        "-silent",
-                        "-timeout", "10",
-                        "-retries", "1",
-                    ]
-                    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                    if os.path.exists(output_file):
-                        with open(output_file, "r", encoding="utf-8") as f:
-                            parsed_findings = parse_nuclei_records(f.read())
-                        raw_output_obj = parsed_findings
-                    else:
-                        parsed_findings = []
-                        raw_output_obj = {"status": "no_findings", "stdout": proc.stdout, "stderr": proc.stderr}
-                elif docker_bin:
-                    # Quick responsiveness preflight to avoid hanging if daemon is stopped or crashed
                     try:
-                        info_check = subprocess.run([docker_bin, "info"], capture_output=True, timeout=5)
-                        if info_check.returncode != 0:
-                            raise RuntimeError(f"Docker daemon is not responsive: {info_check.stderr.decode('utf-8', errors='replace')[:200] if info_check.stderr else 'Daemon offline'}")
-                    except subprocess.TimeoutExpired:
-                        raise RuntimeError("Docker daemon is unresponsive (health check timed out after 5s). Please restart Docker.")
-
-                    docker_target = target_url
-                    if "127.0.0.1" in docker_target or "localhost" in docker_target:
-                        docker_target = docker_target.replace("127.0.0.1", "host.docker.internal").replace("localhost", "host.docker.internal")
-
-                    # Ensure isolated bridge network exists prior to container launch
+                        progress_cb("vuln_analysis", 75, "Running Nuclei perimeter misconfiguration templates...", "nuclei-engine")
+                        cmd = [
+                            nuclei_bin,
+                            "-u", target_url,
+                            "-json-export", output_file,
+                            "-silent",
+                            "-timeout", "10",
+                            "-retries", "1",
+                            "-tags", "misconfig,exposure,tech",
+                        ]
+                        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
+                        if os.path.exists(output_file):
+                            with open(output_file, "r", encoding="utf-8") as f:
+                                n_findings = parse_nuclei_records(f.read())
+                                for nf in n_findings:
+                                    if not any(existing["title"].lower() == nf["title"].lower() for existing in parsed_findings):
+                                        parsed_findings.append(nf)
+                    except Exception as n_err:
+                        logger.info(f"Nuclei binary scan note: {n_err}")
+                elif docker_bin and getattr(settings, "ALLOW_EMBEDDED_DOCKER", False):
                     try:
-                        net_check = subprocess.run([docker_bin, "network", "inspect", "shannon-net"], capture_output=True, timeout=5)
-                        if net_check.returncode != 0:
-                            subprocess.run([docker_bin, "network", "create", "--driver", "bridge", "shannon-net"], capture_output=True, timeout=5)
-                    except Exception:
-                        pass
+                        info_check = subprocess.run([docker_bin, "info"], capture_output=True, timeout=3)
+                        if info_check.returncode == 0:
+                            progress_cb("vuln_analysis", 75, "Running containerized Nuclei security templates...", "nuclei-container")
+                            docker_target = target_url
+                            if "127.0.0.1" in docker_target or "localhost" in docker_target:
+                                docker_target = docker_target.replace("127.0.0.1", "host.docker.internal").replace("localhost", "host.docker.internal")
 
-                    cmd = [
-                        docker_bin, "run", "--rm",
-                        "--name", f"fixops-worker-{assessment_id[:8]}",
-                        "--network", "shannon-net",
-                        "--add-host=host.docker.internal:host-gateway",
-                        "--cpus", "1.0",
-                        "--memory", "2g",
-                        "--pids-limit", "128",
-                        "--security-opt", "no-new-privileges:true",
-                        "--cap-drop", "ALL",
-                        "-v", f"{workspace_dir}:/app/output",
-                        "-v", "fixops-nuclei-templates:/root/nuclei-templates",
-                        "projectdiscovery/nuclei:latest",
-                        "-u", docker_target,
-                        "-json-export", "/app/output/nuclei_output.json",
-                        "-silent",
-                        "-timeout", "10",
-                        "-tags", "cve,misconfig,tech,exposure",
-                    ]
-                    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                    if os.path.exists(output_file):
-                        with open(output_file, "r", encoding="utf-8") as f:
-                            parsed_findings = parse_nuclei_records(f.read())
-                        raw_output_obj = parsed_findings
-                    else:
-                        parsed_findings = []
-                        raw_output_obj = {"status": "no_findings", "stdout": proc.stdout, "stderr": proc.stderr}
-                else:
-                    raise RuntimeError(
-                        "Black-box engine (Nuclei) is not installed on this worker host and Docker is unavailable. "
-                        "Deploy to container-enabled worker infrastructure or run in Lab Benchmark mode."
-                    )
+                            cmd = [
+                                docker_bin, "run", "--rm",
+                                "--name", f"fixops-worker-{assessment_id[:8]}",
+                                "--add-host=host.docker.internal:host-gateway",
+                                "--cpus", "1.0",
+                                "--memory", "1g",
+                                "--pids-limit", "64",
+                                "--security-opt", "no-new-privileges:true",
+                                "--cap-drop", "ALL",
+                                "-v", f"{workspace_dir}:/app/output",
+                                "projectdiscovery/nuclei:latest",
+                                "-u", docker_target,
+                                "-json-export", "/app/output/nuclei_output.json",
+                                "-silent",
+                                "-timeout", "10",
+                                "-tags", "misconfig,exposure,tech",
+                            ]
+                            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
+                            if os.path.exists(output_file):
+                                with open(output_file, "r", encoding="utf-8") as f:
+                                    n_findings = parse_nuclei_records(f.read())
+                                    for nf in n_findings:
+                                        if not any(existing["title"].lower() == nf["title"].lower() for existing in parsed_findings):
+                                            parsed_findings.append(nf)
+                    except Exception as d_err:
+                        logger.info(f"Docker nuclei note: {d_err}")
 
-            update_assessment_progress(
-                assessment_id=assessment_id,
-                phase="report_synthesis",
-                progress_percent=85,
-                message="Deduplicating findings and normalizing CVE/CWE taxonomy...",
-                active_agent="dedup-engine",
-                log_line=f"Deduplication complete. Ingesting {len(parsed_findings)} unique vulnerability records.",
-                db=db,
-            )
+            progress_cb("report_synthesis", 95, f"Synthesized {len(parsed_findings)} genuine security finding(s). Ingesting records...", "synthesizer")
 
         else:
             # -------------------------------------------------------------
@@ -949,10 +941,13 @@ def launch_scan(
     elif settings.WORKER_DISPATCH_MODE == "embedded":
         should_run_embedded = True
     elif settings.WORKER_DISPATCH_MODE == "auto":
-        is_production = settings.ENVIRONMENT.lower() == "production"
-        has_docker_or_nuclei = bool(shutil.which("docker") or shutil.which("nuclei"))
-        if not is_production and has_docker_or_nuclei:
+        if scan_mode == "blackbox":
             should_run_embedded = True
+        else:
+            is_production = settings.ENVIRONMENT.lower() == "production"
+            has_docker_or_nuclei = bool(shutil.which("docker") or shutil.which("nuclei"))
+            if not is_production and has_docker_or_nuclei:
+                should_run_embedded = True
 
     if should_run_embedded:
         if sync_execution:

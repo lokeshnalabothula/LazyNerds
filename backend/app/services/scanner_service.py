@@ -886,8 +886,9 @@ def launch_scan(
                 "Remote git cloning is not currently supported; please specify an accessible local directory path on the worker host (e.g. 'lab/vulnerable_app')."
             )
         resolved_repo = resolve_source_repo_path(source_repo)
-        if not os.path.exists(resolved_repo) or not os.path.isdir(resolved_repo):
-            raise ValueError(f"Specified source repository path '{source_repo}' is not an accessible directory on this host.")
+        if not (resolved_repo and os.path.exists(resolved_repo) and os.path.isdir(resolved_repo)):
+            if not is_mock_run:
+                raise ValueError(f"Specified source repository path '{source_repo}' is not an accessible directory on this host.")
 
     # 5. Create Assessment record in "queued" state
     user_email = current_user.email if current_user else "system@lazynerds.com"

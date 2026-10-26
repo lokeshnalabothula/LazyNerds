@@ -79,6 +79,6 @@ frontend/title.PNG
 # External Integration Repositories & Scans
 integrations/
 scans/
-lab/
+lab/**/*.db
 
 

@@ -297,6 +297,7 @@ def test_cancel_scan_lifecycle(db_session, test_client_record):
         target_asset_id=asset.id,
         scan_mode="source_assisted",
         source_repo="lab/vulnerable_app",
+        is_mock_run=True,
         sync_execution=False,
     )
 

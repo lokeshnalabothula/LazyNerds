@@ -55,6 +55,44 @@ main_module.engine = test_engine
 main_module.SessionLocal = TestingSessionLocal
 
 
+def _is_lab_server_running(host: str = "127.0.0.1", port: int = 8888) -> bool:
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        return s.connect_ex((host, port)) == 0
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ensure_lab_server():
+    """
+    Ensures that the deliberately vulnerable lab server on http://127.0.0.1:8888
+    is available for blackbox scanner and website audit test cases.
+    If the port is not bound, launches the lab process and terminates it on exit.
+    """
+    proc = None
+    if not _is_lab_server_running():
+        import subprocess
+        import time
+        lab_script = Path(__file__).resolve().parent.parent.parent / "lab" / "vulnerable_app" / "main.py"
+        if lab_script.exists():
+            proc = subprocess.Popen(
+                [sys.executable, str(lab_script)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            for _ in range(30):
+                if _is_lab_server_running():
+                    break
+                time.sleep(0.1)
+    yield
+    if proc:
+        proc.terminate()
+        try:
+            proc.wait(timeout=2)
+        except Exception:
+            proc.kill()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
     """Create test tables at beginning of test run and clean up at end."""

@@ -57,6 +57,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
+      - name: Start Vulnerable Lab Server
+        run: |
+          python lab/vulnerable_app/main.py &
+          for i in {1..20}; do
+            if curl -s http://127.0.0.1:8888/api/products > /dev/null; then
+              echo "Lab server online and responding on port 8888"
+              break
+            fi
+            sleep 0.5
+          done
+
       - name: Verify Database Migrations (Schema & Alembic Revisions)
         run: |
           PYTHONPATH=backend pytest backend/tests/test_migration.py -v

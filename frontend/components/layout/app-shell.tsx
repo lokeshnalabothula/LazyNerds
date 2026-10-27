@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
+import React, { useEffect } from "react";
+import { FloatingNav } from "@/components/layout/floating-nav";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter, usePathname } from "next/navigation";
 import { FixOpsAppLoader } from "@/components/ui/loading";
-import { cn } from "@/lib/utils";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -17,55 +15,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  // Initialize and persist sidebar collapse state
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("fixops_sidebar_collapsed");
-      if (saved !== null) {
-        setIsCollapsed(saved === "true");
-      }
-    } catch {
-      // Safe no-op on SSR / private browsing
-    }
-  }, []);
-
-  const toggleSidebarCollapse = useCallback(() => {
-    setIsCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("fixops_sidebar_collapsed", String(next));
-      } catch {
-        // Safe no-op
-      }
-      return next;
-    });
-  }, []);
-
-  // Keyboard shortcut: Ctrl+B or Cmd+B to toggle sidebar (ignoring active input fields)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        toggleSidebarCollapse();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleSidebarCollapse]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -87,52 +36,20 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#090A0F] telemetry-grid-bg flex flex-col md:flex-row text-[#e3e1e9] overflow-x-hidden relative selection:bg-[#00f0ff]/20 selection:text-[#00f0ff]">
+    <div className="min-h-screen bg-[#07090E] telemetry-grid-bg flex flex-col text-[#e3e1e9] overflow-x-hidden relative selection:bg-[#F5C518]/20 selection:text-[#F5C518]">
       {/* Subtle Atmospheric Radial Vignette (Stitch Liquid Glass Model) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(0,240,255,0.06),rgba(9,10,15,0))]"
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(245,197,24,0.04),rgba(7,9,14,0))]"
       />
 
-      {/* Desktop Collapsible Sidebar */}
-      <div
-        className={cn(
-          "hidden md:block shrink-0 h-screen sticky top-0 transition-[width] duration-300 ease-in-out z-20",
-          isCollapsed ? "w-[68px]" : "w-64"
-        )}
-      >
-        <Sidebar
-          isCollapsed={isCollapsed}
-          onToggleCollapse={toggleSidebarCollapse}
-        />
-      </div>
+      {/* Modern Floating Liquid Glass Navigation System */}
+      <FloatingNav />
 
-      {/* Mobile / Tablet Drawer */}
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-200">
-          <div
-            className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
-            onClick={() => setMobileNavOpen(false)}
-            aria-label="Close navigation overlay"
-          />
-          <div className="relative w-64 max-w-[85vw] h-full z-10 bg-zinc-50 dark:bg-[#0B0D12] shadow-2xl animate-in slide-in-from-left duration-200 border-r border-zinc-200 dark:border-[#222630]">
-            <Sidebar onNavigate={() => setMobileNavOpen(false)} />
-          </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden relative z-10">
-        <Topbar
-          title={title}
-          isSidebarCollapsed={isCollapsed}
-          onToggleSidebar={toggleSidebarCollapse}
-          onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)}
-        />
-        <main className="flex-1 p-3.5 sm:p-5 md:p-6 lg:p-8 max-w-[1400px] w-full mx-auto transition-all">
-          {children}
-        </main>
-      </div>
+      {/* Main Content Area - Full width, expansive, and unobstructed */}
+      <main className="flex-1 w-full max-w-[1440px] mx-auto px-3 sm:px-5 md:px-6 lg:px-8 pt-3 sm:pt-4 md:pt-6 pb-16 relative z-10 transition-all">
+        {children}
+      </main>
     </div>
   );
-  };
+};

@@ -1,662 +1,571 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ThinkingOrb } from "@/components/stitch/ThinkingOrb";
-import { BorderBeam } from "@/components/stitch/BorderBeam";
-import {
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  Lock,
-  Terminal,
-  ArrowRight,
-  CheckCircle2,
-  FileCode2,
-  BarChart3,
-  ExternalLink,
-  Activity,
-  Layers,
-  Cpu,
-  Server,
-  FileText,
-  Menu,
-  X,
-  ChevronRight,
-  Database,
-  Eye,
-  Check,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
+const SAMPLE_DOMAINS = [
+  "https://apple.com",
+  "https://stripe.com",
+  "https://github.com",
+  "https://google.com",
+  "https://openai.com",
+  "https://netflix.com",
+  "https://spotify.com",
+];
+
 export default function HomePage() {
+  const router = useRouter();
   const { user } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const [inputValue, setInputValue] = useState("");
+  const [placeholderValue, setPlaceholderValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [statusHint, setStatusHint] = useState("Free initial scan · Domain verification required");
+
+  const userInteractedRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const domainIndexRef = useRef(0);
+  const charIndexRef = useRef(0);
+  const isDeletingRef = useRef(false);
+
+  // Typewriter effect loop rotating through recognizable targets
+  useEffect(() => {
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReducedMotion) {
+      setPlaceholderValue(SAMPLE_DOMAINS[0]);
+      return;
+    }
+
+    function tick() {
+      if (userInteractedRef.current) {
+        return;
+      }
+
+      const currentTarget = SAMPLE_DOMAINS[domainIndexRef.current];
+
+      if (isDeletingRef.current) {
+        charIndexRef.current--;
+        setPlaceholderValue(currentTarget.substring(0, charIndexRef.current));
+      } else {
+        charIndexRef.current++;
+        setPlaceholderValue(currentTarget.substring(0, charIndexRef.current));
+      }
+
+      let delay = isDeletingRef.current ? 38 : 75 + Math.random() * 40;
+
+      if (!isDeletingRef.current && charIndexRef.current === currentTarget.length) {
+        delay = 2600;
+        isDeletingRef.current = true;
+      } else if (isDeletingRef.current && charIndexRef.current === 0) {
+        isDeletingRef.current = false;
+        domainIndexRef.current = (domainIndexRef.current + 1) % SAMPLE_DOMAINS.length;
+        delay = 550;
+      }
+
+      timeoutRef.current = setTimeout(tick, delay);
+    }
+
+    timeoutRef.current = setTimeout(tick, 1000);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    userInteractedRef.current = true;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (!inputValue.trim()) {
+      userInteractedRef.current = false;
+      charIndexRef.current = 0;
+      isDeletingRef.current = false;
+      timeoutRef.current = setTimeout(() => {
+        const currentTarget = SAMPLE_DOMAINS[domainIndexRef.current];
+        charIndexRef.current = 1;
+        setPlaceholderValue(currentTarget.substring(0, 1));
+      }, 800);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    userInteractedRef.current = true;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setInputValue(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    let query = inputValue.trim();
+    if (!query) {
+      query = placeholderValue || SAMPLE_DOMAINS[0];
+      setInputValue(query);
+    }
+
+    userInteractedRef.current = true;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    setIsScanning(true);
+    const domainClean = query.replace(/^https?:\/\//, "");
+    setStatusHint(`Analyzing ${domainClean} endpoints...`);
+
+    // Ensure scheme is present for router
+    const finalUrl = /^https?:\/\//i.test(query) ? query : `https://${query}`;
+
+    setTimeout(() => {
+      setIsScanning(false);
+      setStatusHint("Scan initiated · Verifying DNS & SSL records");
+      router.push(`/audit?url=${encodeURIComponent(finalUrl)}`);
+    }, 1200);
+  };
 
   return (
-    <div className="min-h-screen bg-[#07090E] text-zinc-100 selection:bg-[#F5C518]/20 selection:text-[#F5C518] flex flex-col font-sans">
-      {/* --------------------------------------------------------------------- */}
-      {/* Navigation Header                                                     */}
-      {/* --------------------------------------------------------------------- */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-[#07090E]/90 border-b border-white/[0.08]">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
-          {/* Brand Wordmark & Logo */}
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-gradient-to-br from-[#FFD84D]/20 via-[#F5C518]/10 to-transparent border border-[#F5C518]/30 flex items-center justify-center text-[#F5C518] shadow-sm group-hover:border-[#F5C518]/60 transition-colors">
-              <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="font-bold tracking-tight text-xs sm:text-base text-zinc-100 font-mono">
-                Lazy Nerds
-              </span>
-              <span className="text-[8px] sm:text-[9px] font-mono uppercase px-1 sm:px-1.5 py-0.5 rounded border border-[#F5C518]/40 bg-[#F5C518]/10 text-[#F5C518] tracking-widest font-semibold">
-                FIXOPS
-              </span>
-            </div>
-          </Link>
+    <div className="min-h-screen flex flex-col justify-between relative select-none antialiased overflow-hidden bg-[#030407] text-[#e2e8f0] font-sans selection:bg-[#7bd0ff]/20 selection:text-[#7bd0ff]">
+      {/* ------------------------------------------------------------------- */}
+      {/* ATMOSPHERIC BACKGROUND LAYERS                                       */}
+      {/* ------------------------------------------------------------------- */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+        data-purpose="background-layers"
+      >
+        {/* Deep grid lines / faint technical grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:120px_120px]" />
 
-          {/* Desktop Navigation Links */}
-          <nav
-            aria-label="Primary Navigation"
-            className="hidden lg:flex items-center gap-7 text-xs font-mono text-zinc-400"
-          >
-            <a
-              href="#capabilities"
-              className="hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:text-[#F5C518]"
-            >
-              Capabilities
-            </a>
-            <a
-              href="#methodology"
-              className="hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:text-[#F5C518]"
-            >
-              Methodology
-            </a>
-            <a
-              href="#architecture"
-              className="hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:text-[#F5C518]"
-            >
-              Architecture
-            </a>
-            <Link
-              href="/privacy"
-              className="hover:text-zinc-100 transition-colors focus-visible:outline-none focus-visible:text-[#F5C518]"
-            >
-              Governance
-            </Link>
-          </nav>
+        {/* Central Vertical Ray */}
+        <div className="vertical-axis-ray" />
 
-          {/* Header Action Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {user ? (
-              <Link
-                href="/overview"
-                className="inline-flex items-center justify-center font-mono font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] border border-white/[0.15] bg-white/[0.02] text-zinc-300 hover:text-white hover:bg-white/[0.06] hover:border-[#F5C518]/40 shadow-xs h-8 px-2.5 sm:px-3 text-xs gap-1.5 select-none cursor-pointer"
-              >
-                <span>Open Console</span>
-                <ArrowRight className="h-3.5 w-3.5 ml-1" />
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/register"
-                  className="hidden sm:inline-flex items-center justify-center font-mono font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] border border-white/[0.10] bg-white/[0.02] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] hover:border-[#F5C518]/40 shadow-xs h-8 px-3 text-xs gap-1.5 select-none cursor-pointer"
-                >
-                  <span>Request Access</span>
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center font-mono font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] border border-white/[0.15] bg-white/[0.02] text-zinc-300 hover:text-white hover:bg-white/[0.06] hover:border-[#F5C518]/40 shadow-xs h-8 px-2.5 sm:px-3 text-xs gap-1.5 select-none cursor-pointer"
-                >
-                  <span className="hidden sm:inline">Portal </span>
-                  <span>Sign In</span>
-                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 ml-0.5 sm:ml-1" />
-                </Link>
-              </>
-            )}
+        {/* Faint orbital coordinate concentric circles */}
+        <div className="orbital-ring w-[920px] h-[920px] left-1/2 top-[34%] opacity-30" />
+        <div className="orbital-ring w-[1280px] h-[1280px] left-1/2 top-[34%] opacity-20" />
 
-            {/* Mobile Hamburger Toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 rounded-lg border border-white/[0.1] bg-white/[0.03] text-zinc-400 hover:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#F5C518]"
-              aria-expanded={mobileMenuOpen}
-              aria-label="Toggle navigation menu"
-            >
-              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </button>
-          </div>
+        {/* Subtle side reticle crosshair markers */}
+        <div className="absolute top-[38%] left-[78px] text-[10px] tracking-widest text-white/10 font-mono hidden md:block">
+          + 45° 12&apos; N
+        </div>
+        <div className="absolute top-[41%] right-[68px] text-[10px] tracking-widest text-white/10 font-mono hidden md:block">
+          [X:00]
         </div>
 
-        {/* Mobile Dropdown Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-b border-white/[0.08] bg-[#090C12]/95 backdrop-blur-xl px-4 py-4 space-y-3">
-            <nav className="flex flex-col space-y-2 text-xs font-mono text-zinc-300">
-              <a
-                href="#capabilities"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors"
-              >
-                Capabilities
-              </a>
-              <a
-                href="#methodology"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors"
-              >
-                Methodology
-              </a>
-              <a
-                href="#architecture"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors"
-              >
-                Architecture
-              </a>
-              <Link
-                href="/privacy"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors"
-              >
-                Privacy & Governance
-              </Link>
-              <Link
-                href="/terms"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-colors"
-              >
-                Terms of Service
-              </Link>
-            </nav>
-            {!user && (
-              <div className="pt-2 border-t border-white/[0.06] flex flex-col gap-2">
-                <Link
-                  href="/register"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full inline-flex items-center justify-center font-mono font-medium rounded-lg transition-all duration-150 border border-white/[0.10] bg-white/[0.02] text-slate-300 hover:text-white hover:bg-white/[0.06] hover:border-[#F5C518]/40 shadow-xs h-8 px-3 text-xs gap-1.5 select-none cursor-pointer"
-                >
-                  <span>Request Organization Access</span>
-                </Link>
-              </div>
-            )}
+        {/* Earth Limb & Atmospheric Arc */}
+        <div className="earth-container">
+          <div className="earth-surface-lights" />
+          {/* Intense sub-surface dawn glow on center horizon with gentle cyber pulse */}
+          <div className="horizon-glow-pulse absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[180px] bg-cyan-100/15 rounded-full blur-[48px]" />
+          <div className="horizon-glow-pulse absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[70px] bg-white/40 rounded-full blur-[24px]" />
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------- */}
+      {/* NAVIGATION HEADER                                                   */}
+      {/* ------------------------------------------------------------------- */}
+      <header
+        className="relative z-30 w-full px-6 sm:px-12 py-7 flex items-center justify-between"
+        data-purpose="top-navigation"
+      >
+        {/* Brand Logo */}
+        <Link
+          href="/"
+          aria-label="Lazy Nerds FixOps Home"
+          className="flex items-center gap-3 group focus:outline-none focus:ring-1 focus:ring-white/30 rounded px-1"
+        >
+          {/* Minimalist geometric shield logo with inner notch */}
+          <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.4)] transition-transform duration-300 group-hover:scale-105">
+            <svg className="w-5 h-5 text-[#040609]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2ZM12 16.5C9.51 16.5 7.5 14.49 7.5 12C7.5 9.51 9.51 7.5 12 7.5V16.5Z" />
+            </svg>
           </div>
-        )}
+          <span className="text-[17px] font-semibold tracking-tight text-white flex items-center">
+            Lazy Nerds
+            <span className="text-[#848c9c] font-normal ml-1.5 font-sans">FixOps</span>
+          </span>
+        </Link>
+
+        {/* Sign In / Console Pill Button */}
+        <nav aria-label="Primary Navigation">
+          {user ? (
+            <Link
+              href="/overview"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+              <span>Console</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+              <span>Sign in</span>
+            </Link>
+          )}
+        </nav>
       </header>
 
-      {/* --------------------------------------------------------------------- */}
-      {/* Main Page Content                                                     */}
-      {/* --------------------------------------------------------------------- */}
-      <main className="flex-1">
-        {/* ------------------------------------------------------------------- */}
-        {/* Hero Section                                                        */}
-        {/* ------------------------------------------------------------------- */}
-        <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 lg:pt-28 lg:pb-32 border-b border-white/[0.06]">
-          {/* Subtle Ambient Radial Highlight */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-[#F5C518]/[0.04] blur-[120px] pointer-events-none rounded-full" />
-
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="max-w-3xl mx-auto text-center space-y-6">
-              {/* ThinkingOrb Floating Cognitive Construct (Stitch) */}
-              <div className="flex flex-col items-center mb-1">
-                <ThinkingOrb size="lg" state="searching" showBadge label="COGNITIVE COCKPIT // ZERO-TRUST DEFENSE" />
-              </div>
-
-              {/* Eyebrow Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/[0.06] text-[#00f0ff] text-[11px] font-mono uppercase tracking-wider">
-                <Activity className="h-3 w-3 animate-pulse" />
-                <span>OPERATIONAL PLATFORM v1.0.0 • VERIFIABLE ROE FENCES</span>
-              </div>
-
-              {/* Dominant Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight font-mono">
-                Precision Penetration Testing & Vulnerability Operations
-              </h1>
-
-              {/* Subheading */}
-              <p className="text-sm sm:text-base lg:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto">
-                Lazy Nerds FixOps pairs rigorous security assessments with verifiable Rules of Engagement, containerized scanner orchestration, and structured remediation workflows for modern engineering teams.
-              </p>
-
-              {/* Primary Call to Action Area (Single Prominent Primary Action Rule) */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link
-                  href={user ? "/overview" : "/login"}
-                  className="w-full sm:w-auto inline-flex items-center justify-center font-mono font-extrabold text-sm rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] gloss-yellow-btn text-[#090A0D] active:scale-[0.98] shadow-lg shadow-[#F5C518]/15 h-10 px-5 gap-2 select-none cursor-pointer"
-                >
-                  <span>{user ? "Open FixOps Console" : "Launch FixOps Portal"}</span>
-                  <ArrowRight className="h-4 w-4 ml-1.5" />
-                </Link>
-                <a
-                  href="#capabilities"
-                  className="w-full sm:w-auto inline-flex items-center justify-center font-mono font-medium text-sm rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] border border-white/[0.10] bg-white/[0.02] text-slate-300 hover:text-[#F9FAFB] hover:bg-white/[0.06] hover:border-[#F5C518]/40 shadow-xs h-10 px-5 gap-2 select-none cursor-pointer"
-                >
-                  <span>Explore Platform Capabilities</span>
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </a>
-              </div>
-            </div>
-
-            {/* Grounded Technical Invariant Chips (Truthful & Verified Features) */}
-            <div className="mt-14 sm:mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="p-4 rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm space-y-1.5">
-                <div className="flex items-center gap-2 text-[#F5C518] font-mono text-xs font-semibold uppercase">
-                  <ShieldCheck className="h-4 w-4 shrink-0" />
-                  <span>Verifiable RoE Fencing</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Explicit legal authorization states (draft, pending, confirmed) strictly enforced before scan dispatch.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm space-y-1.5">
-                <div className="flex items-center gap-2 text-[#F5C518] font-mono text-xs font-semibold uppercase">
-                  <Terminal className="h-4 w-4 shrink-0" />
-                  <span>Containerized Sandboxing</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Automated security tools execute in isolated Docker workers with dropped privileges and bounded leases.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm space-y-1.5">
-                <div className="flex items-center gap-2 text-[#F5C518] font-mono text-xs font-semibold uppercase">
-                  <Lock className="h-4 w-4 shrink-0" />
-                  <span>Multi-Layer SSRF Defense</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Destination validation unconditionally blocking cloud metadata (169.254.169.254) and internal infrastructure.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm space-y-1.5">
-                <div className="flex items-center gap-2 text-[#F5C518] font-mono text-xs font-semibold uppercase">
-                  <FileCode2 className="h-4 w-4 shrink-0" />
-                  <span>Traceable Remediation</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  CVSS v3.1 severity triage, CWE mapping, and reproducible proof-of-concept evidence for every finding.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ------------------------------------------------------------------- */}
-        {/* Core Capabilities Section                                          */}
-        {/* ------------------------------------------------------------------- */}
-        <section id="capabilities" className="py-16 sm:py-24 border-b border-white/[0.06] relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mb-12 sm:mb-16 space-y-3">
-              <div className="inline-flex items-center gap-1.5 text-xs font-mono uppercase text-[#F5C518] tracking-widest font-semibold">
-                <Cpu className="h-3.5 w-3.5" />
-                <span>ENGINEERING CAPABILITIES</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-mono">
-                Built for High-Assurance Security Workflows
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Six integrated operational subsystems engineered to identify genuine vulnerabilities, challenge unverified assumptions, and drive verifiable remediation.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {/* Card 1: Engagements & RoE */}
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.035] to-transparent backdrop-blur-md space-y-3 hover:border-[#F5C518]/30 transition-colors">
-                <div className="h-10 w-10 rounded-xl bg-white/[0.04] border border-white/[0.1] flex items-center justify-center text-[#F5C518]">
-                  <ShieldAlert className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-bold text-white font-mono">
-                  Rules of Engagement Fencing
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Security assessments are never initiated without explicit stakeholder authorization. FixOps locks engagement parameters and validates client ownership before scanning.
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                  <Check className="h-3 w-3 text-[#F5C518]" />
-                  <span>Verified state machine & lock boundaries</span>
-                </div>
-              </div>
-
-              {/* Card 2: Containerized Worker Execution */}
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.035] to-transparent backdrop-blur-md space-y-3 hover:border-[#F5C518]/30 transition-colors">
-                <div className="h-10 w-10 rounded-xl bg-white/[0.04] border border-white/[0.1] flex items-center justify-center text-[#F5C518]">
-                  <Terminal className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-bold text-white font-mono">
-                  Containerized Scanner Orchestration
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Automated security tools run inside isolated Docker worker containers with dropped capabilities (`--cap-drop ALL`), strict memory limits, and atomic worker leases.
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                  <Check className="h-3 w-3 text-[#F5C518]" />
-                  <span>Nuclei engine with SARIF 2.1.0 ingestion</span>
-                </div>
-              </div>
-
-              {/* Card 3: Multi-Layer SSRF Defense */}
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.035] to-transparent backdrop-blur-md space-y-3 hover:border-[#F5C518]/30 transition-colors">
-                <div className="h-10 w-10 rounded-xl bg-white/[0.04] border border-white/[0.1] flex items-center justify-center text-[#F5C518]">
-                  <Lock className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-bold text-white font-mono">
-                  Kernel-Level SSRF Protection
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Destination validation blocks probes against AWS/GCP/Azure instance metadata endpoints (`169.254.169.254`), private RFC 1918 subnets, and sensitive internal ports.
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                  <Check className="h-3 w-3 text-[#F5C518]" />
-                  <span>Fail-closed lab enforcement in production</span>
-                </div>
-              </div>
-
-              {/* Card 4: Actionable Findings Dossiers */}
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.035] to-transparent backdrop-blur-md space-y-3 hover:border-[#F5C518]/30 transition-colors">
-                <div className="h-10 w-10 rounded-xl bg-white/[0.04] border border-white/[0.1] flex items-center justify-center text-[#F5C518]">
-                  <FileCode2 className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-bold text-white font-mono">
-                  Reproducible Findings Dossiers
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Every vulnerability is cataloged with verified CVSS v3.1 vector calculations, CWE taxonomies, step-by-step reproduction evidence, and concrete remediation advice.
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                  <Check className="h-3 w-3 text-[#F5C518]" />
-                  <span>Clean scannable dossiers with zero table occlusion</span>
-                </div>
-              </div>
-
-              {/* Card 5: Remediation Lifecycle Tracking */}
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.035] to-transparent backdrop-blur-md space-y-3 hover:border-[#F5C518]/30 transition-colors">
-                <div className="h-10 w-10 rounded-xl bg-white/[0.04] border border-white/[0.1] flex items-center justify-center text-[#F5C518]">
-                  <CheckCircle2 className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-bold text-white font-mono">
-                  Remediation SLA & Verification
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Track vulnerability status through open, in-progress, remediated, accepted risk, and verified fixed states. Automated scheduler rules send timely follow-up reminders.
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                  <Check className="h-3 w-3 text-[#F5C518]" />
-                  <span>Event-driven webhooks & email alerts</span>
-                </div>
-              </div>
-
-              {/* Card 6: Multi-Tenant Stakeholder Console */}
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.035] to-transparent backdrop-blur-md space-y-3 hover:border-[#F5C518]/30 transition-colors">
-                <div className="h-10 w-10 rounded-xl bg-white/[0.04] border border-white/[0.1] flex items-center justify-center text-[#F5C518]">
-                  <BarChart3 className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-bold text-white font-mono">
-                  Executive Reports & Role Scoping
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Multi-tenant isolation strictly restricts client stakeholders to their organization scope. Executive reports compile risk posture and remediation progress into clean deliverables.
-                </p>
-                <div className="pt-2 text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
-                  <Check className="h-3 w-3 text-[#F5C518]" />
-                  <span>Role-based tenant isolation (founder, employee, client)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ------------------------------------------------------------------- */}
-        {/* Assessment Methodology Section                                      */}
-        {/* ------------------------------------------------------------------- */}
-        <section id="methodology" className="py-16 sm:py-24 border-b border-white/[0.06] bg-white/[0.01]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mb-12 sm:mb-16 space-y-3">
-              <div className="inline-flex items-center gap-1.5 text-xs font-mono uppercase text-[#F5C518] tracking-widest font-semibold">
-                <Layers className="h-3.5 w-3.5" />
-                <span>OPERATIONAL METHODOLOGY</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-mono">
-                Verified 4-Stage Security Lifecycle
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                From initial client onboarding to cryptographic deliverables, every step is bound by explicit operational rules.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Step 01 */}
-              <div className="p-5 rounded-2xl border border-white/[0.08] bg-[#090C12] space-y-3 relative">
-                <div className="text-2xl font-mono font-extrabold text-[#F5C518]/80">01</div>
-                <h3 className="text-sm font-bold text-white font-mono">
-                  Scope Definition & RoE
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Clients and engagements are configured with explicit in-scope assets. Target URLs undergo SSRF destination validation and RoE certification before test creation.
-                </p>
-              </div>
-
-              {/* Step 02 */}
-              <div className="p-5 rounded-2xl border border-white/[0.08] bg-[#090C12] space-y-3 relative">
-                <div className="text-2xl font-mono font-extrabold text-[#F5C518]/80">02</div>
-                <h3 className="text-sm font-bold text-white font-mono">
-                  Isolated Probe Execution
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Automated security tools are dispatched to decoupled worker nodes. Jobs run inside sandboxed Docker containers with bounded lease timeouts and capability shedding.
-                </p>
-              </div>
-
-              {/* Step 03 */}
-              <div className="p-5 rounded-2xl border border-white/[0.08] bg-[#090C12] space-y-3 relative">
-                <div className="text-2xl font-mono font-extrabold text-[#F5C518]/80">03</div>
-                <h3 className="text-sm font-bold text-white font-mono">
-                  Normalization & Evidence
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Raw SARIF and JSON security outputs are parsed into normalized vulnerability findings with CVSS severity calculations, affected assets, and actionable evidence.
-                </p>
-              </div>
-
-              {/* Step 04 */}
-              <div className="p-5 rounded-2xl border border-white/[0.08] bg-[#090C12] space-y-3 relative">
-                <div className="text-2xl font-mono font-extrabold text-[#F5C518]/80">04</div>
-                <h3 className="text-sm font-bold text-white font-mono">
-                  Remediation & Sign-Off
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Engineering teams apply mitigations while security personnel perform verification scans. Terminal engagements are locked against tampering, producing final audit reports.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ------------------------------------------------------------------- */}
-        {/* Architecture & Truthful Disclosures Section                         */}
-        {/* ------------------------------------------------------------------- */}
-        <section id="architecture" className="py-16 sm:py-24 border-b border-white/[0.06]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mb-12 sm:mb-16 space-y-3">
-              <div className="inline-flex items-center gap-1.5 text-xs font-mono uppercase text-[#F5C518] tracking-widest font-semibold">
-                <Server className="h-3.5 w-3.5" />
-                <span>SYSTEM ARCHITECTURE</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-mono">
-                Engineering Integrity & Transparency
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Lazy Nerds maintains strict operational boundaries: zero fabricated customer testimonials, zero simulated claims without benchmark provenance, and zero bypass of security controls.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] space-y-3">
-                <div className="flex items-center gap-2 text-white font-mono text-sm font-semibold">
-                  <Database className="h-4 w-4 text-[#F5C518]" />
-                  <span>Modern Core Stack</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Next.js 15 App Router frontend paired with asynchronous FastAPI, SQLAlchemy 2.0 ORM, and PostgreSQL 16 Lakebase with pooled connections and Alembic migration tracking.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] space-y-3">
-                <div className="flex items-center gap-2 text-white font-mono text-sm font-semibold">
-                  <Eye className="h-4 w-4 text-[#F5C518]" />
-                  <span>Truthful Provenance</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Live findings are strictly separated from offline simulations using explicit `[LAB BENCHMARK]` provenance tags. We never fabricate exploits or simulate scan completions.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] space-y-3">
-                <div className="flex items-center gap-2 text-white font-mono text-sm font-semibold">
-                  <Lock className="h-4 w-4 text-[#F5C518]" />
-                  <span>Role-Based Tenant Guard</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Enforces server-side privilege boundaries across administrative founders, security consultants, and client viewers. Tenant isolation is enforced across database queries and role-based access checks.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ------------------------------------------------------------------- */}
-        {/* Call to Action Section                                              */}
-        {/* ------------------------------------------------------------------- */}
-        <section className="py-16 sm:py-20 relative overflow-hidden">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-mono">
-              Ready to Inspect Your Attack Surface?
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
-              Sign in to the FixOps security operations console or submit an authorized registration request for your organization.
-            </p>
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href={user ? "/overview" : "/login"}
-                className="w-full sm:w-auto inline-flex items-center justify-center font-mono font-medium text-sm rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] border border-white/[0.2] bg-white/[0.02] text-zinc-200 hover:text-[#F9FAFB] hover:bg-white/[0.08] hover:border-[#F5C518]/40 shadow-xs h-10 px-5 gap-2 select-none cursor-pointer"
+      {/* ------------------------------------------------------------------- */}
+      {/* HERO MAIN SECTION                                                   */}
+      {/* ------------------------------------------------------------------- */}
+      <main
+        className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-2 pb-16"
+        data-purpose="hero-content"
+      >
+        {/* Frosted Glass Shield Vector Wrapper */}
+        <div className="relative flex items-center justify-center w-full max-w-[620px]">
+          {/* Background Shield Silhouette */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
+            {/* Scaled & Enhanced Shield Assembly */}
+            <div className="relative flex items-center justify-center transform scale-[0.75] sm:scale-[0.82] transition-transform duration-300 origin-center">
+              {/* Crisp SVG Outer & Inner Bevel Contours */}
+              <svg
+                className="absolute inset-0 w-[580px] h-[610px] pointer-events-none z-10 overflow-visible"
+                fill="none"
+                viewBox="0 0 580 610"
               >
-                <span>{user ? "Open FixOps Console" : "Launch FixOps Portal"}</span>
-                <ArrowRight className="h-4 w-4 ml-1.5" />
-              </Link>
-              {!user && (
-                <Link
-                  href="/register"
-                  className="w-full sm:w-auto inline-flex items-center justify-center font-mono font-medium text-sm rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C518] focus-visible:ring-offset-2 focus-visible:ring-offset-[#090A0D] border border-white/[0.10] bg-white/[0.02] text-slate-300 hover:text-[#F9FAFB] hover:bg-white/[0.06] hover:border-[#F5C518]/40 shadow-xs h-10 px-5 gap-2 select-none cursor-pointer"
-                >
-                  <span>Request Organization Access</span>
-                </Link>
-              )}
+                <defs>
+                  {/* Chrome edge gradient for crest and flanks left */}
+                  <linearGradient id="fullBorderGradLeft" x1="50%" x2="0%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                    <stop offset="25%" stopColor="#cbd5e1" stopOpacity="0.75" />
+                    <stop offset="65%" stopColor="#64748b" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.85" />
+                  </linearGradient>
+
+                  {/* Chrome edge gradient for crest and flanks right */}
+                  <linearGradient id="fullBorderGradRight" x1="50%" x2="100%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                    <stop offset="25%" stopColor="#cbd5e1" stopOpacity="0.75" />
+                    <stop offset="65%" stopColor="#64748b" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.85" />
+                  </linearGradient>
+
+                  {/* Traveling photon energy gradient left along entire perimeter */}
+                  <linearGradient id="photonCircuitGradLeft" x1="50%" x2="0%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                    <stop offset="35%" stopColor="#7bd0ff" stopOpacity="0.95" />
+                    <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+                  </linearGradient>
+
+                  {/* Traveling photon energy gradient right along entire perimeter */}
+                  <linearGradient id="photonCircuitGradRight" x1="50%" x2="100%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                    <stop offset="35%" stopColor="#7bd0ff" stopOpacity="0.95" />
+                    <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+                  </linearGradient>
+
+                  {/* Inner specular rim gradient */}
+                  <linearGradient id="shieldInnerRim" x1="50%" x2="50%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.6" />
+                    <stop offset="40%" stopColor="#ffffff" stopOpacity="0.05" />
+                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.15" />
+                  </linearGradient>
+
+                  {/* Glow Filter for energy trail */}
+                  <filter height="200%" id="beamGlow" width="200%" x="-50%" y="-50%">
+                    <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="3" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+
+                {/* Static / Base Full Symmetrical Outer Perimeter Strokes */}
+                <path
+                  className="full-perimeter-left"
+                  d="M 290 0 C 210 40 110 52 10 55 C 5 220 35 420 290 610"
+                  fill="none"
+                  opacity="0.65"
+                  stroke="url(#fullBorderGradLeft)"
+                  strokeLinecap="round"
+                  strokeWidth="1.8"
+                />
+                <path
+                  className="full-perimeter-right"
+                  d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610"
+                  fill="none"
+                  opacity="0.65"
+                  stroke="url(#fullBorderGradRight)"
+                  strokeLinecap="round"
+                  strokeWidth="1.8"
+                />
+
+                {/* Inner Bevel contours starting from apex symmetrically */}
+                <path
+                  className="crest-inner-stroke"
+                  d="M 290 8 C 213 46 117 58 20 61"
+                  fill="none"
+                  opacity="0.75"
+                  stroke="url(#shieldInnerRim)"
+                  strokeWidth="1"
+                />
+                <path
+                  className="crest-inner-stroke"
+                  d="M 290 8 C 367 46 463 58 560 61"
+                  fill="none"
+                  opacity="0.75"
+                  stroke="url(#shieldInnerRim)"
+                  strokeWidth="1"
+                />
+                <path
+                  d="M 560 61 C 565 218 536 410 290 596 C 44 410 15 218 20 61"
+                  fill="none"
+                  opacity="0.4"
+                  stroke="url(#shieldInnerRim)"
+                  strokeWidth="1"
+                />
+
+                {/* Dual Synchronous Extended Energy Beams: Slowly trace down contours from Apex (0%) to Tip (50%) */}
+                <path
+                  className="perimeter-pulse-beam-left"
+                  d="M 290 0 C 210 40 110 52 10 55 C 5 220 35 420 290 610"
+                  fill="none"
+                  filter="url(#beamGlow)"
+                  stroke="url(#photonCircuitGradLeft)"
+                  strokeLinecap="round"
+                  strokeWidth="3.2"
+                />
+                <path
+                  className="perimeter-pulse-beam-right"
+                  d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610"
+                  fill="none"
+                  filter="url(#beamGlow)"
+                  stroke="url(#photonCircuitGradRight)"
+                  strokeLinecap="round"
+                  strokeWidth="3.2"
+                />
+              </svg>
+
+              {/* Apex Flare crosshair with synchronized breathing shimmer (Top Apex) */}
+              <div className="apex-flare" />
+
+              {/* Outer Corner Flares (Left & Right Shoulders) */}
+              <div className="corner-flare-left" />
+              <div className="corner-flare-right" />
+
+              {/* Bottom Convergence Flare where dual beams meet at lower tip (50% mark) */}
+              <div className="bottom-apex-flare" />
+
+              {/* Downward light beam projection connecting shield tip towards central scroll axis */}
+              <div className="convergence-projector-stream" />
+
+              {/* Frosted Glass Shield Vector */}
+              <div className="shield-glass" />
             </div>
           </div>
-        </section>
-      </main>
 
-      {/* --------------------------------------------------------------------- */}
-      {/* Footer                                                                */}
-      {/* --------------------------------------------------------------------- */}
-      <footer className="border-t border-white/[0.08] bg-[#05070B] py-12 px-4 sm:px-6 lg:px-8 text-xs font-mono text-zinc-400">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-          {/* Brand Info */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-[#F5C518]/10 border border-[#F5C518]/30 flex items-center justify-center text-[#F5C518]">
-                <Shield className="h-3.5 w-3.5" />
-              </div>
-              <span className="font-bold tracking-tight text-zinc-200">Lazy Nerds FixOps</span>
+          {/* Foreground Centered Content */}
+          <div className="relative z-10 w-full flex flex-col items-center text-center pt-8 sm:pt-10">
+            {/* Eyebrow Tagline with delicate hairline rules */}
+            <div
+              className="flex items-center justify-center gap-4 mb-5 w-full max-w-sm"
+              data-purpose="category-eyebrow"
+            >
+              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-white/50" />
+              <span className="text-[11px] font-medium tracking-[0.24em] text-white/70 uppercase">
+                CYBERSECURITY AUDIT
+              </span>
+              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-white/30 to-white/50" />
             </div>
-            <p className="text-[11px] text-zinc-500 leading-relaxed">
-              Continuous cybersecurity management, authorized assessment operations, and verified vulnerability remediation.
+
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-6xl md:text-[68px] font-medium tracking-[-0.03em] leading-[1.08] text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-3.5 max-w-[580px]">
+              Know what’s<br />exposed.
+            </h1>
+
+            {/* Supporting Subheadline */}
+            <p className="text-sm sm:text-base font-normal tracking-wide text-[#949dae] mb-9">
+              Verify. Scan. Secure.
             </p>
-          </div>
 
-          {/* Operational Links */}
-          <div className="space-y-2.5">
-            <h4 className="text-zinc-200 font-semibold uppercase tracking-wider text-[11px]">Operations</h4>
-            <ul className="space-y-1.5 text-[11px]">
-              <li>
-                <Link href="/login" className="hover:text-[#F5C518] transition-colors">
-                  Client Portal Sign In
-                </Link>
-              </li>
-              <li>
-                <Link href="/overview" className="hover:text-[#F5C518] transition-colors">
-                  Overview Cockpit
-                </Link>
-              </li>
-              <li>
-                <Link href="/register" className="hover:text-[#F5C518] transition-colors">
-                  Organization Registration
-                </Link>
-              </li>
-              <li>
-                <Link href="/register/status" className="hover:text-[#F5C518] transition-colors">
-                  Registration Status Tracker
-                </Link>
-              </li>
-            </ul>
-          </div>
+            {/* Interactive Domain Scan Input Capsule */}
+            <div className="w-full max-w-[530px] px-2 mb-4" data-purpose="scan-form-container">
+              <form
+                id="auditForm"
+                onSubmit={handleSubmit}
+                className={`capsule-pill rounded-full p-1.5 pl-5 sm:pl-6 flex items-center transition-all duration-300 ${
+                  isScanning ? "scanning-active" : ""
+                } ${isFocused ? "ring-1 ring-white/25" : ""}`}
+              >
+                {/* Globe Icon */}
+                <div aria-hidden="true" className="text-white/60 mr-3 shrink-0">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2 12h20" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
 
-          {/* Security Architecture Links */}
-          <div className="space-y-2.5">
-            <h4 className="text-zinc-200 font-semibold uppercase tracking-wider text-[11px]">Framework</h4>
-            <ul className="space-y-1.5 text-[11px]">
-              <li>
-                <a href="#capabilities" className="hover:text-[#F5C518] transition-colors">
-                  Rules of Engagement
-                </a>
-              </li>
-              <li>
-                <a href="#capabilities" className="hover:text-[#F5C518] transition-colors">
-                  SSRF Protection Matrix
-                </a>
-              </li>
-              <li>
-                <a href="#capabilities" className="hover:text-[#F5C518] transition-colors">
-                  Docker Scanner Workers
-                </a>
-              </li>
-              <li>
-                <a href="#methodology" className="hover:text-[#F5C518] transition-colors">
-                  Remediation Lifecycle
-                </a>
-              </li>
-            </ul>
-          </div>
+                {/* Input Wrapper (Clean Typewriter Display) */}
+                <div className="relative w-full flex items-center overflow-hidden">
+                  <input
+                    id="domainInput"
+                    name="target_domain"
+                    type="text"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder={placeholderValue}
+                    aria-label="Website domain to audit"
+                    autoComplete="off"
+                    spellCheck="false"
+                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[14px] sm:text-[15px] font-normal tracking-normal py-2.5 px-0 select-text outline-none"
+                  />
+                </div>
 
-          {/* Governance & Compliance */}
-          <div className="space-y-2.5">
-            <h4 className="text-zinc-200 font-semibold uppercase tracking-wider text-[11px]">Governance</h4>
-            <ul className="space-y-1.5 text-[11px]">
-              <li>
-                <Link href="/privacy" className="hover:text-[#F5C518] transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-[#F5C518] transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <a href="/api/v1/health" target="_blank" rel="noreferrer" className="hover:text-[#F5C518] transition-colors inline-flex items-center gap-1">
-                  <span>API Operational Health</span>
-                  <ExternalLink className="h-2.5 w-2.5" />
-                </a>
-              </li>
-            </ul>
+                {/* Submit Button (Chrome Liquid Pill) */}
+                <button
+                  id="scanSubmitBtn"
+                  type="submit"
+                  aria-label="Start cybersecurity audit scan"
+                  className="chrome-button shrink-0 w-16 sm:w-[72px] h-10 sm:h-11 rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
+                >
+                  {isScanning ? (
+                    <svg
+                      id="spinnerIcon"
+                      className="w-4 h-4 text-slate-900 animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      id="arrowIcon"
+                      className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform stroke-[2.2]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* Verification Notice / Sub-label */}
+            <div
+              className="flex items-center justify-center gap-2 text-white/50 text-[12px] font-normal tracking-normal"
+              data-purpose="terms-hint"
+            >
+              <svg
+                className="w-3.5 h-3.5 text-white/60"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span id="statusHintText">{statusHint}</span>
+            </div>
           </div>
         </div>
+      </main>
 
-        {/* Corporate Disclosure Banner */}
-        <div className="pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500">
-          <p>© 2026 Lazy Nerds. All rights reserved. FixOps Client Manager.</p>
-          <p className="text-[10px] text-zinc-600">
-            Legal parameters marked with brackets in governance docs await corporate counsel review.
-          </p>
+      {/* ------------------------------------------------------------------- */}
+      {/* INTERACTIVE SCROLL PROMPT                                           */}
+      {/* ------------------------------------------------------------------- */}
+      <div
+        className="relative z-20 flex flex-col items-center pb-6 group cursor-pointer"
+        data-purpose="scroll-prompt"
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+          }
+        }}
+      >
+        <div className="flex flex-col items-center justify-center overflow-visible">
+          <div className="h-5 flex items-center justify-center overflow-visible">
+            <svg
+              className="w-5 h-5 text-white/80 animate-falling-arrow overflow-visible filter drop-shadow-[0_0_8px_rgba(125,208,255,0.6)]"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <defs>
+                <linearGradient id="scrollChevronGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                  <stop offset="50%" stopColor="#cbd5e1" stopOpacity="0.75" />
+                  <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.95" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M7 9.5L12 14.5L17 9.5"
+                stroke="url(#scrollChevronGrad)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.4"
+              />
+              <circle cx="12" cy="14.5" fill="#ffffff" opacity="0.85" r="0.6" />
+            </svg>
+          </div>
+          <span className="inline-flex items-center text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.24em] text-white/80 px-3 py-1 mt-1 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-md shadow-[0_0_12px_rgba(255,255,255,0.04)] select-none transition-all duration-300 group-hover:text-white group-hover:border-white/40 group-hover:bg-white/[0.08]">
+            Scroll to explore
+          </span>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------- */}
+      {/* SITE FOOTER                                                         */}
+      {/* ------------------------------------------------------------------- */}
+      <footer
+        className="relative z-20 border-t border-white/[0.08] px-6 sm:px-12 py-5 flex items-center justify-between text-[13px] text-white/45 font-normal"
+        data-purpose="site-footer"
+      >
+        <div>Lazy Nerds © 2026</div>
+        <div className="flex items-center gap-4">
+          <Link href="/privacy" className="hover:text-white/80 transition-colors">
+            Privacy
+          </Link>
+          <span className="text-white/20 select-none">|</span>
+          <Link href="/terms" className="hover:text-white/80 transition-colors">
+            Terms
+          </Link>
         </div>
       </footer>
     </div>

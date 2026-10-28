@@ -177,7 +177,7 @@ export default function WebsiteAuditPage() {
     loadInitialData();
   }, [loadInitialData]);
 
-  // Restore active audit from localStorage on mount
+  // Restore active audit from localStorage on mount and read target URL query param
   useEffect(() => {
     try {
       const saved = localStorage.getItem(ACTIVE_AUDIT_STORAGE_KEY);
@@ -188,6 +188,14 @@ export default function WebsiteAuditPage() {
           setActiveEngagementId(parsed.engagementId || null);
           setActiveTargetUrl(parsed.targetUrl || null);
           setScanStatus("running");
+        }
+      }
+
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const queryTarget = params.get("url") || params.get("target");
+        if (queryTarget && !url) {
+          setUrl(queryTarget);
         }
       }
     } catch {

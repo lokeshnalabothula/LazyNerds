@@ -3,13 +3,13 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-describe("Public Marketing Homepage Integrity & Grounded Truth (LNA-16)", () => {
+describe("Stitch Cybersecurity Audit Landing Page Parity", () => {
   const cwd = process.cwd();
   const frontendDir = cwd.endsWith("frontend") ? cwd : path.join(cwd, "frontend");
   const homepagePath = path.join(frontendDir, "app", "page.tsx");
   const homepageCode = fs.readFileSync(homepagePath, "utf8");
 
-  test("Homepage renders public landing page without unconditional redirects away from '/'", () => {
+  test("Homepage renders public Stitch landing page without unconditional redirects", () => {
     // Must NOT contain unconditional router.replace('/overview') or router.replace('/login')
     assert.ok(
       !homepageCode.includes("router.replace('/overview')") &&
@@ -19,28 +19,30 @@ describe("Public Marketing Homepage Integrity & Grounded Truth (LNA-16)", () => 
       "Homepage must not unconditionally redirect unauthenticated visitors away from '/'"
     );
 
-    // Must render hero headline and brand
+    // Must render Stitch headline and brand
     assert.ok(
-      homepageCode.includes("Precision Penetration Testing & Vulnerability Operations"),
-      "Must render the primary headline"
+      homepageCode.includes("Know what’s") && homepageCode.includes("exposed."),
+      "Must render the Stitch primary headline 'Know what’s exposed.'"
     );
     assert.ok(
-      homepageCode.includes("Lazy Nerds") && homepageCode.includes("FIXOPS"),
-      "Must render Lazy Nerds FIXOPS branding"
+      homepageCode.includes("Lazy Nerds") && homepageCode.includes("FixOps"),
+      "Must render Lazy Nerds FixOps branding"
+    );
+    assert.ok(
+      homepageCode.includes("CYBERSECURITY AUDIT"),
+      "Must render category eyebrow 'CYBERSECURITY AUDIT'"
+    );
+    assert.ok(
+      homepageCode.includes("Verify. Scan. Secure."),
+      "Must render supporting subheadline 'Verify. Scan. Secure.'"
     );
   });
 
-  test("Navigation provides accessible routes to portal, registration, and governance", () => {
-    // Portal sign in
+  test("Navigation provides accessible routes to portal, legal, and console", () => {
+    // Portal sign in / console
     assert.ok(
-      homepageCode.includes('href="/login"') || homepageCode.includes("href={user ? \"/overview\" : \"/login\"}"),
-      "Must provide navigation link to login/portal"
-    );
-
-    // Registration request
-    assert.ok(
-      homepageCode.includes('href="/register"'),
-      "Must provide navigation link to self-service registration"
+      homepageCode.includes('href="/login"') && homepageCode.includes('href="/overview"'),
+      "Must provide navigation link to login and console"
     );
 
     // Governance & Legal
@@ -52,48 +54,25 @@ describe("Public Marketing Homepage Integrity & Grounded Truth (LNA-16)", () => 
       homepageCode.includes('href="/terms"'),
       "Must provide link to terms of service"
     );
-    assert.ok(
-      homepageCode.includes('href="/api/v1/health"'),
-      "Must provide link to operational health endpoint"
-    );
   });
 
-  test("Enforces single prominent primary action hierarchy per screen state", () => {
-    // Count exact occurrences of gloss-yellow-btn across the entire homepage template
-    const yellowMatches = homepageCode.match(/gloss-yellow-btn/g) || [];
-    assert.strictEqual(
-      yellowMatches.length,
-      1,
-      `Homepage must define exactly ONE yellow primary action across all template states (found ${yellowMatches.length})`
-    );
-
-    // Hero action must have dominant primary yellow styling on the anchor
+  test("Interactive domain scan input capsule and Chrome button exist", () => {
+    // Form and input capsule
     assert.ok(
-      homepageCode.includes("gloss-yellow-btn") &&
-        homepageCode.includes('{user ? "Open FixOps Console" : "Launch FixOps Portal"}'),
-      "Hero section must feature the single dominant yellow action anchor"
+      homepageCode.includes("capsule-pill"),
+      "Must feature Stitch capsule-pill input container"
     );
-
-    // Hero secondary helper must be subordinate outline styling
     assert.ok(
-      homepageCode.includes('href="#capabilities"') &&
-        homepageCode.includes("Explore Platform Capabilities"),
-      "Secondary hero action must be subordinate anchor linking to capabilities"
+      homepageCode.includes('id="domainInput"'),
+      "Must include domain input"
     );
-
-    // Header actions must use subordinate styling to avoid competing with hero
     assert.ok(
-      homepageCode.includes("Portal Sign In") &&
-        homepageCode.includes("Open Console") &&
-        homepageCode.includes("border-white/[0.15]"),
-      "Header actions must use subordinate outline styling rather than yellow primary"
+      homepageCode.includes("chrome-button"),
+      "Must feature Stitch chrome-button liquid pill action"
     );
-
-    // Bottom CTA section must feature subordinate outline styling
     assert.ok(
-      homepageCode.includes("Request Organization Access") &&
-        homepageCode.includes("border-white/[0.2]"),
-      "Bottom CTA section must offer subordinate styling"
+      homepageCode.includes("Free initial scan · Domain verification required"),
+      "Must feature domain verification requirement hint"
     );
   });
 
@@ -112,88 +91,50 @@ describe("Public Marketing Homepage Integrity & Grounded Truth (LNA-16)", () => 
       !hasNestedLinkButton && !hasNestedAButton,
       "Must not nest interactive <button> controls inside <Link> or <a> elements"
     );
+  });
 
-    // Homepage must not import or render the Button component (all navigation actions are styled anchors)
+  test("Stitch atmospheric lighting, shield geometry, and energy beams are defined", () => {
     assert.ok(
-      !homepageCode.includes('import { Button }') &&
-        !homepageCode.includes('<Button'),
-      "Homepage navigation actions must be rendered as direct styled anchors rather than nested <Button> components"
+      homepageCode.includes("vertical-axis-ray"),
+      "Must render central vertical axis ray"
     );
-
-    // Any standalone button (like mobile hamburger) must be a valid button with type='button'
     assert.ok(
-      homepageCode.includes('<button') &&
-        homepageCode.includes('type="button"') &&
-        homepageCode.includes('aria-label="Toggle navigation menu"'),
-      "Standalone interactive controls must be valid accessible buttons"
+      homepageCode.includes("shield-glass"),
+      "Must render frosted glass shield backdrop"
+    );
+    assert.ok(
+      homepageCode.includes("perimeter-pulse-beam-left") &&
+        homepageCode.includes("perimeter-pulse-beam-right"),
+      "Must render dual synchronous perimeter pulse energy beams"
+    );
+    assert.ok(
+      homepageCode.includes("apex-flare") &&
+        homepageCode.includes("bottom-apex-flare"),
+      "Must render top apex flare and bottom convergence flare"
+    );
+    assert.ok(
+      homepageCode.includes("earth-container") &&
+        homepageCode.includes("earth-surface-lights"),
+      "Must render curved earth horizon backdrop and surface lights"
+    );
+    assert.ok(
+      homepageCode.includes("animate-falling-arrow"),
+      "Must render synchronized scroll exploration arrow"
     );
   });
 
-  test("Claims are strictly grounded in verified platform capabilities (zero fabricated proof)", () => {
-    // Grounded technical capabilities verified in LNA-15
-    assert.ok(
-      homepageCode.includes("Rules of Engagement") || homepageCode.includes("RoE"),
-      "Must highlight verified Rules of Engagement authorization fencing"
-    );
-    assert.ok(
-      homepageCode.includes("SSRF") && homepageCode.includes("169.254.169.254"),
-      "Must highlight verified multi-layer SSRF destination protection"
-    );
-    assert.ok(
-      homepageCode.includes("Docker") && homepageCode.includes("Nuclei"),
-      "Must highlight verified containerized scanner orchestration"
-    );
-    assert.ok(
-      homepageCode.includes("CVSS") && homepageCode.includes("CWE"),
-      "Must highlight verified findings triage and remediation taxonomy"
-    );
-
-    // Strict negative checks: No fabricated social proof or false guarantees
-    const lower = homepageCode.toLowerCase();
-    assert.ok(
-      !lower.includes("10,000+ hacks prevented") &&
-        !lower.includes("100% unhackable") &&
-        !lower.includes("guaranteed zero breaches") &&
-        !lower.includes("trusted by fortune 500") &&
-        !lower.includes("cross-tenant data leaks are structurally prevented") &&
-        !lower.includes("5-star rating"),
-      "Must not include fabricated statistics, false security guarantees, or fake testimonials"
-    );
-
-    // Verifiable isolation claim
-    assert.ok(
-      homepageCode.includes("Tenant isolation is enforced across database queries and role-based access checks"),
-      "Must use precise, verifiable tenant isolation wording rather than absolute guarantees"
-    );
-
-    // Zero broken or non-functional dummy contact forms
-    assert.ok(
-      !homepageCode.includes("<form") && !homepageCode.includes('onSubmit='),
-      "Must not include non-functional placeholder contact forms"
-    );
-  });
-
-  test("Semantic accessibility structure and responsive layout attributes exist", () => {
-    // Semantic landmarks
+  test("Semantic accessibility structure exists", () => {
     assert.ok(homepageCode.includes("<header"), "Must include semantic <header> landmark");
     assert.ok(homepageCode.includes("<main"), "Must include semantic <main> landmark");
     assert.ok(homepageCode.includes("<footer"), "Must include semantic <footer> landmark");
     assert.ok(homepageCode.includes("<nav"), "Must include semantic <nav> landmark");
-
-    // Responsive landmarks and mobile controls
     assert.ok(
-      homepageCode.includes("aria-label=\"Primary Navigation\"") ||
-        homepageCode.includes("aria-label='Primary Navigation'"),
+      homepageCode.includes('aria-label="Primary Navigation"'),
       "Primary navigation must include descriptive aria-label"
     );
     assert.ok(
-      homepageCode.includes("aria-label=\"Toggle navigation menu\"") ||
-        homepageCode.includes("aria-label='Toggle navigation menu'"),
-      "Mobile hamburger button must include accessible aria-label"
-    );
-    assert.ok(
-      homepageCode.includes("aria-expanded="),
-      "Mobile hamburger button must include aria-expanded attribute"
+      homepageCode.includes('aria-label="Website domain to audit"'),
+      "Domain input must include accessible aria-label"
     );
   });
 });

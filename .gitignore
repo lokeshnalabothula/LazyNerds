@@ -82,3 +82,7 @@ scans/
 lab/**/*.db
 
 
+
+# Local Chrome for Testing
+chrome/
+

@@ -82,15 +82,23 @@ class ApiError extends Error {
 
 export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("fixops_token");
+  try {
+    return localStorage.getItem("fixops_token");
+  } catch {
+    return null;
+  }
 }
 
 export function setStoredToken(token: string | null) {
   if (typeof window === "undefined") return;
-  if (token) {
-    localStorage.setItem("fixops_token", token);
-  } else {
-    localStorage.removeItem("fixops_token");
+  try {
+    if (token) {
+      localStorage.setItem("fixops_token", token);
+    } else {
+      localStorage.removeItem("fixops_token");
+    }
+  } catch {
+    // Ignore storage quota / security errors in restricted browser contexts
   }
 }
 

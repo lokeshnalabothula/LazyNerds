@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User } from "@/types/client";
-import { api, setStoredToken } from "@/lib/api";
+import { api, getStoredToken, setStoredToken } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
@@ -21,13 +21,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const checkAuth = useCallback(async () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("fixops_token") : null;
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
     try {
+      const token = getStoredToken();
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       const currentUser = await api.getCurrentUser();
       setUser(currentUser);
     } catch {

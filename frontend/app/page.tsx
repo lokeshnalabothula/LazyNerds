@@ -35,6 +35,7 @@ export default function HomePage() {
   useEffect(() => {
     const prefersReducedMotion =
       typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
@@ -130,7 +131,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between relative select-none antialiased overflow-hidden bg-[#030407] text-[#e2e8f0] font-sans selection:bg-[#7bd0ff]/20 selection:text-[#7bd0ff]">
+    <div
+      suppressHydrationWarning
+      className="min-h-screen flex flex-col justify-between relative antialiased overflow-x-hidden bg-[#030407] text-[#e2e8f0] font-sans selection:bg-[#7bd0ff]/20 selection:text-[#7bd0ff]"
+    >
       {/* ------------------------------------------------------------------- */}
       {/* ATMOSPHERIC BACKGROUND LAYERS                                       */}
       {/* ------------------------------------------------------------------- */}
@@ -281,6 +285,11 @@ export default function HomePage() {
                       <feMergeNode in="SourceGraphic" />
                     </feMerge>
                   </filter>
+
+                  {/* Standard SVG Clip Path for WebKit / Safari cross-browser stability */}
+                  <clipPath id="shieldClip">
+                    <path d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610 C 35 420 5 220 10 55 C 110 52 210 40 290 0 Z" />
+                  </clipPath>
                 </defs>
 
                 {/* Static / Base Full Symmetrical Outer Perimeter Strokes */}
@@ -382,7 +391,7 @@ export default function HomePage() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl md:text-[68px] font-medium tracking-[-0.03em] leading-[1.08] text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-3.5 max-w-[580px]">
+            <h1 className="text-4xl sm:text-6xl md:text-[68px] font-medium tracking-[-0.03em] leading-[1.08] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-3.5 max-w-[580px]">
               Know what’s<br />exposed.
             </h1>
 
@@ -392,10 +401,11 @@ export default function HomePage() {
             </p>
 
             {/* Interactive Domain Scan Input Capsule */}
-            <div className="w-full max-w-[530px] px-2 mb-4" data-purpose="scan-form-container">
+            <div className="w-full max-w-[530px] px-2 mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
               <form
                 id="auditForm"
                 onSubmit={handleSubmit}
+                suppressHydrationWarning
                 className={`capsule-pill rounded-full p-1.5 pl-5 sm:pl-6 flex items-center transition-all duration-300 ${
                   isScanning ? "scanning-active" : ""
                 } ${isFocused ? "ring-1 ring-white/25" : ""}`}
@@ -433,6 +443,7 @@ export default function HomePage() {
                     aria-label="Website domain to audit"
                     autoComplete="off"
                     spellCheck="false"
+                    suppressHydrationWarning
                     className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[14px] sm:text-[15px] font-normal tracking-normal py-2.5 px-0 select-text outline-none"
                   />
                 </div>
@@ -515,8 +526,12 @@ export default function HomePage() {
         className="relative z-20 flex flex-col items-center pb-6 group cursor-pointer"
         data-purpose="scroll-prompt"
         onClick={() => {
-          if (typeof window !== "undefined") {
-            window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+          if (typeof window !== "undefined" && typeof window.scrollTo === "function") {
+            try {
+              window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+            } catch {
+              window.scrollTo(0, window.innerHeight);
+            }
           }
         }}
       >

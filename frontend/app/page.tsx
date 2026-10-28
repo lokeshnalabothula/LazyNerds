@@ -174,33 +174,33 @@ export default function HomePage() {
       {/* NAVIGATION HEADER                                                   */}
       {/* ------------------------------------------------------------------- */}
       <header
-        className="relative z-30 w-full px-6 sm:px-12 py-7 flex items-center justify-between"
+        className="relative z-30 w-full px-4 sm:px-12 py-5 sm:py-7 flex items-center justify-between"
         data-purpose="top-navigation"
       >
         {/* Brand Logo */}
         <Link
           href="/"
           aria-label="Lazy Nerds FixOps Home"
-          className="flex items-center gap-3 group focus:outline-none focus:ring-1 focus:ring-white/30 rounded px-1"
+          className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus:ring-1 focus:ring-white/30 rounded px-1 shrink-0"
         >
           {/* Minimalist geometric shield logo with inner notch */}
-          <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.4)] transition-transform duration-300 group-hover:scale-105">
-            <svg className="w-5 h-5 text-[#040609]" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-white flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.4)] transition-transform duration-300 group-hover:scale-105 shrink-0">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#040609]" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2ZM12 16.5C9.51 16.5 7.5 14.49 7.5 12C7.5 9.51 9.51 7.5 12 7.5V16.5Z" />
             </svg>
           </div>
-          <span className="text-[17px] font-semibold tracking-tight text-white flex items-center">
+          <span className="text-[15px] sm:text-[17px] font-semibold tracking-tight text-white flex items-center whitespace-nowrap">
             Lazy Nerds
             <span className="text-[#848c9c] font-normal ml-1.5 font-sans">FixOps</span>
           </span>
         </Link>
 
         {/* Sign In / Console Pill Button */}
-        <nav aria-label="Primary Navigation">
+        <nav aria-label="Primary Navigation" className="shrink-0">
           {user ? (
             <Link
               href="/overview"
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
               <span>Console</span>
@@ -208,7 +208,7 @@ export default function HomePage() {
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
               <span>Sign in</span>
@@ -225,11 +225,14 @@ export default function HomePage() {
         data-purpose="hero-content"
       >
         {/* Frosted Glass Shield Vector Wrapper */}
-        <div className="relative flex items-center justify-center w-full max-w-[680px] lg:max-w-[760px]">
+        <div className="relative flex items-center justify-center w-full max-w-[92vw] sm:max-w-[80vw] md:max-w-[780px] lg:max-w-[920px] xl:max-w-[1100px]">
           {/* Background Shield Silhouette */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
-            {/* Scaled & Enhanced Shield Assembly */}
-            <div className="relative flex items-center justify-center transform scale-[0.88] sm:scale-100 lg:scale-[1.06] transition-transform duration-300 origin-center">
+            {/* Scaled & Enhanced Shield Assembly (Fluid ~60% Viewport Scale) */}
+            <div
+              className="shield-assembly relative flex items-center justify-center transition-transform duration-300 origin-center"
+              style={{ transform: "scale(var(--shield-scale, 1))" }}
+            >
               {/* Crisp SVG Outer & Inner Bevel Contours */}
               <svg
                 className="absolute inset-0 w-[580px] h-[610px] pointer-events-none z-10 overflow-visible"
@@ -377,43 +380,43 @@ export default function HomePage() {
           </div>
 
           {/* Foreground Centered Content */}
-          <div className="relative z-10 w-full flex flex-col items-center text-center pt-8 sm:pt-10">
+          <div className="relative z-10 w-full flex flex-col items-center text-center pt-4 sm:pt-6 md:pt-10">
             {/* Eyebrow Tagline with delicate hairline rules */}
             <div
-              className="flex items-center justify-center gap-4 mb-5 w-full max-w-sm"
+              className="flex items-center justify-center gap-2 sm:gap-4 mb-3 sm:mb-5 w-full max-w-[220px] sm:max-w-sm"
               data-purpose="category-eyebrow"
             >
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-white/50" />
-              <span className="text-[11px] font-medium tracking-[0.24em] text-white/70 uppercase">
+              <span className="text-[9px] sm:text-[11px] lg:text-[12px] font-medium tracking-[0.2em] sm:tracking-[0.24em] text-white/70 uppercase">
                 CYBERSECURITY AUDIT
               </span>
               <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-white/30 to-white/50" />
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[78px] xl:text-[82px] font-medium tracking-[-0.035em] leading-[1.06] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-4 max-w-[660px]">
+            <h1 className="text-[28px] xs:text-[32px] sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[88px] 2xl:text-[96px] font-medium tracking-[-0.035em] leading-[1.06] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-3 sm:mb-4 max-w-[290px] sm:max-w-[520px] md:max-w-[660px] lg:max-w-[820px] xl:max-w-[960px]">
               Know what’s<br />exposed.
             </h1>
 
             {/* Supporting Subheadline */}
-            <p className="text-base sm:text-[17px] font-normal tracking-wide text-[#949dae] mb-9 sm:mb-10">
+            <p className="text-[13px] sm:text-base lg:text-[18px] xl:text-[20px] font-normal tracking-wide text-[#949dae] mb-5 sm:mb-7 lg:mb-9 xl:mb-10">
               Verify. Scan. Secure.
             </p>
 
             {/* Interactive Domain Scan Input Capsule */}
-            <div className="w-full max-w-[530px] sm:max-w-[560px] px-2 mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
+            <div className="w-full max-w-[260px] xs:max-w-[280px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[620px] xl:max-w-[700px] px-1 sm:px-2 mb-3 sm:mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
               <form
                 id="auditForm"
                 onSubmit={handleSubmit}
                 suppressHydrationWarning
-                className={`capsule-pill rounded-full p-2 pl-5 sm:pl-6 sm:pr-2 flex items-center transition-all duration-300 ${
+                className={`capsule-pill rounded-full p-1.5 sm:p-2 pl-3 sm:pl-6 pr-1.5 sm:pr-2 flex items-center transition-all duration-300 min-h-[42px] sm:min-h-[50px] lg:min-h-[56px] xl:min-h-[62px] ${
                   isScanning ? "scanning-active" : ""
                 } ${isFocused ? "ring-1 ring-white/25" : ""}`}
               >
                 {/* Globe Icon */}
-                <div aria-hidden="true" className="text-white/60 mr-3 shrink-0">
+                <div aria-hidden="true" className="text-white/60 mr-2 sm:mr-3 shrink-0">
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
@@ -444,7 +447,7 @@ export default function HomePage() {
                     autoComplete="off"
                     spellCheck="false"
                     suppressHydrationWarning
-                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[15px] sm:text-[16px] font-normal tracking-normal py-2.5 px-0 select-text outline-none"
+                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[13px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-normal tracking-normal py-1 sm:py-2.5 px-0 select-text outline-none"
                   />
                 </div>
 
@@ -453,12 +456,12 @@ export default function HomePage() {
                   id="scanSubmitBtn"
                   type="submit"
                   aria-label="Start cybersecurity audit scan"
-                  className="chrome-button shrink-0 w-16 sm:w-[76px] h-10 sm:h-12 rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
+                  className="chrome-button shrink-0 w-11 sm:w-16 md:w-[76px] lg:w-[84px] xl:w-[94px] h-8 sm:h-10 md:h-12 lg:h-[44px] xl:h-[48px] rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
                 >
                   {isScanning ? (
                     <svg
                       id="spinnerIcon"
-                      className="w-4 h-4 text-slate-900 animate-spin"
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-900 animate-spin"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
@@ -479,7 +482,7 @@ export default function HomePage() {
                   ) : (
                     <svg
                       id="arrowIcon"
-                      className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform stroke-[2.2]"
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-0.5 transition-transform stroke-[2.2]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -497,7 +500,7 @@ export default function HomePage() {
 
             {/* Verification Notice / Sub-label */}
             <div
-              className="flex items-center justify-center gap-2 text-white/50 text-[12px] font-normal tracking-normal"
+              className="flex items-center justify-center gap-2 text-white/50 text-[11px] sm:text-[12px] lg:text-[13px] font-normal tracking-normal"
               data-purpose="terms-hint"
             >
               <svg
@@ -569,7 +572,7 @@ export default function HomePage() {
       {/* SITE FOOTER                                                         */}
       {/* ------------------------------------------------------------------- */}
       <footer
-        className="relative z-20 border-t border-white/[0.08] px-6 sm:px-12 py-5 flex items-center justify-between text-[13px] text-white/45 font-normal"
+        className="relative z-20 border-t border-white/[0.08] px-4 sm:px-12 py-4 sm:py-5 flex items-center justify-between text-[11px] sm:text-[13px] text-white/45 font-normal"
         data-purpose="site-footer"
       >
         <div>Lazy Nerds © 2026</div>

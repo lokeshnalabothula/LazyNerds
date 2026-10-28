@@ -859,11 +859,69 @@
     100% { transform: translate(-50%, -50%) rotate(360deg); }
   }
 
+  /* Fluid Responsive Scaling Rules: 
+     - Desktop: Hero zooms in, shield occupies ~60% of viewport width (~864px on 1440px, ~1142px on 1920px)
+     - Mobile: Hero zooms out, shield occupies ~60-65% of screen width (~241px on 390px, ~206px on 320px)
+     - Planetary horizon stays positioned safely below hero elements across all viewports
+  */
+  :root {
+    --shield-scale: 0.355;
+    --earth-top: clamp(480px, 74vh, 560px);
+  }
+  @media (min-width: 380px) {
+    :root {
+      --shield-scale: 0.415;
+      --earth-top: clamp(520px, 73vh, 620px);
+    }
+  }
+  @media (min-width: 480px) {
+    :root {
+      --shield-scale: 0.50;
+      --earth-top: clamp(550px, 72vh, 650px);
+    }
+  }
+  @media (min-width: 640px) {
+    :root {
+      --shield-scale: 0.66;
+      --earth-top: clamp(580px, 71vh, 680px);
+    }
+  }
+  @media (min-width: 768px) {
+    :root {
+      --shield-scale: 0.79;
+      --earth-top: clamp(600px, 71vh, 700px);
+    }
+  }
+  @media (min-width: 1024px) {
+    :root {
+      --shield-scale: 1.06;
+      --earth-top: clamp(630px, 70vh, 730px);
+    }
+  }
+  @media (min-width: 1280px) {
+    :root {
+      --shield-scale: 1.33;
+      --earth-top: clamp(650px, 72vh, 760px);
+    }
+  }
+  @media (min-width: 1440px) {
+    :root {
+      --shield-scale: 1.49;
+      --earth-top: clamp(670px, 73vh, 780px);
+    }
+  }
+  @media (min-width: 1800px) {
+    :root {
+      --shield-scale: 1.97;
+      --earth-top: clamp(750px, 73vh, 860px);
+    }
+  }
+
   .earth-container {
     position: absolute;
     left: -25%;
     right: -25%;
-    top: clamp(620px, 70vh, 760px);
+    top: var(--earth-top, 70%);
     height: 950px;
     border-radius: 50% / 32%;
     background: radial-gradient(50% 40% at 50% 0%, #151d28 0%, #080d14 45%, #020306 90%);

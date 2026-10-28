@@ -86,3 +86,5 @@ lab/**/*.db
 # Local Chrome for Testing
 chrome/
 
+.vercel
+.env*

@@ -861,17 +861,17 @@
 
   .earth-container {
     position: absolute;
-    left: -20%;
-    right: -20%;
-    bottom: -480px;
-    height: 820px;
-    border-radius: 50% / 35%;
+    left: -25%;
+    right: -25%;
+    top: clamp(620px, 70vh, 760px);
+    height: 950px;
+    border-radius: 50% / 32%;
     background: radial-gradient(50% 40% at 50% 0%, #151d28 0%, #080d14 45%, #020306 90%);
     box-shadow: 
-      0 -1px 0 rgba(255, 255, 255, 0.7),
-      0 -4px 15px rgba(215, 235, 255, 0.65),
-      0 -20px 70px rgba(130, 185, 255, 0.28),
-      0 -60px 140px rgba(90, 140, 230, 0.12);
+      0 -1px 0 rgba(255, 255, 255, 0.75),
+      0 -4px 18px rgba(215, 235, 255, 0.7),
+      0 -20px 80px rgba(130, 185, 255, 0.35),
+      0 -60px 160px rgba(90, 140, 230, 0.15);
     pointer-events: none;
     overflow: hidden;
     z-index: 5;
@@ -917,19 +917,19 @@
   }
 
   .capsule-pill {
-    background: linear-gradient(180deg, rgba(28, 34, 46, 0.65) 0%, rgba(12, 16, 23, 0.85) 100%);
-    box-shadow: 
-      inset 0 1px 1px rgba(255, 255, 255, 0.28),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.7),
-      0 10px 40px -10px rgba(0, 0, 0, 0.9),
-      0 0 25px rgba(190, 220, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-  }
-  .capsule-pill:focus-within {
-    border-color: rgba(255, 255, 255, 0.35);
+    background: linear-gradient(180deg, rgba(28, 34, 46, 0.75) 0%, rgba(12, 16, 23, 0.9) 100%);
     box-shadow: 
       inset 0 1px 1px rgba(255, 255, 255, 0.35),
-      0 0 35px rgba(200, 225, 255, 0.22);
+      inset 0 -1px 1px rgba(0, 0, 0, 0.7),
+      0 12px 40px -10px rgba(0, 0, 0, 0.95),
+      0 0 35px rgba(190, 220, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  .capsule-pill:focus-within {
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 
+      inset 0 1px 1px rgba(255, 255, 255, 0.45),
+      0 0 45px rgba(200, 225, 255, 0.28);
   }
 
   .scanning-active {

@@ -221,15 +221,15 @@ export default function HomePage() {
       {/* HERO MAIN SECTION                                                   */}
       {/* ------------------------------------------------------------------- */}
       <main
-        className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-2 pb-16"
+        className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-2 pb-10 sm:pb-14"
         data-purpose="hero-content"
       >
         {/* Frosted Glass Shield Vector Wrapper */}
-        <div className="relative flex items-center justify-center w-full max-w-[620px]">
+        <div className="relative flex items-center justify-center w-full max-w-[680px] lg:max-w-[760px]">
           {/* Background Shield Silhouette */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
             {/* Scaled & Enhanced Shield Assembly */}
-            <div className="relative flex items-center justify-center transform scale-[0.75] sm:scale-[0.82] transition-transform duration-300 origin-center">
+            <div className="relative flex items-center justify-center transform scale-[0.88] sm:scale-100 lg:scale-[1.06] transition-transform duration-300 origin-center">
               {/* Crisp SVG Outer & Inner Bevel Contours */}
               <svg
                 className="absolute inset-0 w-[580px] h-[610px] pointer-events-none z-10 overflow-visible"
@@ -391,22 +391,22 @@ export default function HomePage() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl md:text-[68px] font-medium tracking-[-0.03em] leading-[1.08] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-3.5 max-w-[580px]">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[78px] xl:text-[82px] font-medium tracking-[-0.035em] leading-[1.06] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-4 max-w-[660px]">
               Know what’s<br />exposed.
             </h1>
 
             {/* Supporting Subheadline */}
-            <p className="text-sm sm:text-base font-normal tracking-wide text-[#949dae] mb-9">
+            <p className="text-base sm:text-[17px] font-normal tracking-wide text-[#949dae] mb-9 sm:mb-10">
               Verify. Scan. Secure.
             </p>
 
             {/* Interactive Domain Scan Input Capsule */}
-            <div className="w-full max-w-[530px] px-2 mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
+            <div className="w-full max-w-[530px] sm:max-w-[560px] px-2 mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
               <form
                 id="auditForm"
                 onSubmit={handleSubmit}
                 suppressHydrationWarning
-                className={`capsule-pill rounded-full p-1.5 pl-5 sm:pl-6 flex items-center transition-all duration-300 ${
+                className={`capsule-pill rounded-full p-2 pl-5 sm:pl-6 sm:pr-2 flex items-center transition-all duration-300 ${
                   isScanning ? "scanning-active" : ""
                 } ${isFocused ? "ring-1 ring-white/25" : ""}`}
               >
@@ -444,7 +444,7 @@ export default function HomePage() {
                     autoComplete="off"
                     spellCheck="false"
                     suppressHydrationWarning
-                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[14px] sm:text-[15px] font-normal tracking-normal py-2.5 px-0 select-text outline-none"
+                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[15px] sm:text-[16px] font-normal tracking-normal py-2.5 px-0 select-text outline-none"
                   />
                 </div>
 
@@ -453,7 +453,7 @@ export default function HomePage() {
                   id="scanSubmitBtn"
                   type="submit"
                   aria-label="Start cybersecurity audit scan"
-                  className="chrome-button shrink-0 w-16 sm:w-[72px] h-10 sm:h-11 rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
+                  className="chrome-button shrink-0 w-16 sm:w-[76px] h-10 sm:h-12 rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
                 >
                   {isScanning ? (
                     <svg

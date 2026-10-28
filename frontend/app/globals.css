@@ -859,61 +859,63 @@
     100% { transform: translate(-50%, -50%) rotate(360deg); }
   }
 
-  /* Fluid Responsive Scaling Rules: 
-     - Desktop: Hero zooms in, shield occupies ~60% of viewport width (~864px on 1440px, ~1142px on 1920px)
-     - Mobile: Hero zooms out, shield occupies ~60-65% of screen width (~241px on 390px, ~206px on 320px)
-     - Planetary horizon stays positioned safely below hero elements across all viewports
+  /* Responsive Shield Composition: 10% Safe Margins (Target ~80% Viewport Width)
+     - Desktop & Laptop: Shield fills ~80% width (10% side margins), apex & tip fully unclipped
+     - Tablet: Shield fills ~80% width (10% side margins)
+     - Mobile: Shield fills ~80% width (10% side margins)
+     - Small Mobile: Shield fills ~80% width with sensible minimum inner spacing
+     - Planetary horizon stays safely positioned below hero elements across all viewports
   */
   :root {
-    --shield-scale: 0.355;
-    --earth-top: clamp(480px, 74vh, 560px);
+    --shield-scale: 0.4414;
+    --earth-top: clamp(400px, 60vh, 460px);
   }
-  @media (min-width: 380px) {
+  @media (min-width: 360px) {
     :root {
-      --shield-scale: 0.415;
-      --earth-top: clamp(520px, 73vh, 620px);
+      --shield-scale: 0.5379;
+      --earth-top: clamp(480px, 62vh, 540px);
     }
   }
-  @media (min-width: 480px) {
+  @media (min-width: 440px) {
     :root {
-      --shield-scale: 0.50;
-      --earth-top: clamp(550px, 72vh, 650px);
+      --shield-scale: 0.6621;
+      --earth-top: clamp(520px, 64vh, 600px);
     }
   }
-  @media (min-width: 640px) {
+  @media (min-width: 580px) {
     :root {
-      --shield-scale: 0.66;
-      --earth-top: clamp(580px, 71vh, 680px);
+      --shield-scale: 0.8828;
+      --earth-top: clamp(560px, 64vh, 640px);
     }
   }
-  @media (min-width: 768px) {
+  @media (min-width: 700px) {
     :root {
-      --shield-scale: 0.79;
-      --earth-top: clamp(600px, 71vh, 700px);
+      --shield-scale: 1.0593;
+      --earth-top: clamp(600px, 64vh, 680px);
     }
   }
-  @media (min-width: 1024px) {
+  @media (min-width: 900px) {
     :root {
-      --shield-scale: 1.06;
-      --earth-top: clamp(630px, 70vh, 730px);
+      --shield-scale: 1.4124;
+      --earth-top: clamp(640px, 68vh, 720px);
     }
   }
-  @media (min-width: 1280px) {
+  @media (min-width: 1150px) {
     :root {
-      --shield-scale: 1.33;
-      --earth-top: clamp(650px, 72vh, 760px);
+      --shield-scale: 1.7655;
+      --earth-top: clamp(660px, 72vh, 740px);
     }
   }
-  @media (min-width: 1440px) {
+  @media (min-width: 1350px) {
     :root {
-      --shield-scale: 1.49;
-      --earth-top: clamp(670px, 73vh, 780px);
+      --shield-scale: 1.9862;
+      --earth-top: clamp(690px, 76vh, 760px);
     }
   }
-  @media (min-width: 1800px) {
+  @media (min-width: 1650px) {
     :root {
-      --shield-scale: 1.97;
-      --earth-top: clamp(750px, 73vh, 860px);
+      --shield-scale: 2.6483;
+      --earth-top: clamp(820px, 78vh, 900px);
     }
   }
 

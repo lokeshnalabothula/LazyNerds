@@ -221,16 +221,21 @@ export default function HomePage() {
       {/* HERO MAIN SECTION                                                   */}
       {/* ------------------------------------------------------------------- */}
       <main
-        className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-2 pb-10 sm:pb-14"
+        className="relative z-20 flex-1 flex flex-col items-center justify-start px-2 sm:px-4 pt-1 sm:pt-3 pb-8 sm:pb-12"
         data-purpose="hero-content"
       >
-        {/* Frosted Glass Shield Vector Wrapper */}
-        <div className="relative flex items-center justify-center w-full max-w-[92vw] sm:max-w-[80vw] md:max-w-[780px] lg:max-w-[920px] xl:max-w-[1100px]">
-          {/* Background Shield Silhouette */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
-            {/* Scaled & Enhanced Shield Assembly (Fluid ~60% Viewport Scale) */}
+        {/* Responsive Shield Hero Container (Target ~80% Viewport Width, 10% Safe Margins) */}
+        <div
+          className="shield-hero-container relative flex flex-col items-center justify-start w-full mx-auto"
+          style={{
+            maxWidth: "calc(580px * var(--shield-scale, 1))",
+          }}
+        >
+          {/* Background Shield Silhouette (Anchored at Top Center) */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none select-none z-0">
+            {/* Scaled & Enhanced Shield Assembly (Fluid ~80% Viewport Scale) */}
             <div
-              className="shield-assembly relative flex items-center justify-center transition-transform duration-300 origin-center"
+              className="shield-assembly relative flex items-center justify-center transition-transform duration-300 origin-top"
               style={{ transform: "scale(var(--shield-scale, 1))" }}
             >
               {/* Crisp SVG Outer & Inner Bevel Contours */}
@@ -379,44 +384,49 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Foreground Centered Content */}
-          <div className="relative z-10 w-full flex flex-col items-center text-center pt-4 sm:pt-6 md:pt-10">
+          {/* Foreground Centered Content (Maintains ~10% Safe Horizontal Inset from Shield Edges) */}
+          <div
+            className="relative z-10 w-full flex flex-col items-center text-center px-[8%] sm:px-[10%]"
+            style={{
+              paddingTop: "calc(65px * var(--shield-scale, 1))",
+            }}
+          >
             {/* Eyebrow Tagline with delicate hairline rules */}
             <div
-              className="flex items-center justify-center gap-2 sm:gap-4 mb-3 sm:mb-5 w-full max-w-[220px] sm:max-w-sm"
+              className="flex items-center justify-center gap-2 sm:gap-4 mb-2.5 sm:mb-4 lg:mb-5 w-full max-w-[200px] xs:max-w-[240px] sm:max-w-sm"
               data-purpose="category-eyebrow"
             >
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-white/50" />
-              <span className="text-[9px] sm:text-[11px] lg:text-[12px] font-medium tracking-[0.2em] sm:tracking-[0.24em] text-white/70 uppercase">
+              <span className="text-[9px] xs:text-[10px] sm:text-[11px] lg:text-[13px] font-medium tracking-[0.18em] sm:tracking-[0.24em] text-white/70 uppercase whitespace-nowrap">
                 CYBERSECURITY AUDIT
               </span>
               <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-white/30 to-white/50" />
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-[28px] xs:text-[32px] sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[88px] 2xl:text-[96px] font-medium tracking-[-0.035em] leading-[1.06] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-3 sm:mb-4 max-w-[290px] sm:max-w-[520px] md:max-w-[660px] lg:max-w-[820px] xl:max-w-[960px]">
+            <h1 className="text-[22px] xs:text-[26px] sm:text-5xl md:text-6xl lg:text-[80px] xl:text-[96px] 2xl:text-[104px] font-medium tracking-[-0.035em] leading-[1.08] sm:leading-[1.06] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-2 sm:mb-3 lg:mb-4 max-w-[85%]">
               Know what’s<br />exposed.
             </h1>
 
             {/* Supporting Subheadline */}
-            <p className="text-[13px] sm:text-base lg:text-[18px] xl:text-[20px] font-normal tracking-wide text-[#949dae] mb-5 sm:mb-7 lg:mb-9 xl:mb-10">
+            <p className="text-[11px] xs:text-[13px] sm:text-base lg:text-[18px] xl:text-[21px] font-normal tracking-wide text-[#949dae] mb-4 sm:mb-6 lg:mb-8 xl:mb-9 max-w-[80%]">
               Verify. Scan. Secure.
             </p>
 
             {/* Interactive Domain Scan Input Capsule */}
-            <div className="w-full max-w-[260px] xs:max-w-[280px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[620px] xl:max-w-[700px] px-1 sm:px-2 mb-3 sm:mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
+            <div className="w-full max-w-[195px] xs:max-w-[240px] sm:max-w-[420px] md:max-w-[520px] lg:max-w-[680px] xl:max-w-[820px] px-0.5 sm:px-2 mb-2.5 sm:mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
               <form
                 id="auditForm"
                 onSubmit={handleSubmit}
                 suppressHydrationWarning
-                className={`capsule-pill rounded-full p-1.5 sm:p-2 pl-3 sm:pl-6 pr-1.5 sm:pr-2 flex items-center transition-all duration-300 min-h-[42px] sm:min-h-[50px] lg:min-h-[56px] xl:min-h-[62px] ${
+                className={`capsule-pill rounded-full p-1 sm:p-2 pl-2.5 sm:pl-6 pr-1 sm:pr-2 flex items-center transition-all duration-300 min-h-[38px] xs:min-h-[42px] sm:min-h-[50px] lg:min-h-[58px] xl:min-h-[64px] ${
                   isScanning ? "scanning-active" : ""
                 } ${isFocused ? "ring-1 ring-white/25" : ""}`}
               >
                 {/* Globe Icon */}
-                <div aria-hidden="true" className="text-white/60 mr-2 sm:mr-3 shrink-0">
+                <div aria-hidden="true" className="text-white/60 mr-1.5 sm:mr-3 shrink-0">
                   <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
+                    className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
@@ -447,7 +457,7 @@ export default function HomePage() {
                     autoComplete="off"
                     spellCheck="false"
                     suppressHydrationWarning
-                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[13px] sm:text-[16px] lg:text-[17px] xl:text-[18px] font-normal tracking-normal py-1 sm:py-2.5 px-0 select-text outline-none"
+                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[11px] xs:text-[13px] sm:text-[16px] lg:text-[17px] xl:text-[19px] font-normal tracking-normal py-0.5 sm:py-2.5 px-0 select-text outline-none"
                   />
                 </div>
 
@@ -456,12 +466,12 @@ export default function HomePage() {
                   id="scanSubmitBtn"
                   type="submit"
                   aria-label="Start cybersecurity audit scan"
-                  className="chrome-button shrink-0 w-11 sm:w-16 md:w-[76px] lg:w-[84px] xl:w-[94px] h-8 sm:h-10 md:h-12 lg:h-[44px] xl:h-[48px] rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
+                  className="chrome-button shrink-0 w-9 xs:w-11 sm:w-16 md:w-[76px] lg:w-[88px] xl:w-[98px] h-7 xs:h-8 sm:h-10 md:h-12 lg:h-[46px] xl:h-[50px] rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
                 >
                   {isScanning ? (
                     <svg
                       id="spinnerIcon"
-                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-900 animate-spin"
+                      className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 text-slate-900 animate-spin"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
@@ -482,7 +492,7 @@ export default function HomePage() {
                   ) : (
                     <svg
                       id="arrowIcon"
-                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-0.5 transition-transform stroke-[2.2]"
+                      className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-0.5 transition-transform stroke-[2.2]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -500,7 +510,7 @@ export default function HomePage() {
 
             {/* Verification Notice / Sub-label */}
             <div
-              className="flex items-center justify-center gap-2 text-white/50 text-[11px] sm:text-[12px] lg:text-[13px] font-normal tracking-normal"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 text-white/50 text-[9px] xs:text-[10px] sm:text-[12px] lg:text-[13px] font-normal tracking-normal max-w-[85%]"
               data-purpose="terms-hint"
             >
               <svg

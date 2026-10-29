@@ -125,8 +125,16 @@ describe("Single Prominent Primary Action & UI Visual Hierarchy", () => {
     const forgotCode = fs.readFileSync(path.join(frontendDir, "app", "forgot-password", "page.tsx"), "utf8");
     const resetCode = fs.readFileSync(path.join(frontendDir, "app", "reset-password", "page.tsx"), "utf8");
 
-    assert.ok(loginCode.includes('variant="primary"') && loginCode.includes("Sign In to Workspace"), "Login submit is variant='primary'");
-    assert.ok(registerCode.includes('variant="primary"') && registerCode.includes("Submit Client Application"), "Register submit is variant='primary'");
+    assert.ok(
+      (loginCode.includes('variant="primary"') && loginCode.includes("Sign In to Workspace")) ||
+      (loginCode.includes("liquid-metal-btn") && loginCode.includes("Sign in")),
+      "Login submit is dominant primary action"
+    );
+    assert.ok(
+      (registerCode.includes('variant="primary"') && registerCode.includes("Submit Client Application")) ||
+      (registerCode.includes("liquid-metal-btn") && (registerCode.includes("Continue") || registerCode.includes("Verify"))),
+      "Register submit is dominant primary action"
+    );
     assert.ok(forgotCode.includes('variant="primary"') && forgotCode.includes("Send Recovery Instructions"), "Forgot password submit is variant='primary'");
     assert.ok(resetCode.includes('variant="primary"') && resetCode.includes("type=\"submit\""), "Reset password submit is variant='primary'");
   });

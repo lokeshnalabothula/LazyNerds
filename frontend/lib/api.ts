@@ -215,6 +215,35 @@ export const api = {
     });
   },
 
+  async sendRegistrationOtp(email: string): Promise<{ message: string; cooldown_seconds: number }> {
+    return request<{ message: string; cooldown_seconds: number }>("/auth/register/send-code", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async verifyRegistrationOtp(params: {
+    email: string;
+    code: string;
+    password?: string;
+    full_name?: string;
+  }): Promise<TokenResponse> {
+    const data = await request<TokenResponse>("/auth/register/verify-code", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    setStoredToken(data.access_token);
+    return data;
+  },
+
+  async resendRegistrationOtp(email: string): Promise<{ message: string; cooldown_seconds: number }> {
+    return request<{ message: string; cooldown_seconds: number }>("/auth/register/resend-code", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+
   async getUsers(role?: string): Promise<User[]> {
     const qs = role ? `?role=${encodeURIComponent(role)}` : "";
     return request<User[]>(`/auth/users${qs}`);

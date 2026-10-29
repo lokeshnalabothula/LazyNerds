@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  setSession: (session: { user: User; access_token: string }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -82,6 +83,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const setSession = useCallback((session: { user: User; access_token: string }) => {
+    setStoredToken(session.access_token);
+    setUser(session.user);
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -90,6 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         isAuthenticated: !!user,
+        setSession,
       }}
     >
       {children}

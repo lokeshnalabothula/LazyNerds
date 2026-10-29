@@ -14,15 +14,145 @@ from app.schemas.auth import (
     ForgotPasswordRequest,
     LoginRequest,
     ResetPasswordRequest,
+    SendRegistrationOtpRequest,
+    SendRegistrationOtpResponse,
     TokenResponse,
     UserOut,
+    VerifyRegistrationOtpRequest,
     VerifyResetTokenRequest,
     VerifyResetTokenResponse,
+    ResendRegistrationOtpRequest,
 )
-from app.services import auth_service, audit_service, password_reset_service, email_service
+from app.services import auth_service, audit_service, password_reset_service, email_service, email_verification_service
 from app.services.auth_service import authenticate_user
 
 router = APIRouter()
+
+
+@router.post("/register/send-code", response_model=SendRegistrationOtpResponse)
+def send_registration_code(
+    data: SendRegistrationOtpRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """
+    Initiates email verification for new user registration.
+    Enforces resend cooldown, hourly rate limiting, and email dispatch.
+    In production, ensures email service is configured.
+    """
+    if settings.ENVIRONMENT == "production":
+        provider = email_service.get_active_email_provider()
+        if provider not in ("resend", "smtp"):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Registration verification is temporarily unavailable because email delivery is not yet configured. Please contact the administrator.",
+            )
+
+    try:
+        raw_code, verif_record = email_verification_service.request_registration_verification(
+            db=db,
+            email=data.email,
+        )
+        background_tasks.add_task(
+            email_service.send_verification_code_email,
+            to_email=data.email,
+            code=raw_code,
+            expires_in_minutes=15,
+        )
+        return SendRegistrationOtpResponse(
+            message="A 6-digit verification code has been dispatched to your email address.",
+            cooldown_seconds=60,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/register/verify-code", response_model=TokenResponse)
+def verify_registration_code(
+    data: VerifyRegistrationOtpRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    """
+    Validates single-use 6-digit verification code.
+    If valid, automatically creates and activates the user account (no manual approval required).
+    Signs user in and issues session token and HttpOnly cookie.
+    """
+    try:
+        user = email_verification_service.verify_registration_code_and_activate(
+            db=db,
+            email=data.email,
+            code=data.code,
+            password=data.password,
+            full_name=data.full_name,
+        )
+        access_token = create_access_token(
+            subject=user.id,
+            extra_claims={"email": user.email, "role": user.role}
+        )
+
+        is_prod = settings.ENVIRONMENT == "production"
+        response.set_cookie(
+            key="fixops_access_token",
+            value=access_token,
+            httponly=True,
+            secure=is_prod,
+            samesite="lax",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        )
+
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=UserOut.model_validate(user),
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/register/resend-code", response_model=SendRegistrationOtpResponse)
+def resend_registration_code(
+    data: ResendRegistrationOtpRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """
+    Resends a new verification code, enforcing cooldown and rate limits.
+    """
+    if settings.ENVIRONMENT == "production":
+        provider = email_service.get_active_email_provider()
+        if provider not in ("resend", "smtp"):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Email verification service is temporarily unavailable in production.",
+            )
+
+    try:
+        raw_code, verif_record = email_verification_service.request_registration_verification(
+            db=db,
+            email=data.email,
+        )
+        background_tasks.add_task(
+            email_service.send_verification_code_email,
+            to_email=data.email,
+            code=raw_code,
+            expires_in_minutes=15,
+        )
+        return SendRegistrationOtpResponse(
+            message="A new 6-digit verification code has been dispatched to your email address.",
+            cooldown_seconds=60,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -34,12 +164,25 @@ def login(
     """
     Authenticates authorized personnel and issues a JWT token.
     Sets a secure HttpOnly cookie for browser sessions.
-    If an applicant has a pending registration, provides actionable status context.
+    Unverified or inactive accounts are rejected.
     """
     user = authenticate_user(db, email=login_data.email, password=login_data.password)
     if not user:
-        # Check if an applicant registration exists for this email
         clean_email = login_data.email.strip().lower()
+
+        # Check if an inactive / unverified user exists
+        inactive_user = (
+            db.query(User)
+            .filter(func.lower(func.trim(User.email)) == clean_email, User.is_active == False)
+            .first()
+        )
+        if inactive_user:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your account has not completed email verification. Please verify your email before signing in.",
+            )
+
+        # Check if an applicant registration exists for this email
         reg = (
             db.query(ClientRegistration)
             .filter(func.lower(func.trim(ClientRegistration.email)) == clean_email)
@@ -51,12 +194,7 @@ def login(
             if reg.status == "pending":
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Your client registration for '{reg.company_name}' is currently pending founder review. You will be notified once approved.",
-                )
-            elif reg.status == "needs_information":
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Registration update required: {reg.review_notes or 'Please provide additional authorized scope information.'}",
+                    detail="Registration is pending email verification. Please complete verification to activate your account.",
                 )
             elif reg.status == "rejected":
                 raise HTTPException(

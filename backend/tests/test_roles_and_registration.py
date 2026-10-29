@@ -53,13 +53,14 @@ def test_client_self_registration_and_status(client, db_session):
     assert status_res.json()["status"] == "pending"
     assert "awaiting executive review" in status_res.json()["message"]
 
-    # Pending applicant login attempt gives actionable status context
+    # Pending applicant login attempt gives actionable status context (unverified)
     login_res = client.post(
         "/api/v1/auth/login",
         json={"email": "alice@cybercorp.io", "password": "SecurePassword2026!"}
     )
     assert login_res.status_code == 403
-    assert "pending founder review" in login_res.json()["detail"]
+    assert "pending email verification" in login_res.json()["detail"]
+
 
 
 def test_employee_cannot_access_unapproved_registrations(client, employee_headers):

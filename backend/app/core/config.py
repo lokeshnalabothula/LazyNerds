@@ -161,6 +161,22 @@ class Settings(BaseSettings):
                     "Production startup aborted: ALLOWED_ORIGINS must contain at least one non-localhost production origin. "
                     "Only localhost origins were detected."
                 )
+
+            # Email provider validation in production
+            email_provider = (self.EMAIL_PROVIDER or "auto").strip().lower()
+            if email_provider == "mock":
+                raise ValueError(
+                    "Production startup aborted: EMAIL_PROVIDER='mock' is strictly prohibited in production. "
+                    "Configure live delivery with RESEND_API_KEY or SMTP credentials."
+                )
+            if email_provider == "resend" and not self.RESEND_API_KEY:
+                raise ValueError(
+                    "Production startup aborted: RESEND_API_KEY must be configured when EMAIL_PROVIDER='resend'."
+                )
+            if email_provider == "smtp" and not self.SMTP_HOST:
+                raise ValueError(
+                    "Production startup aborted: SMTP_HOST must be configured when EMAIL_PROVIDER='smtp'."
+                )
         else:
             # In development/test, if ALLOWED_ORIGINS was empty or unset, restore dev defaults
             if not self.ALLOWED_ORIGINS:

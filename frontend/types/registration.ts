@@ -62,3 +62,20 @@ export interface RegistrationStatusCheckResponse {
   rejection_reason?: string | null;
   created_at: string;
 }
+
+export interface SendRegistrationOtpRequest {
+  email: string;
+}
+
+export interface SendRegistrationOtpResponse {
+  message: string;
+  cooldown_seconds: number;
+}
+
+export interface VerifyRegistrationOtpRequest {
+  email: string;
+  code: string;
+  password?: string;
+  full_name?: string;
+}
+

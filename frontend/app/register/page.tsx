@@ -1,113 +1,110 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { api } from "@/lib/api";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ThinkingOrb } from "@/components/stitch/ThinkingOrb";
-import { BorderBeam } from "@/components/stitch/BorderBeam";
-import {
-  Shield,
-  AlertCircle,
-  CheckCircle2,
-  Building2,
-  UserCheck,
-  Server,
-  ArrowRight,
-  ArrowLeft,
-  Search,
-} from "lucide-react";
-
-const registerSchema = z.object({
-  full_name: z.string().min(2, "Full name must be at least 2 characters").max(255),
-  email: z.string().email("Please provide a valid corporate email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Must contain at least one number")
-    .regex(/[^A-Za-z0-9]/, "Must contain at least one special character"),
-  phone: z.string().max(50).optional().or(z.literal("")),
-  job_title: z.string().max(100).optional().or(z.literal("")),
-  company_name: z.string().min(2, "Company name must be at least 2 characters").max(255),
-  website: z.string().max(500).optional().or(z.literal("")),
-  industry: z.string().max(100).optional().or(z.literal("")),
-  company_size: z.string().max(50).optional().or(z.literal("")),
-  country: z.string().max(100).optional().or(z.literal("")),
-  primary_domains: z.string().max(2000).optional().or(z.literal("")),
-  requested_services: z.string().max(2000).optional().or(z.literal("")),
-  scope_description: z.string().max(4000).optional().or(z.literal("")),
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+import { useAuth } from "@/lib/auth-context";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { user, loading, setSession } = useAuth();
+
+  const [step, setStep] = useState<"email" | "verify">("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successData, setSuccessData] = useState<{
-    company_name: string;
-    email: string;
-    registration_id: string;
-  } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState<number>(0);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      full_name: "",
-      email: "",
-      password: "",
-      phone: "",
-      job_title: "",
-      company_name: "",
-      website: "",
-      industry: "Technology / SaaS",
-      company_size: "10-50",
-      country: "India",
-      primary_domains: "",
-      requested_services: "Automated FixOps & Vulnerability Management",
-      scope_description: "",
-    },
-  });
+  // If already authenticated, redirect to Overview
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/overview");
+    }
+  }, [user, loading, router]);
 
-  const onSubmit = async (data: RegisterFormData) => {
-    setServerError(null);
+  // Cooldown timer interval
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  const handleSendCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setErrorMessage("Please provide a valid corporate email address.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const res = await api.registerClient({
-        full_name: data.full_name,
-        email: data.email,
-        password: data.password,
-        company_name: data.company_name,
-        phone: data.phone || null,
-        job_title: data.job_title || null,
-        website: data.website || null,
-        industry: data.industry || null,
-        company_size: data.company_size || null,
-        country: data.country || null,
-        primary_domains: data.primary_domains || null,
-        requested_services: data.requested_services || null,
-        scope_description: data.scope_description || null,
+      const res = await api.sendRegistrationOtp(cleanEmail);
+      setInfoMessage(res.message || "A verification code has been dispatched to your email.");
+      setCooldown(res.cooldown_seconds || 60);
+      setStep("verify");
+    } catch (err: any) {
+      setErrorMessage(
+        err.message || "Failed to send verification code. Please check your email and try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (cooldown > 0 || isSubmitting) return;
+    setErrorMessage(null);
+    setInfoMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const res = await api.resendRegistrationOtp(email.trim().toLowerCase());
+      setInfoMessage(res.message || "A new verification code has been sent.");
+      setCooldown(res.cooldown_seconds || 60);
+      setCode("");
+    } catch (err: any) {
+      setErrorMessage(
+        err.message || "Unable to resend verification code. Please wait before retrying."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    const cleanCode = code.trim();
+    if (cleanCode.length !== 6 || !/^\d+$/.test(cleanCode)) {
+      setErrorMessage("Please enter the complete 6-digit numeric verification code.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const tokenResponse = await api.verifyRegistrationOtp({
+        email: email.trim().toLowerCase(),
+        code: cleanCode,
       });
 
-      setSuccessData({
-        company_name: res.company_name,
-        email: data.email,
-        registration_id: res.registration_id,
-      });
+      if (setSession) {
+        setSession(tokenResponse);
+      }
+      router.push("/overview");
     } catch (err: any) {
-      setServerError(
-        err.message || "Failed to submit client registration. Please verify your inputs."
+      setErrorMessage(
+        err.message || "Verification code is invalid or has expired. Please request a new code."
       );
     } finally {
       setIsSubmitting(false);
@@ -115,296 +112,278 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121318] text-[#e3e1e9] telemetry-grid-bg py-10 px-4 sm:px-6 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Ambient Top Glow */}
-      <div className="absolute w-[600px] h-[400px] rounded-full bg-[#00f0ff]/10 filter blur-[96px] pointer-events-none -z-10 -top-20" />
-      <div className="absolute w-[400px] h-[300px] rounded-full bg-[#3131c0]/15 filter blur-[80px] pointer-events-none -z-10 top-40" />
-
-      <div className="w-full max-w-2xl space-y-6 relative z-10">
-        {/* Thinking Orb Header */}
-        <div className="flex flex-col items-center">
-          <ThinkingOrb
-            size="lg"
-            state="connecting"
-            showBadge
-            label="ONBOARDING // TENANT INGESTION"
-          />
+    <div className="bg-[#030407] text-[#e2e8f0] antialiased min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-white/20 selection:text-white font-sans">
+      {/* Atmospheric Cosmic & Planetary Horizon Background */}
+      <div aria-hidden="true" className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Grid lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:120px_120px]" />
+        
+        {/* Central Vertical Laser Ray */}
+        <div className="vertical-axis-ray" />
+        
+        {/* Subtle reticle coordinate markers */}
+        <div className="absolute top-[38%] left-[78px] text-[10px] tracking-widest text-white/10 font-mono hidden md:block">
+          + 45° 12&apos; N
         </div>
-
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-2xl font-bold tracking-tight text-[#dbfcff]">
-              Lazy Nerds
-            </span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#00f0ff]/15 text-[#00f0ff] border border-[#00f0ff]/30 tracking-wider shrink-0">
-              ONBOARDING
-            </span>
-          </div>
-          <p className="text-xs sm:text-sm text-[#b9cacb] max-w-md mx-auto">
-            Register your organization to access our automated cybersecurity operations, vulnerability management, and remediation pipeline.
-          </p>
+        <div className="absolute top-[41%] right-[68px] text-[10px] tracking-widest text-white/10 font-mono hidden md:block">
+          [X:00]
         </div>
-
-        {/* Success Card */}
-        {successData ? (
-          <BorderBeam preset="ocean" className="p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-6 text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-zinc-100">
-                Application Submitted Successfully
-              </h2>
-              <p className="text-xs sm:text-sm text-zinc-300">
-                Thank you for applying. We have registered{" "}
-                <span className="font-semibold text-[#00f0ff] font-mono">
-                  {successData.company_name}
-                </span>{" "}
-                in our onboarding queue.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-lg bg-[#161920] border border-[#222630] text-left text-xs text-zinc-400 space-y-2 font-mono">
-              <div className="flex justify-between items-center border-b border-[#222630] pb-2">
-                <span className="text-zinc-500">Contact Email:</span>
-                <span className="text-zinc-200">{successData.email}</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-[#222630] pb-2">
-                <span className="text-zinc-500">Application Status:</span>
-                <span className="text-[#00f0ff] font-semibold px-2 py-0.5 rounded bg-[#00f0ff]/15 border border-[#00f0ff]/30 text-[11px]">
-                  Pending Founder Review
-                </span>
-              </div>
-              <p className="text-[11px] text-zinc-400 pt-1">
-                For security reasons, access is quarantined until validated by Lazy Nerds leadership. Once verified, you will be able to log in immediately with your chosen credentials.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Link
-                href={`/register/status?email=${encodeURIComponent(successData.email)}`}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/40 hover:bg-[#00f0ff]/30"
-              >
-                <Search className="h-4 w-4" />
-                <span>Track Application Status</span>
-              </Link>
-              <Link
-                href="/login"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold bg-[#161920] border border-[#222630] text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
-              >
-                <span>Return to Sign In</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </BorderBeam>
-        ) : (
-          /* Registration Form Card */
-          <BorderBeam preset="colorful" className="p-6 sm:p-8 shadow-2xl">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {serverError && (
-                <div className="p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>{serverError}</span>
-                </div>
-              )}
-
-              {/* Section 1: Contact Representative */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 border-b border-[#222630] pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
-                  <UserCheck className="h-4 w-4 text-[#F5C518]" />
-                  <span>1. Primary Contact Information</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label="Full Name *"
-                    required
-                    placeholder="Jane Doe"
-                    error={errors.full_name?.message}
-                    {...register("full_name")}
-                  />
-                  <Input
-                    label="Corporate Email *"
-                    type="email"
-                    required
-                    placeholder="jane@company.com"
-                    error={errors.email?.message}
-                    {...register("email")}
-                  />
-                  <Input
-                    label="Account Password *"
-                    type="password"
-                    required
-                    placeholder="Min 8 chars, mixed case, symbols"
-                    error={errors.password?.message}
-                    {...register("password")}
-                  />
-                  <Input
-                    label="Job Title / Role"
-                    placeholder="CISO / Head of Security"
-                    error={errors.job_title?.message}
-                    {...register("job_title")}
-                  />
-                  <Input
-                    label="Contact Phone"
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    error={errors.phone?.message}
-                    {...register("phone")}
-                  />
-                </div>
-              </div>
-
-              {/* Section 2: Organization Profile */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center gap-2 border-b border-[#222630] pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
-                  <Building2 className="h-4 w-4 text-[#F5C518]" />
-                  <span>2. Organization Profile</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label="Company Name *"
-                    required
-                    placeholder="Acme Corp, Inc."
-                    error={errors.company_name?.message}
-                    {...register("company_name")}
-                  />
-                  <Input
-                    label="Company Website"
-                    placeholder="https://acme.com"
-                    error={errors.website?.message}
-                    {...register("website")}
-                  />
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
-                      Industry Sector
-                    </label>
-                    <select
-                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
-                      {...register("industry")}
-                    >
-                      <option value="Technology / SaaS">Technology / SaaS</option>
-                      <option value="Financial Services / Fintech">Financial Services / Fintech</option>
-                      <option value="Healthcare & Life Sciences">Healthcare & Life Sciences</option>
-                      <option value="E-Commerce & Retail">E-Commerce & Retail</option>
-                      <option value="Defense & Critical Infrastructure">Defense & Critical Infrastructure</option>
-                      <option value="Consulting & Professional Services">Consulting & Professional Services</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
-                      Company Size
-                    </label>
-                    <select
-                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
-                      {...register("company_size")}
-                    >
-                      <option value="1-20 employees">1-20 employees</option>
-                      <option value="21-100 employees">21-100 employees</option>
-                      <option value="101-500 employees">101-500 employees</option>
-                      <option value="500+ employees">500+ employees</option>
-                    </select>
-                  </div>
-                  <Input
-                    label="Country / Headquarters"
-                    placeholder="India"
-                    error={errors.country?.message}
-                    {...register("country")}
-                  />
-                </div>
-              </div>
-
-              {/* Section 3: Scope & Operations Requirements */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center gap-2 border-b border-[#222630] pb-2 text-zinc-200 text-xs font-mono font-semibold uppercase tracking-wider">
-                  <Server className="h-4 w-4 text-[#F5C518]" />
-                  <span>3. Scope & Requirements</span>
-                </div>
-                <div className="space-y-3">
-                  <Input
-                    label="Primary In-Scope Domains / CIDRs"
-                    placeholder="api.company.com, app.company.com"
-                    error={errors.primary_domains?.message}
-                    {...register("primary_domains")}
-                  />
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
-                      Requested FixOps Automation Services
-                    </label>
-                    <select
-                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
-                      {...register("requested_services")}
-                    >
-                      <option value="Automated FixOps & Vulnerability Management">
-                        Automated FixOps & Vulnerability Management (Full Pipeline)
-                      </option>
-                      <option value="Continuous Penetration Testing & SLA Tracking">
-                        Continuous Penetration Testing & SLA Tracking
-                      </option>
-                      <option value="Cloud Security Posture & Asset Discovery">
-                        Cloud Security Posture & Asset Discovery
-                      </option>
-                      <option value="Compliance Verification & Audit Readiness">
-                        Compliance Verification & Audit Readiness (SOC2, ISO27001)
-                      </option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-300 dark:text-[#9CA3AF] mb-1.5">
-                      Brief Scope Description or Security Goals
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="Outline target assets, tech stack, compliance deadlines, or specific remediation requirements..."
-                      className="w-full rounded-lg bg-[#161920] border border-[#222630] px-3 py-2 text-xs text-[#F9FAFB] placeholder-zinc-500 focus:outline-none focus:border-[#F5C518] focus:ring-1 focus:ring-[#F5C518]"
-                      {...register("scope_description")}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-[#222630] space-y-3">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="w-full h-11 text-xs font-bold tracking-wide uppercase"
-                  isLoading={isSubmitting}
-                >
-                  <Shield className="h-4 w-4 mr-2" />
-                  <span>Submit Client Application</span>
-                </Button>
-
-                <div className="flex items-center justify-between text-xs text-[#b9cacb] pt-1">
-                  <Link
-                    href="/login"
-                    className="inline-flex items-center gap-1.5 hover:text-[#00f0ff] transition-colors"
-                  >
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    <span>Back to Sign In</span>
-                  </Link>
-                  <Link
-                    href="/register/status"
-                    className="hover:text-[#00f0ff] transition-colors font-medium"
-                  >
-                    Already applied? Track status
-                  </Link>
-                </div>
-              </div>
-            </form>
-          </BorderBeam>
-        )}
-
-        <div className="text-center text-xs text-zinc-500">
-          Strict authorization and tenant isolation are enforced. Inquiries:{" "}
-          <a
-            href="mailto:onboarding@lazynerds.com"
-            className="text-zinc-400 hover:text-zinc-200 underline underline-offset-4"
-          >
-            onboarding@lazynerds.com
-          </a>
+        
+        {/* Earth Limb & Atmospheric Arc */}
+        <div className="stitch-earth-container">
+          <div className="stitch-earth-surface-lights" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[180px] bg-cyan-100/15 rounded-full blur-[48px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[70px] bg-white/40 rounded-full blur-[24px]" />
         </div>
       </div>
+
+      {/* Minimalist Top Navigation Bar */}
+      <header className="relative z-30 w-full max-w-7xl mx-auto px-6 sm:px-12 py-7 flex items-center justify-between">
+        {/* Brand Anchor */}
+        <Link
+          aria-label="Lazy Nerds FixOps Home"
+          className="flex items-center gap-3 group focus:outline-none focus:ring-1 focus:ring-white/30 rounded px-1"
+          href="/"
+        >
+          <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.4)] transition-transform duration-300 group-hover:scale-105">
+            <svg className="w-5 h-5 text-[#040609]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2ZM12 16.5C9.51 16.5 7.5 14.49 7.5 12C7.5 9.51 9.51 7.5 12 7.5V16.5Z" />
+            </svg>
+          </div>
+          <span className="text-[17px] font-semibold tracking-tight text-white flex items-center">
+            Lazy Nerds
+            <span className="text-[#848c9c] font-normal ml-1.5">FixOps</span>
+          </span>
+        </Link>
+
+        {/* Secondary Action / Link to Sign in */}
+        <Link
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 group active:scale-[0.98]"
+          href="/login"
+        >
+          <span>Sign in</span>
+          <svg className="w-3.5 h-3.5 text-white/80 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+          </svg>
+        </Link>
+      </header>
+
+      {/* Central Registration Canvas */}
+      <main className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 py-8">
+        <div className="relative w-full max-w-[460px]">
+          {/* Central Shield & Specular Apex Flare Background */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
+            <div className="relative flex items-center justify-center transform scale-[0.78] origin-center opacity-75">
+              <svg className="absolute inset-0 w-[580px] h-[610px] pointer-events-none z-10 overflow-visible" fill="none" viewBox="0 0 580 610">
+                <defs>
+                  <linearGradient id="shieldRimGradReg" x1="50%" x2="0%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                    <stop offset="35%" stopColor="#cbd5e1" stopOpacity="0.65" />
+                    <stop offset="70%" stopColor="#64748b" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.8" />
+                  </linearGradient>
+                  <linearGradient id="shieldInnerRimGradReg" x1="50%" x2="50%" y1="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+                    <stop offset="40%" stopColor="#ffffff" stopOpacity="0.05" />
+                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.2" />
+                  </linearGradient>
+                </defs>
+                <path d="M 290 0 C 210 40 110 52 10 55 C 5 220 35 420 290 610" fill="none" opacity="0.6" stroke="url(#shieldRimGradReg)" strokeLinecap="round" strokeWidth="1.8" />
+                <path d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610" fill="none" opacity="0.6" stroke="url(#shieldRimGradReg)" strokeLinecap="round" strokeWidth="1.8" />
+                <path d="M 290 8 C 213 46 117 58 20 61" fill="none" opacity="0.75" stroke="url(#shieldInnerRimGradReg)" strokeWidth="1" />
+                <path d="M 290 8 C 367 46 463 58 560 61" fill="none" opacity="0.75" stroke="url(#shieldInnerRimGradReg)" strokeWidth="1" />
+                <path d="M 560 61 C 565 218 536 410 290 596 C 44 410 15 218 20 61" fill="none" opacity="0.4" stroke="url(#shieldInnerRimGradReg)" strokeWidth="1" />
+              </svg>
+              <div className="apex-flare" />
+              <div className="stitch-shield-glass" />
+            </div>
+          </div>
+
+          {/* Registration Frosted Glass Card */}
+          <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-7 sm:p-9 z-10">
+            {step === "email" ? (
+              <>
+                <div className="text-center mb-7">
+                  <h1 className="text-3xl sm:text-[34px] font-headline font-semibold text-white tracking-[-0.02em] mb-2 leading-tight">
+                    Create an account.
+                  </h1>
+                </div>
+
+                {errorMessage && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-[13px] leading-snug">
+                    {errorMessage}
+                  </div>
+                )}
+
+                <form className="space-y-4" onSubmit={handleSendCode}>
+                  <div className="space-y-1.5">
+                    <label className="block font-mono text-[12px] text-[#949dae] font-medium tracking-wide" htmlFor="register-email">
+                      Work Email
+                    </label>
+                    <div className="relative flex items-center stitch-input-chassis rounded-xl">
+                      <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
+                        <span className="material-symbols-outlined text-[19px]" data-icon="alternate_email">
+                          alternate_email
+                        </span>
+                      </div>
+                      <input
+                        autoComplete="email"
+                        className="w-full bg-transparent py-3 pr-3.5 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
+                        id="register-email"
+                        name="email"
+                        placeholder="operator@company.com"
+                        required
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                      type="submit"
+                      disabled={isSubmitting}
+                    >
+                      <span>{isSubmitting ? "Sending code..." : "Continue"}</span>
+                      <svg
+                        className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+
+                <div className="mt-6 pt-5 border-t border-white/[0.08] text-center">
+                  <p className="text-[13px] text-[#949dae]">
+                    Already have an account?{" "}
+                    <Link className="text-white font-medium hover:underline underline-offset-4 transition-colors" href="/login">
+                      Sign in
+                    </Link>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center mb-6">
+                  <h1 className="text-3xl sm:text-[34px] font-headline font-semibold text-white tracking-[-0.02em] mb-2 leading-tight">
+                    Verify email.
+                  </h1>
+                  <p className="text-[13px] text-[#949dae]">
+                    Enter the code sent to <span className="text-white font-mono">{email}</span>
+                  </p>
+                </div>
+
+                {errorMessage && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-[13px] leading-snug">
+                    {errorMessage}
+                  </div>
+                )}
+
+                {infoMessage && (
+                  <div className="mb-4 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 text-[13px] leading-snug">
+                    {infoMessage}
+                  </div>
+                )}
+
+                <form className="space-y-4" onSubmit={handleVerifyCode}>
+                  <div className="space-y-1.5">
+                    <label className="block font-mono text-[12px] text-[#949dae] font-medium tracking-wide text-center" htmlFor="verification-code">
+                      6-Digit Verification Code
+                    </label>
+                    <div className="relative flex items-center stitch-input-chassis rounded-xl">
+                      <input
+                        autoComplete="one-time-code"
+                        autoFocus
+                        className="w-full bg-transparent py-3 px-4 text-white placeholder-[#505a6c] font-mono text-[22px] tracking-[0.35em] text-center border-0 focus:ring-0 focus:outline-none"
+                        id="verification-code"
+                        inputMode="numeric"
+                        maxLength={6}
+                        name="code"
+                        pattern="[0-9]*"
+                        placeholder="••••••"
+                        required
+                        type="text"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[12px] font-mono text-[#8e96a4] px-1">
+                    <button
+                      className="hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      disabled={cooldown > 0 || isSubmitting}
+                      type="button"
+                      onClick={handleResendCode}
+                    >
+                      {cooldown > 0 ? `Resend code (${cooldown}s)` : "Resend code"}
+                    </button>
+                    <button
+                      className="hover:text-white transition-colors cursor-pointer"
+                      type="button"
+                      onClick={() => {
+                        setStep("email");
+                        setErrorMessage(null);
+                        setInfoMessage(null);
+                        setCode("");
+                      }}
+                    >
+                      Change email
+                    </button>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                      type="submit"
+                      disabled={isSubmitting || code.length !== 6}
+                    >
+                      <span>{isSubmitting ? "Verifying..." : "Verify & activate"}</span>
+                      <svg
+                        className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+
+                <div className="mt-6 pt-5 border-t border-white/[0.08] text-center">
+                  <p className="text-[13px] text-[#949dae]">
+                    Already have an account?{" "}
+                    <Link className="text-white font-medium hover:underline underline-offset-4 transition-colors" href="/login">
+                      Sign in
+                    </Link>
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Institutional Precision Footer */}
+      <footer className="relative z-30 w-full max-w-7xl mx-auto border-t border-white/[0.08] px-6 sm:px-12 py-5 flex items-center justify-between text-[13px] text-white/45 font-normal">
+        <div>Lazy Nerds © 2026</div>
+        <div className="flex items-center gap-4">
+          <Link className="hover:text-white/80 transition-colors" href="/privacy">
+            Privacy
+          </Link>
+          <span className="text-white/20 select-none">|</span>
+          <Link className="hover:text-white/80 transition-colors" href="/terms">
+            Terms
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }

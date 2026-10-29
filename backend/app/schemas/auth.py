@@ -61,3 +61,24 @@ class ResetPasswordRequest(BaseModel):
     token: str = Field(..., min_length=16, description="Cryptographic reset token")
     new_password: str = Field(..., min_length=10, max_length=128, description="New password (minimum 10 characters)")
 
+
+class SendRegistrationOtpRequest(BaseModel):
+    email: EmailStr
+
+
+class SendRegistrationOtpResponse(BaseModel):
+    message: str
+    cooldown_seconds: int = 60
+
+
+class VerifyRegistrationOtpRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=6, max_length=6, description="6-digit verification code")
+    password: Optional[str] = Field(None, min_length=8, max_length=128, description="Optional account password")
+    full_name: Optional[str] = Field(None, max_length=255, description="Optional user full name")
+
+
+class ResendRegistrationOtpRequest(BaseModel):
+    email: EmailStr
+
+

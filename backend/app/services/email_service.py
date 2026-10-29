@@ -376,3 +376,205 @@ def send_password_reset_email(
             "message_id": None,
             "error": str(e),
         }
+
+
+def build_verification_code_html(code: str, to_email: str, expires_in_minutes: int = 15) -> str:
+    """Generates a professional, branded HTML template for email verification OTP."""
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Verification Code - Lazy Nerds FixOps</title>
+  <style>
+    body {{
+      margin: 0;
+      padding: 0;
+      background-color: #030407;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }}
+    table {{
+      border-collapse: collapse;
+    }}
+    .wrapper {{
+      width: 100%;
+      table-layout: fixed;
+      background-color: #030407;
+      padding: 40px 16px;
+    }}
+    .container {{
+      max-width: 540px;
+      margin: 0 auto;
+      background-color: #0a0f19;
+      border: 1px solid rgba(140, 185, 240, 0.16);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }}
+    .header {{
+      background-color: #060a12;
+      padding: 28px 32px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }}
+    .brand-title {{
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      margin: 0;
+    }}
+    .brand-sub {{
+      font-size: 12px;
+      color: #8e96a4;
+      margin: 4px 0 0 0;
+      letter-spacing: 0.02em;
+    }}
+    .content {{
+      padding: 36px 32px;
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.6;
+    }}
+    .heading {{
+      font-size: 20px;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 16px 0;
+      letter-spacing: -0.02em;
+    }}
+    .code-box {{
+      text-align: center;
+      margin: 32px 0;
+    }}
+    .code-digit {{
+      display: inline-block;
+      background-color: #060a12;
+      border: 1px solid rgba(140, 185, 240, 0.35);
+      border-radius: 8px;
+      padding: 16px 36px;
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      font-size: 34px;
+      letter-spacing: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 20px rgba(100, 170, 255, 0.15);
+    }}
+    .notice {{
+      background-color: rgba(6, 10, 18, 0.7);
+      border-left: 3px solid #7bd0ff;
+      padding: 12px 16px;
+      margin: 24px 0 0 0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #8e96a4;
+    }}
+    .footer {{
+      padding: 20px 32px;
+      background-color: #04070c;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.5;
+    }}
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="brand-title">Lazy Nerds <span style="color:#8e96a4;font-weight:normal;">FixOps</span></div>
+        <p class="brand-sub">Security Operations &amp; Autonomous Vulnerability Remediation</p>
+      </div>
+      <div class="content">
+        <h1 class="heading">Email Verification</h1>
+        <p style="margin:0 0 12px 0;">Use the single-use verification code below to verify your email (<strong style="color:#ffffff;">{to_email}</strong>) and activate your account:</p>
+        
+        <div class="code-box">
+          <div class="code-digit">{code}</div>
+        </div>
+
+        <p style="font-size:13px;color:#94a3b8;margin:0 0 16px 0;text-align:center;">
+          This code expires in <strong style="color:#ffffff;">{expires_in_minutes} minutes</strong> and can only be used once.
+        </p>
+
+        <div class="notice">
+          <strong>Security note:</strong> If you did not request this verification code, you can safely disregard this email. No account will be activated without code verification.
+        </div>
+      </div>
+      <div class="footer">
+        Lazy Nerds &copy; 2026 FixOps &bull; Autonomous Security Operations<br>
+        Confidential verification notice sent to {to_email}
+      </div>
+    </div>
+  </div>
+</body>
+</html>"""
+
+
+def build_verification_code_plaintext(code: str, to_email: str, expires_in_minutes: int = 15) -> str:
+    """Generates plain text verification code message."""
+    return f"""LAZY NERDS FIXOPS — EMAIL VERIFICATION
+
+Your single-use verification code is:
+{code}
+
+This code will expire in {expires_in_minutes} minutes and can only be used once.
+
+Enter this code on the verification screen to activate your FixOps account for {to_email}.
+
+If you did not request this code, you can safely ignore this email.
+
+--
+Lazy Nerds FixOps
+Autonomous Security Operations & Vulnerability Remediation
+"""
+
+
+def send_verification_code_email(
+    to_email: str,
+    code: str,
+    expires_in_minutes: int = 15,
+) -> Dict[str, Any]:
+    """
+    Dispatches a branded verification code email to the specified user.
+    Auto-detects whether to use Resend, SMTP, or Mock provider.
+    Never throws unhandled exceptions to the caller.
+    """
+    subject = f"{code} is your Lazy Nerds FixOps verification code"
+    html_content = build_verification_code_html(code, to_email, expires_in_minutes)
+    text_content = build_verification_code_plaintext(code, to_email, expires_in_minutes)
+
+    provider = get_active_email_provider()
+
+    # In production, mock dispatch must not silently pretend live delivery occurred
+    if settings.ENVIRONMENT == "production" and provider not in ("resend", "smtp"):
+        err_msg = "Email delivery service is unconfigured in production. RESEND_API_KEY or SMTP credentials are required."
+        logger.error(f"[EMAIL SERVICE CONFIG ERROR] {err_msg}")
+        return {
+            "success": False,
+            "provider": "unconfigured",
+            "message_id": None,
+            "error": err_msg,
+            "simulated": False,
+        }
+
+    try:
+        if provider == "resend":
+            return _send_via_resend(to_email, subject, html_content, text_content)
+        elif provider == "smtp":
+            return _send_via_smtp(to_email, subject, html_content, text_content)
+        else:
+            return _send_mock(to_email, subject, html_content, text_content)
+    except Exception as e:
+        logger.exception(f"Unexpected error in verification email dispatch to {to_email}: {e}")
+        return {
+            "success": False,
+            "provider": provider,
+            "message_id": None,
+            "error": str(e),
+        }
+

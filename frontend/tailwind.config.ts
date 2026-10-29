@@ -56,6 +56,9 @@ const config: Config = {
         amberGlow: "#f59e0b",
         roseGlow: "#f43f5e",
         // Direct Stitch aliases for Obsidian Cyber Precision
+        deepSpace: '#030407',
+        steel: '#8e96a4',
+        lightChrome: '#eef2f7',
         surface: {
           DEFAULT: "#111318",
           subtle: "#1B1E24",
@@ -150,6 +153,12 @@ const config: Config = {
           "Consolas",
           '"Liberation Mono"',
           "monospace",
+        ],
+        headline: [
+          '"Space Grotesk"',
+          '"Geist"',
+          "Inter",
+          "sans-serif",
         ],
       },
       boxShadow: {

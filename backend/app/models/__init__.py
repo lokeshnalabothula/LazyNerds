@@ -9,6 +9,7 @@ from app.models.notification import Notification
 from app.models.audit_log import AuditLog
 from app.models.password_reset import PasswordResetToken
 from app.models.registration import ClientRegistration
+from app.models.email_verification import EmailVerificationCode
 
 __all__ = [
     "Client",
@@ -25,4 +26,5 @@ __all__ = [
     "AuditLog",
     "PasswordResetToken",
     "ClientRegistration",
+    "EmailVerificationCode",
 ]

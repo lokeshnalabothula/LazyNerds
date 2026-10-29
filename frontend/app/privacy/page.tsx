@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Shield, Lock, FileText } from "lucide-react";
 
 export const metadata = {
-  title: "Privacy Policy — Lazy Nerds FixOps",
+  title: "Privacy Policy",
   description: "Privacy policy and data handling disclosures for FixOps Client Manager.",
 };
 

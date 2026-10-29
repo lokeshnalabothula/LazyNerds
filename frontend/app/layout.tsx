@@ -5,11 +5,15 @@ import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lazynerds.vercel.app"),
-  title: "Lazy Nerds FixOps — Automated Cybersecurity & Remediation Platform",
+  title: {
+    default: "Lazy Nerds FixOps",
+    template: "%s | Lazy Nerds FixOps",
+  },
   description:
-    "Cybersecurity automation platform: client management, continuous engagement operations, verified vulnerability remediation, and automated security reporting.",
+    "Automated cybersecurity operations, continuous attack surface management, and verified vulnerability remediation.",
   icons: {
     icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -18,9 +22,9 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Lazy Nerds FixOps — Automated Cybersecurity & Remediation Platform",
+    title: "Lazy Nerds FixOps",
     description:
-      "Automated vulnerability remediation, continuous security testing, and client operations.",
+      "Automated cybersecurity operations, continuous attack surface management, and verified vulnerability remediation.",
     images: [{ url: "/brand/logo.png", width: 512, height: 512, alt: "Lazy Nerds FixOps" }],
   },
 };

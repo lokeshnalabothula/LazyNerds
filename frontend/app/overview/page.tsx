@@ -104,14 +104,22 @@ export default function OverviewPage() {
   }
 
   // Operator initials & full name
-  const operatorName = user?.full_name || "Alex Mercer";
-  const operatorRole = user?.role === "founder" ? "SecOps Lead" : (user?.role === "employee" ? "Security Engineer" : "Client Operator");
+  const operatorName = user?.full_name?.trim() || "Security Operator";
+  const operatorRole = (() => {
+    if (!user?.role) return "Operator";
+    const r = user.role.trim().toLowerCase();
+    if (r === "founder") return "SecOps Lead";
+    if (r === "employee") return "Security Engineer";
+    if (r === "client") return "Client Operator";
+    return user.role;
+  })();
   const operatorInitials = operatorName
     .split(" ")
+    .filter(Boolean)
     .map((n) => n[0])
     .join("")
     .substring(0, 2)
-    .toUpperCase() || "AM";
+    .toUpperCase() || "SO";
 
   // Telemetry computations
   const clientsTotal = metrics?.clients_total ?? 14;

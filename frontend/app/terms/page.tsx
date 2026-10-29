@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Shield, AlertTriangle } from "lucide-react";
 
 export const metadata = {
-  title: "Terms and Conditions — Lazy Nerds FixOps",
+  title: "Terms and Conditions",
   description: "Terms and conditions of use for Lazy Nerds FixOps Client Manager.",
 };
 

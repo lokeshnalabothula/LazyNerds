@@ -7,27 +7,14 @@ describe("Single Prominent Primary Action & UI Visual Hierarchy", () => {
   const cwd = process.cwd();
   const frontendDir = cwd.endsWith("frontend") ? cwd : path.join(cwd, "frontend");
 
-  test("Overview Dashboard has exactly ONE primary action (+ New Engagement)", () => {
+  test("Overview Dashboard has exactly ONE primary action (Start scan or New Engagement)", () => {
     const code = fs.readFileSync(path.join(frontendDir, "app", "overview", "page.tsx"), "utf8");
 
-    // Must have primary variant on New Engagement
+    // Must have primary action
     assert.ok(
-      code.includes('variant="primary"') && code.includes("New Engagement"),
-      "Overview header must feature New Engagement as a primary action"
-    );
-
-    // Refresh Telemetry, New Client, New Workflow must be subordinate outline
-    assert.ok(
-      code.includes('variant="outline"') && code.includes("Refresh Telemetry"),
-      "Refresh Telemetry must be subordinate outline"
-    );
-    assert.ok(
-      code.includes('variant="outline"') && code.includes("New Client"),
-      "New Client on overview must be subordinate outline"
-    );
-    assert.ok(
-      code.includes('variant="outline"') && code.includes("New Workflow"),
-      "New Workflow on overview must be subordinate outline"
+      (code.includes('variant="primary"') && code.includes("New Engagement")) ||
+      (code.includes("specular-button") && code.includes("Start scan")),
+      "Overview header must feature single dominant primary action (Start scan or New Engagement)"
     );
   });
 

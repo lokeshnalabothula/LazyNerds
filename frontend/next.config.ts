@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
         destination: "/overview",
         permanent: false,
       },
+      {
+        source: "/signup",
+        destination: "/register",
+        permanent: false,
+      },
     ];
   },
   async headers() {

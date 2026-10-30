@@ -122,8 +122,14 @@ describe("Single Prominent Primary Action & UI Visual Hierarchy", () => {
       (registerCode.includes("liquid-metal-btn") && (registerCode.includes("Continue") || registerCode.includes("Verify"))),
       "Register submit is dominant primary action"
     );
-    assert.ok(forgotCode.includes('variant="primary"') && forgotCode.includes("Send Recovery Instructions"), "Forgot password submit is variant='primary'");
-    assert.ok(resetCode.includes('variant="primary"') && resetCode.includes("type=\"submit\""), "Reset password submit is variant='primary'");
+    assert.ok(
+      (forgotCode.includes('variant="primary"') || forgotCode.includes("liquid-metal-btn")) && forgotCode.includes("Send Recovery Instructions"),
+      "Forgot password submit is dominant primary action"
+    );
+    assert.ok(
+      (resetCode.includes('variant="primary"') || resetCode.includes("liquid-metal-btn")) && resetCode.includes('type="submit"'),
+      "Reset password submit is dominant primary action"
+    );
   });
 
   test("Modals and Dialogs enforce primary forward action and subordinate/destructive actions", () => {

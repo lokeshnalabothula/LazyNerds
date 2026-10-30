@@ -94,12 +94,16 @@ describe("Stitch Cybersecurity Audit Landing Page Parity", () => {
   });
 
   test("Stitch atmospheric lighting, shield geometry, and energy beams are defined", () => {
+    const bgFile = path.join(frontendDir, "components", "ui", "fixops-background.tsx");
+    const bgCode = fs.existsSync(bgFile) ? fs.readFileSync(bgFile, "utf8") : "";
+    const combinedCode = homepageCode + "\n" + bgCode;
+
     assert.ok(
-      homepageCode.includes("vertical-axis-ray"),
+      combinedCode.includes("vertical-axis-ray"),
       "Must render central vertical axis ray"
     );
     assert.ok(
-      homepageCode.includes("shield-glass"),
+      homepageCode.includes("shield-glass") || combinedCode.includes("shield-glass"),
       "Must render frosted glass shield backdrop"
     );
     assert.ok(
@@ -113,8 +117,8 @@ describe("Stitch Cybersecurity Audit Landing Page Parity", () => {
       "Must render top apex flare and bottom convergence flare"
     );
     assert.ok(
-      homepageCode.includes("earth-container") &&
-        homepageCode.includes("earth-surface-lights"),
+      combinedCode.includes("earth-container") &&
+        combinedCode.includes("earth-surface-lights"),
       "Must render curved earth horizon backdrop and surface lights"
     );
     assert.ok(

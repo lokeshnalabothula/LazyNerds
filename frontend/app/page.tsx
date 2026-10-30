@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { FixOpsBackground } from "@/components/ui/fixops-background";
 
 const SAMPLE_DOMAINS = [
   "https://apple.com",
@@ -138,43 +139,13 @@ export default function HomePage() {
       {/* ------------------------------------------------------------------- */}
       {/* ATMOSPHERIC BACKGROUND LAYERS                                       */}
       {/* ------------------------------------------------------------------- */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
-        data-purpose="background-layers"
-      >
-        {/* Deep grid lines / faint technical grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:120px_120px]" />
-
-        {/* Central Vertical Ray */}
-        <div className="vertical-axis-ray" />
-
-        {/* Faint orbital coordinate concentric circles */}
-        <div className="orbital-ring w-[920px] h-[920px] left-1/2 top-[34%] opacity-30" />
-        <div className="orbital-ring w-[1280px] h-[1280px] left-1/2 top-[34%] opacity-20" />
-
-        {/* Subtle side reticle crosshair markers */}
-        <div className="absolute top-[38%] left-[78px] text-[10px] tracking-widest text-white/10 font-mono hidden md:block">
-          + 45° 12&apos; N
-        </div>
-        <div className="absolute top-[41%] right-[68px] text-[10px] tracking-widest text-white/10 font-mono hidden md:block">
-          [X:00]
-        </div>
-
-        {/* Earth Limb & Atmospheric Arc */}
-        <div className="earth-container">
-          <div className="earth-surface-lights" />
-          {/* Intense sub-surface dawn glow on center horizon with gentle cyber pulse */}
-          <div className="horizon-glow-pulse absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[180px] bg-cyan-100/15 rounded-full blur-[48px]" />
-          <div className="horizon-glow-pulse absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[70px] bg-white/40 rounded-full blur-[24px]" />
-        </div>
-      </div>
+      {/* Persistent atmospheric background provided by RootLayout PersistentBackground */}
 
       {/* ------------------------------------------------------------------- */}
       {/* NAVIGATION HEADER                                                   */}
       {/* ------------------------------------------------------------------- */}
       <header
-        className="relative z-30 w-full px-4 sm:px-12 py-5 sm:py-7 flex items-center justify-between"
+        className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-5 sm:py-6 flex items-center justify-between"
         data-purpose="top-navigation"
       >
         {/* Brand Logo */}
@@ -200,7 +171,7 @@ export default function HomePage() {
           {user ? (
             <Link
               href="/overview"
-              className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
               <span>Console</span>
@@ -208,7 +179,7 @@ export default function HomePage() {
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
               <span>Sign in</span>
@@ -393,7 +364,7 @@ export default function HomePage() {
           >
             {/* Eyebrow Tagline with delicate hairline rules */}
             <div
-              className="flex items-center justify-center gap-2 sm:gap-4 mb-2.5 sm:mb-4 lg:mb-5 w-full max-w-[200px] xs:max-w-[240px] sm:max-w-sm"
+              className="hero-stagger-1 flex items-center justify-center gap-2 sm:gap-4 mb-2.5 sm:mb-4 lg:mb-5 w-full max-w-[200px] xs:max-w-[240px] sm:max-w-sm"
               data-purpose="category-eyebrow"
             >
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/30 to-white/50" />
@@ -404,29 +375,29 @@ export default function HomePage() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-[22px] xs:text-[26px] sm:text-5xl md:text-6xl lg:text-[80px] xl:text-[96px] 2xl:text-[104px] font-medium tracking-[-0.035em] leading-[1.08] sm:leading-[1.06] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-2 sm:mb-3 lg:mb-4 max-w-[85%]">
+            <h1 className="hero-stagger-2 text-[clamp(1.75rem,5vw+0.5rem,5.5rem)] font-medium tracking-[-0.035em] leading-[1.08] text-white text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7] mb-2 sm:mb-3 lg:mb-4 max-w-[90%] mx-auto">
               Know what’s<br />exposed.
             </h1>
 
             {/* Supporting Subheadline */}
-            <p className="text-[11px] xs:text-[13px] sm:text-base lg:text-[18px] xl:text-[21px] font-normal tracking-wide text-[#949dae] mb-4 sm:mb-6 lg:mb-8 xl:mb-9 max-w-[80%]">
+            <p className="hero-stagger-3 text-[clamp(0.8125rem,1.1vw+0.5rem,1.25rem)] font-normal tracking-wide text-[#949dae] mb-4 sm:mb-6 lg:mb-8 max-w-[85%] mx-auto">
               Verify. Scan. Secure.
             </p>
 
             {/* Interactive Domain Scan Input Capsule */}
-            <div className="w-full max-w-[195px] xs:max-w-[240px] sm:max-w-[420px] md:max-w-[520px] lg:max-w-[680px] xl:max-w-[820px] px-0.5 sm:px-2 mb-2.5 sm:mb-4" data-purpose="scan-form-container" suppressHydrationWarning>
+            <div className="hero-stagger-4 w-full max-w-[min(680px,calc(100vw-2.5rem))] px-0.5 sm:px-2 mb-2.5 sm:mb-4 mx-auto" data-purpose="scan-form-container" suppressHydrationWarning>
               <form
                 id="auditForm"
                 onSubmit={handleSubmit}
                 suppressHydrationWarning
-                className={`capsule-pill rounded-full p-1 sm:p-2 pl-2.5 sm:pl-6 pr-1 sm:pr-2 flex items-center transition-all duration-300 min-h-[38px] xs:min-h-[42px] sm:min-h-[50px] lg:min-h-[58px] xl:min-h-[64px] ${
+                className={`capsule-pill rounded-full p-1 sm:p-2 pl-3 sm:pl-6 pr-1 sm:pr-2 flex items-center transition-all duration-300 min-h-[44px] sm:min-h-[52px] lg:min-h-[58px] ${
                   isScanning ? "scanning-active" : ""
                 } ${isFocused ? "ring-1 ring-white/25" : ""}`}
               >
                 {/* Globe Icon */}
-                <div aria-hidden="true" className="text-white/60 mr-1.5 sm:mr-3 shrink-0">
+                <div aria-hidden="true" className="text-white/60 mr-2 sm:mr-3 shrink-0 flex items-center justify-center">
                   <svg
-                    className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
+                    className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
@@ -457,7 +428,7 @@ export default function HomePage() {
                     autoComplete="off"
                     spellCheck="false"
                     suppressHydrationWarning
-                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[11px] xs:text-[13px] sm:text-[16px] lg:text-[17px] xl:text-[19px] font-normal tracking-normal py-0.5 sm:py-2.5 px-0 select-text outline-none"
+                    className="w-full bg-transparent border-0 text-white placeholder-white/35 focus:ring-0 text-[12px] sm:text-[15px] lg:text-[17px] font-normal tracking-normal py-1 sm:py-2 px-0 select-text outline-none"
                   />
                 </div>
 
@@ -466,7 +437,7 @@ export default function HomePage() {
                   id="scanSubmitBtn"
                   type="submit"
                   aria-label="Start cybersecurity audit scan"
-                  className="chrome-button shrink-0 w-9 xs:w-11 sm:w-16 md:w-[76px] lg:w-[88px] xl:w-[98px] h-7 xs:h-8 sm:h-10 md:h-12 lg:h-[46px] xl:h-[50px] rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
+                  className="chrome-button shrink-0 min-w-[44px] min-h-[44px] px-3 sm:px-5 rounded-full flex items-center justify-center text-slate-900 group cursor-pointer"
                 >
                   {isScanning ? (
                     <svg
@@ -582,7 +553,7 @@ export default function HomePage() {
       {/* SITE FOOTER                                                         */}
       {/* ------------------------------------------------------------------- */}
       <footer
-        className="relative z-20 border-t border-white/[0.08] px-4 sm:px-12 py-4 sm:py-5 flex items-center justify-between text-[11px] sm:text-[13px] text-white/45 font-normal"
+        className="relative z-20 w-full max-w-7xl mx-auto border-t border-white/[0.08] px-4 sm:px-8 lg:px-12 py-4 sm:py-5 flex items-center justify-between text-[11px] sm:text-[13px] text-white/45 font-normal"
         data-purpose="site-footer"
       >
         <div>Lazy Nerds © 2026</div>

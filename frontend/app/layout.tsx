@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ToastProvider } from "@/components/ui/toast";
+import { PersistentBackground } from "@/components/ui/persistent-background";
+import { PageTransition } from "@/components/ui/page-transition";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lazynerds.vercel.app"),
@@ -40,9 +42,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#07080b] font-sans antialiased text-[#F1F5F9] selection:bg-white/20 selection:text-white">
+      <body className="min-h-screen bg-[#07080b] font-sans antialiased text-[#F1F5F9] selection:bg-white/20 selection:text-white relative">
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <PersistentBackground />
+            <PageTransition>{children}</PageTransition>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

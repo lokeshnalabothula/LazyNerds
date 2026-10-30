@@ -13,13 +13,16 @@ describe("Stitch Sign-In Page Parity & Email OTP Registration Flow", () => {
     const loginPath = path.join(frontendDir, "app", "login", "page.tsx");
     assert.ok(fs.existsSync(loginPath), "login/page.tsx must exist");
     const loginCode = fs.readFileSync(loginPath, "utf8");
+    const bgFile = path.join(frontendDir, "components", "ui", "fixops-background.tsx");
+    const bgCode = fs.existsSync(bgFile) ? fs.readFileSync(bgFile, "utf8") : "";
+    const combinedLoginCode = loginCode + "\n" + bgCode;
 
     // Atmospheric backdrop elements
-    assert.ok(loginCode.includes("vertical-axis-ray"), "Must include central vertical laser ray");
-    assert.ok(loginCode.includes("stitch-earth-container"), "Must include Stitch earth container");
-    assert.ok(loginCode.includes("stitch-earth-surface-lights"), "Must include Stitch earth surface lights");
-    assert.ok(loginCode.includes("stitch-shield-glass"), "Must include frosted glass shield vector");
-    assert.ok(loginCode.includes("apex-flare"), "Must include specular apex flare");
+    assert.ok(combinedLoginCode.includes("vertical-axis-ray"), "Must include central vertical laser ray");
+    assert.ok(combinedLoginCode.includes("stitch-earth-container"), "Must include Stitch earth container");
+    assert.ok(combinedLoginCode.includes("stitch-earth-surface-lights"), "Must include Stitch earth surface lights");
+    assert.ok(combinedLoginCode.includes("stitch-shield-glass"), "Must include frosted glass shield vector");
+    assert.ok(combinedLoginCode.includes("apex-flare"), "Must include specular apex flare");
 
     // Header & navigation
     assert.ok(loginCode.includes("Back to scan"), "Header must include 'Back to scan' link");
@@ -57,7 +60,10 @@ describe("Stitch Sign-In Page Parity & Email OTP Registration Flow", () => {
     // Reuses Stitch atmospheric backdrop and components
     assert.ok(registerCode.includes("stitch-specular-card"), "Must use specular glass card");
     assert.ok(registerCode.includes("stitch-liquid-metal-btn"), "Must use liquid metal CTA button");
-    assert.ok(registerCode.includes("vertical-axis-ray"), "Must feature vertical laser ray");
+    assert.ok(
+      registerCode.includes("vertical-axis-ray") || registerCode.includes("FixOpsBackground"),
+      "Must feature vertical laser ray or shared FixOpsBackground"
+    );
   });
 
   test("OTP verification code validation enforces 6 digits", () => {

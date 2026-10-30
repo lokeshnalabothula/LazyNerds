@@ -18,24 +18,10 @@ export default function RegisterPage() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState<number>(0);
 
-  // If already authenticated, redirect to Overview or preserved destination
+  // If already authenticated, redirect to Overview
   useEffect(() => {
     if (!loading && user) {
-      let targetPath = "/overview";
-      if (typeof window !== "undefined") {
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectParam = urlParams.get("redirect");
-        if (
-          redirectParam &&
-          redirectParam.startsWith("/") &&
-          !redirectParam.startsWith("//") &&
-          redirectParam !== "/login" &&
-          redirectParam !== "/register"
-        ) {
-          targetPath = redirectParam;
-        }
-      }
-      router.replace(targetPath);
+      router.replace("/overview");
     }
   }, [user, loading, router]);
 
@@ -170,27 +156,16 @@ export default function RegisterPage() {
           </span>
         </Link>
 
-        {/* Header Action Controls */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <Link
-            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 bg-white/[0.02] text-[12px] sm:text-[13px] font-medium text-white/70 hover:text-white hover:border-white/30 hover:bg-white/[0.06] transition-all duration-200 whitespace-nowrap"
-            href="/"
-          >
-            <span className="material-symbols-outlined text-[15px] group-hover:-translate-x-0.5 transition-transform text-white/80" data-icon="arrow_back">
-              arrow_back
-            </span>
-            <span>Back to scan</span>
-          </Link>
-          <Link
-            className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 group active:scale-[0.98]"
-            href="/login"
-          >
-            <span>Sign in</span>
-            <svg className="w-3.5 h-3.5 text-white/80 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
-            </svg>
-          </Link>
-        </div>
+        {/* Secondary Action / Link to Sign in */}
+        <Link
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 group active:scale-[0.98]"
+          href="/login"
+        >
+          <span>Sign in</span>
+          <svg className="w-3.5 h-3.5 text-white/80 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+          </svg>
+        </Link>
       </header>
 
       {/* Central Registration Canvas */}

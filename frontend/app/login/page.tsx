@@ -25,7 +25,8 @@ export default function LoginPage() {
           redirectParam &&
           redirectParam.startsWith("/") &&
           !redirectParam.startsWith("//") &&
-          redirectParam !== "/login"
+          redirectParam !== "/login" &&
+          redirectParam !== "/signup"
         ) {
           targetPath = redirectParam;
         }
@@ -123,16 +124,24 @@ export default function LoginPage() {
           </span>
         </Link>
 
-        {/* Secondary Action / Back to Scan Pill */}
-        <Link
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 group active:scale-[0.98]"
-          href="/"
-        >
-          <span className="material-symbols-outlined text-[15px] group-hover:-translate-x-0.5 transition-transform text-white/80" data-icon="arrow_back">
-            arrow_back
-          </span>
-          <span>Back to scan</span>
-        </Link>
+        {/* Header Action Controls */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <Link
+            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 bg-white/[0.02] text-[12px] sm:text-[13px] font-medium text-white/70 hover:text-white hover:border-white/30 hover:bg-white/[0.06] transition-all duration-200 whitespace-nowrap"
+            href="/"
+          >
+            <span className="material-symbols-outlined text-[15px] group-hover:-translate-x-0.5 transition-transform text-white/80" data-icon="arrow_back">
+              arrow_back
+            </span>
+            <span>Back to scan</span>
+          </Link>
+          <Link
+            className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap"
+            href="/signup"
+          >
+            <span>Sign up</span>
+          </Link>
+        </div>
       </header>
 
       {/* Central Authentication Canvas */}
@@ -283,7 +292,7 @@ export default function LoginPage() {
             <div className="mt-6 pt-5 border-t border-white/[0.08] text-center">
               <p className="text-[13px] text-[#949dae]">
                 Don&apos;t have an account?{" "}
-                <Link className="text-white font-medium hover:underline underline-offset-4 transition-colors" href="/register">
+                <Link className="text-white font-medium hover:underline underline-offset-4 transition-colors" href="/signup">
                   Create an account
                 </Link>
               </p>

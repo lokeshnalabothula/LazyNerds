@@ -195,8 +195,8 @@ export default function HomePage() {
           </span>
         </Link>
 
-        {/* Navigation Action Controls */}
-        <nav aria-label="Primary Navigation" className="shrink-0 flex items-center gap-2 sm:gap-3">
+        {/* Sign In / Console Pill Button */}
+        <nav aria-label="Primary Navigation" className="shrink-0">
           {user ? (
             <Link
               href="/overview"
@@ -206,21 +206,13 @@ export default function HomePage() {
               <span>Console</span>
             </Link>
           ) : (
-            <>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 bg-white/[0.02] text-[12px] sm:text-[13px] font-medium text-white/80 hover:text-white hover:border-white/30 hover:bg-white/[0.06] transition-all duration-200 whitespace-nowrap shrink-0"
-              >
-                <span>Sign in</span>
-              </Link>
-              <Link
-                href="/signup"
-                className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.06] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white hover:text-white hover:border-white/40 hover:bg-white/[0.12] transition-all duration-200 whitespace-nowrap shrink-0"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
-                <span>Sign up</span>
-              </Link>
-            </>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+              <span>Sign in</span>
+            </Link>
           )}
         </nav>
       </header>

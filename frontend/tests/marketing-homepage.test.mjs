@@ -107,13 +107,13 @@ describe("Stitch Cybersecurity Audit Landing Page Parity", () => {
       "Must render frosted glass shield backdrop"
     );
     assert.ok(
-      homepageCode.includes("perimeter-pulse-beam-left") &&
-        homepageCode.includes("perimeter-pulse-beam-right"),
+      combinedCode.includes("perimeter-pulse-beam-left") &&
+        combinedCode.includes("perimeter-pulse-beam-right"),
       "Must render dual synchronous perimeter pulse energy beams"
     );
     assert.ok(
-      homepageCode.includes("apex-flare") &&
-        homepageCode.includes("bottom-apex-flare"),
+      combinedCode.includes("apex-flare") &&
+        combinedCode.includes("bottom-apex-flare"),
       "Must render top apex flare and bottom convergence flare"
     );
     assert.ok(

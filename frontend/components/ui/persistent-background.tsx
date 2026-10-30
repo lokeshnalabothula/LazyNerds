@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { FixOpsBackground, FixOpsAuthShield } from "./fixops-background";
 
 /**
- * Public routes that share the persistent FixOps atmospheric background
+ * Public routes that share the persistent FixOps atmospheric cosmic backdrop
  */
 const PUBLIC_AUTH_ROUTES = [
   "/",
@@ -19,9 +19,10 @@ const PUBLIC_AUTH_ROUTES = [
 ];
 
 /**
- * Routes that display the centered specular auth shield behind the card
+ * Public routes that display the unified centered specular cyber shield
  */
-const AUTH_ROUTES = [
+const PUBLIC_SHIELD_ROUTES = [
+  "/",
   "/login",
   "/register",
   "/signup",
@@ -33,9 +34,13 @@ const AUTH_ROUTES = [
  * PersistentBackground
  * 
  * Sits in the RootLayout so it NEVER unmounts during client-side navigation
- * between public and authentication pages. This eliminates background
- * flashes, prevents shield repositioning/restarting, and keeps the planetary
- * horizon, lasers, and lighting completely rock-solid.
+ * between Landing, Login, Registration, Forgot Password, and Reset Password.
+ * 
+ * Guarantees 100% visual identity parity:
+ * - Identical obsidian cosmic grid, vertical laser ray, and orbital concentric rings
+ * - Identical curved planetary Earth limb horizon and atmospheric dawn lighting
+ * - Identical centered specular cyber shield with apex flare, energy pulses, and frosted glass fill
+ * - Zero shift, zero flicker, zero restart across all public routes
  */
 export function PersistentBackground() {
   const pathname = usePathname();
@@ -49,8 +54,10 @@ export function PersistentBackground() {
     return null;
   }
 
-  const isLanding = pathname === "/";
-  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  // Display shield consistently across Landing and all auth/recovery flows
+  const hasShield = PUBLIC_SHIELD_ROUTES.some((route) =>
+    route === "/" ? pathname === "/" : pathname.startsWith(route)
+  );
 
   return (
     <div
@@ -58,15 +65,14 @@ export function PersistentBackground() {
       className="persistent-background-root fixed inset-0 pointer-events-none z-0 overflow-hidden select-none"
       data-purpose="persistent-background"
     >
-      {/* Persistent atmospheric cosmic backdrop: grid, laser ray, horizon & lighting */}
-      <FixOpsBackground showRings={isLanding} />
+      {/* Persistent atmospheric cosmic backdrop: grid, laser ray, horizon, rings & lighting */}
+      <FixOpsBackground showRings={true} />
 
-      {/* Persistent specular cyber shield:
-          Anchored precisely to the center of the viewport behind authentication
-          cards across /login, /register, /forgot-password, /reset-password.
-          Because it is hosted here in RootLayout, it NEVER unmounts or flashes
-          when the user navigates between authentication steps. */}
-      {isAuthRoute && (
+      {/* Persistent unified specular cyber shield:
+          Anchored precisely to the center of the viewport behind the landing hero
+          and authentication cards across /login, /register, /forgot-password, /reset-password.
+          Because it is hosted here in RootLayout, it NEVER unmounts, jumps, or flashes. */}
+      {hasShield && (
         <div
           className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 transition-opacity duration-300"
           data-purpose="persistent-auth-shield"

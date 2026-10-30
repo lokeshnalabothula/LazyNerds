@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { api } from "@/lib/api";
 import { FixOpsBackground, FixOpsAuthShield } from "@/components/ui/fixops-background";
-import { FixOpsAppLoader } from "@/components/ui/loading";
 
 const resetPasswordSchema = z
   .object({
@@ -97,15 +96,6 @@ function ResetPasswordContent() {
     }
   };
 
-  if (verifying) {
-    return (
-      <FixOpsAppLoader
-        label="VERIFYING RECOVERY TOKEN"
-        subtext="Validating cryptographic integrity & expiration…"
-      />
-    );
-  }
-
   return (
     <div className="bg-transparent text-[#e2e8f0] antialiased min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-white/20 selection:text-white font-sans">
       {/* Persistent atmospheric background provided by RootLayout PersistentBackground */}
@@ -150,7 +140,21 @@ function ResetPasswordContent() {
 
           {/* Reset Password Frosted Glass Card */}
           <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-6 sm:p-8 z-10 w-full">
-            {!tokenValid ? (
+            {verifying ? (
+              <div className="space-y-4 text-center py-6">
+                <div className="mx-auto w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <span className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+                <div className="space-y-1">
+                  <h2 className="text-xl font-headline font-semibold text-white tracking-[-0.02em]">
+                    Verifying Recovery Token
+                  </h2>
+                  <p className="text-[13px] text-[#949dae] leading-relaxed">
+                    Validating cryptographic integrity &amp; expiration…
+                  </p>
+                </div>
+              </div>
+            ) : !tokenValid ? (
               <div className="space-y-4 text-center">
                 <div className="mx-auto w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
                   <span className="material-symbols-outlined text-[22px]">error</span>
@@ -330,16 +334,64 @@ function ResetPasswordContent() {
   );
 }
 
+function ResetPasswordLoadingFallback() {
+  return (
+    <div className="bg-transparent text-[#e2e8f0] antialiased min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-white/20 selection:text-white font-sans">
+      <header className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-5 sm:py-6 flex items-center justify-between">
+        <Link
+          aria-label="Lazy Nerds FixOps Home"
+          className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus:ring-1 focus:ring-white/30 rounded px-1 shrink-0"
+          href="/"
+        >
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-white flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.4)] transition-transform duration-300 group-hover:scale-105 shrink-0">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#040609]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2ZM12 16.5C9.51 16.5 7.5 14.49 7.5 12C7.5 9.51 9.51 7.5 12 7.5V16.5Z" />
+            </svg>
+          </div>
+          <span className="text-[15px] sm:text-[17px] font-semibold tracking-tight text-white flex items-center whitespace-nowrap">
+            Lazy Nerds
+            <span className="text-[#848c9c] font-normal ml-1.5 font-sans">FixOps</span>
+          </span>
+        </Link>
+        <nav aria-label="Primary Navigation" className="shrink-0">
+          <Link
+            className="inline-flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 group active:scale-[0.98] whitespace-nowrap shrink-0"
+            href="/login"
+          >
+            <span className="material-symbols-outlined text-[15px] group-hover:-translate-x-0.5 transition-transform text-white/80" data-icon="arrow_back">
+              arrow_back
+            </span>
+            <span>Back to sign in</span>
+          </Link>
+        </nav>
+      </header>
+      <main className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-10 my-auto">
+        <div className="relative w-full max-w-[min(440px,calc(100vw-2rem))] mx-auto">
+          <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-6 sm:p-8 z-10 w-full text-center space-y-4 py-8">
+            <div className="mx-auto w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+              <span className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-xl font-headline font-semibold text-white tracking-[-0.02em]">
+                Loading Recovery Interface
+              </h2>
+              <p className="text-[13px] text-[#949dae] leading-relaxed">
+                Initializing credential reset session…
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-5 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] sm:text-[12px] text-white/40 font-mono border-t border-white/[0.06]">
+        <span>LAZY NERDS FIXOPS · INCIDENT REMEDIATION</span>
+      </footer>
+    </div>
+  );
+}
+
 export default function ResetPasswordPage() {
   return (
-    <Suspense
-      fallback={
-        <FixOpsAppLoader
-          label="INITIALIZING SECURITY SESSION"
-          subtext="Loading credential recovery interface…"
-        />
-      }
-    >
+    <Suspense fallback={<ResetPasswordLoadingFallback />}>
       <ResetPasswordContent />
     </Suspense>
   );

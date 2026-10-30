@@ -87,7 +87,7 @@ export function FixOpsAuthShield({ className = "" }: FixOpsAuthShieldProps) {
       className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0 ${className}`}
     >
       <div
-        className="relative flex items-center justify-center origin-center opacity-75 transition-transform duration-300"
+        className="relative flex items-center justify-center origin-center opacity-85 transition-transform duration-300"
         style={{ transform: "scale(var(--auth-shield-scale, 0.78))" }}
       >
         {/* High-Definition SVG Cyber Shield Outline & Energy Contours */}
@@ -97,36 +97,75 @@ export function FixOpsAuthShield({ className = "" }: FixOpsAuthShieldProps) {
           viewBox="0 0 580 610"
         >
           <defs>
-            <linearGradient id="shieldRimGradShared" x1="50%" x2="0%" y1="0%" y2="100%">
+            {/* Chrome edge gradient for crest and flanks left */}
+            <linearGradient id="shieldRimGradSharedLeft" x1="50%" x2="0%" y1="0%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-              <stop offset="35%" stopColor="#cbd5e1" stopOpacity="0.65" />
-              <stop offset="70%" stopColor="#64748b" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.8" />
+              <stop offset="25%" stopColor="#cbd5e1" stopOpacity="0.75" />
+              <stop offset="65%" stopColor="#64748b" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.85" />
             </linearGradient>
+
+            {/* Chrome edge gradient for crest and flanks right */}
+            <linearGradient id="shieldRimGradSharedRight" x1="50%" x2="100%" y1="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+              <stop offset="25%" stopColor="#cbd5e1" stopOpacity="0.75" />
+              <stop offset="65%" stopColor="#64748b" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.85" />
+            </linearGradient>
+
+            {/* Traveling photon energy gradient left along perimeter */}
+            <linearGradient id="photonCircuitGradLeftShared" x1="50%" x2="0%" y1="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+              <stop offset="35%" stopColor="#7bd0ff" stopOpacity="0.95" />
+              <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+            </linearGradient>
+
+            {/* Traveling photon energy gradient right along perimeter */}
+            <linearGradient id="photonCircuitGradRightShared" x1="50%" x2="100%" y1="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+              <stop offset="35%" stopColor="#7bd0ff" stopOpacity="0.95" />
+              <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+            </linearGradient>
+
+            {/* Inner specular rim gradient */}
             <linearGradient id="shieldInnerRimGradShared" x1="50%" x2="50%" y1="0%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.6" />
               <stop offset="40%" stopColor="#ffffff" stopOpacity="0.05" />
-              <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.15" />
             </linearGradient>
+
+            {/* Glow Filter for energy pulse */}
+            <filter height="200%" id="beamGlowShared" width="200%" x="-50%" y="-50%">
+              <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="3" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
+
           {/* Left & Right Shield Outer Glow Strokes */}
           <path
             d="M 290 0 C 210 40 110 52 10 55 C 5 220 35 420 290 610"
             fill="none"
-            opacity="0.6"
-            stroke="url(#shieldRimGradShared)"
+            opacity="0.65"
+            stroke="url(#shieldRimGradSharedLeft)"
             strokeLinecap="round"
             strokeWidth="1.8"
           />
           <path
             d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610"
             fill="none"
-            opacity="0.6"
-            stroke="url(#shieldRimGradShared)"
+            opacity="0.65"
+            stroke="url(#shieldRimGradSharedRight)"
             strokeLinecap="round"
             strokeWidth="1.8"
           />
-          {/* Main High-Definition Rim Strokes */}
+
+          {/* Main High-Definition Inner Bevel Contours */}
           <path
             d="M 290 8 C 213 46 117 58 20 61"
             fill="none"
@@ -148,9 +187,41 @@ export function FixOpsAuthShield({ className = "" }: FixOpsAuthShieldProps) {
             stroke="url(#shieldInnerRimGradShared)"
             strokeWidth="1"
           />
+
+          {/* Dual Synchronous Energy Pulses */}
+          <path
+            className="perimeter-pulse-beam-left"
+            d="M 290 0 C 210 40 110 52 10 55 C 5 220 35 420 290 610"
+            fill="none"
+            filter="url(#beamGlowShared)"
+            stroke="url(#photonCircuitGradLeftShared)"
+            strokeLinecap="round"
+            strokeWidth="3.2"
+          />
+          <path
+            className="perimeter-pulse-beam-right"
+            d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610"
+            fill="none"
+            filter="url(#beamGlowShared)"
+            stroke="url(#photonCircuitGradRightShared)"
+            strokeLinecap="round"
+            strokeWidth="3.2"
+          />
         </svg>
+
         {/* Radiant Specular Apex Flare Star */}
         <div className="apex-flare" />
+
+        {/* Shoulder Corner Flares */}
+        <div className="corner-flare-left" />
+        <div className="corner-flare-right" />
+
+        {/* Bottom Convergence Flare */}
+        <div className="bottom-apex-flare" />
+
+        {/* Downward light beam projection towards central scroll axis */}
+        <div className="convergence-projector-stream" />
+
         {/* Frosted Glass Shield Vector Fill */}
         <div className="stitch-shield-glass" />
       </div>

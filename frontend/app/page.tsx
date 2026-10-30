@@ -167,7 +167,7 @@ export default function HomePage() {
         </Link>
 
         {/* Sign In / Console Pill Button */}
-        <nav aria-label="Primary Navigation" className="shrink-0 flex items-center gap-2 sm:gap-3">
+        <nav aria-label="Primary Navigation" className="shrink-0">
           {user ? (
             <Link
               href="/overview"
@@ -177,21 +177,13 @@ export default function HomePage() {
               <span>Console</span>
             </Link>
           ) : (
-            <>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 bg-white/[0.02] text-[12px] sm:text-[13px] font-medium text-white/80 hover:text-white hover:border-white/30 hover:bg-white/[0.06] transition-all duration-200 whitespace-nowrap shrink-0"
-              >
-                <span>Sign in</span>
-              </Link>
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.06] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white hover:border-white/40 hover:bg-white/[0.12] transition-all duration-200 whitespace-nowrap shrink-0"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
-                <span>Register</span>
-              </Link>
-            </>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 whitespace-nowrap shrink-0"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+              <span>Sign in</span>
+            </Link>
           )}
         </nav>
       </header>
@@ -200,177 +192,11 @@ export default function HomePage() {
       {/* HERO MAIN SECTION                                                   */}
       {/* ------------------------------------------------------------------- */}
       <main
-        className="relative z-20 flex-1 flex flex-col items-center justify-start px-2 sm:px-4 pt-1 sm:pt-3 pb-8 sm:pb-12"
+        className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-10 my-auto w-full"
         data-purpose="hero-content"
       >
-        {/* Responsive Shield Hero Container (Target ~80% Viewport Width, 10% Safe Margins) */}
-        <div
-          className="shield-hero-container relative flex flex-col items-center justify-start w-full mx-auto"
-          style={{
-            maxWidth: "calc(580px * var(--shield-scale, 1))",
-          }}
-        >
-          {/* Background Shield Silhouette (Anchored at Top Center) */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none select-none z-0">
-            {/* Scaled & Enhanced Shield Assembly (Fluid ~80% Viewport Scale) */}
-            <div
-              className="shield-assembly relative flex items-center justify-center transition-transform duration-300 origin-top"
-              style={{ transform: "scale(var(--shield-scale, 1))" }}
-            >
-              {/* Crisp SVG Outer & Inner Bevel Contours */}
-              <svg
-                className="absolute inset-0 w-[580px] h-[610px] pointer-events-none z-10 overflow-visible"
-                fill="none"
-                viewBox="0 0 580 610"
-              >
-                <defs>
-                  {/* Chrome edge gradient for crest and flanks left */}
-                  <linearGradient id="fullBorderGradLeft" x1="50%" x2="0%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-                    <stop offset="25%" stopColor="#cbd5e1" stopOpacity="0.75" />
-                    <stop offset="65%" stopColor="#64748b" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.85" />
-                  </linearGradient>
-
-                  {/* Chrome edge gradient for crest and flanks right */}
-                  <linearGradient id="fullBorderGradRight" x1="50%" x2="100%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-                    <stop offset="25%" stopColor="#cbd5e1" stopOpacity="0.75" />
-                    <stop offset="65%" stopColor="#64748b" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.85" />
-                  </linearGradient>
-
-                  {/* Traveling photon energy gradient left along entire perimeter */}
-                  <linearGradient id="photonCircuitGradLeft" x1="50%" x2="0%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                    <stop offset="35%" stopColor="#7bd0ff" stopOpacity="0.95" />
-                    <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.5" />
-                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
-                  </linearGradient>
-
-                  {/* Traveling photon energy gradient right along entire perimeter */}
-                  <linearGradient id="photonCircuitGradRight" x1="50%" x2="100%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                    <stop offset="35%" stopColor="#7bd0ff" stopOpacity="0.95" />
-                    <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.5" />
-                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
-                  </linearGradient>
-
-                  {/* Inner specular rim gradient */}
-                  <linearGradient id="shieldInnerRim" x1="50%" x2="50%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.6" />
-                    <stop offset="40%" stopColor="#ffffff" stopOpacity="0.05" />
-                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.15" />
-                  </linearGradient>
-
-                  {/* Glow Filter for energy trail */}
-                  <filter height="200%" id="beamGlow" width="200%" x="-50%" y="-50%">
-                    <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="3" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-
-                  {/* Standard SVG Clip Path for WebKit / Safari cross-browser stability */}
-                  <clipPath id="shieldClip">
-                    <path d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610 C 35 420 5 220 10 55 C 110 52 210 40 290 0 Z" />
-                  </clipPath>
-                </defs>
-
-                {/* Static / Base Full Symmetrical Outer Perimeter Strokes */}
-                <path
-                  className="full-perimeter-left"
-                  d="M 290 0 C 210 40 110 52 10 55 C 5 220 35 420 290 610"
-                  fill="none"
-                  opacity="0.65"
-                  stroke="url(#fullBorderGradLeft)"
-                  strokeLinecap="round"
-                  strokeWidth="1.8"
-                />
-                <path
-                  className="full-perimeter-right"
-                  d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610"
-                  fill="none"
-                  opacity="0.65"
-                  stroke="url(#fullBorderGradRight)"
-                  strokeLinecap="round"
-                  strokeWidth="1.8"
-                />
-
-                {/* Inner Bevel contours starting from apex symmetrically */}
-                <path
-                  className="crest-inner-stroke"
-                  d="M 290 8 C 213 46 117 58 20 61"
-                  fill="none"
-                  opacity="0.75"
-                  stroke="url(#shieldInnerRim)"
-                  strokeWidth="1"
-                />
-                <path
-                  className="crest-inner-stroke"
-                  d="M 290 8 C 367 46 463 58 560 61"
-                  fill="none"
-                  opacity="0.75"
-                  stroke="url(#shieldInnerRim)"
-                  strokeWidth="1"
-                />
-                <path
-                  d="M 560 61 C 565 218 536 410 290 596 C 44 410 15 218 20 61"
-                  fill="none"
-                  opacity="0.4"
-                  stroke="url(#shieldInnerRim)"
-                  strokeWidth="1"
-                />
-
-                {/* Dual Synchronous Extended Energy Beams: Slowly trace down contours from Apex (0%) to Tip (50%) */}
-                <path
-                  className="perimeter-pulse-beam-left"
-                  d="M 290 0 C 210 40 110 52 10 55 C 5 220 35 420 290 610"
-                  fill="none"
-                  filter="url(#beamGlow)"
-                  stroke="url(#photonCircuitGradLeft)"
-                  strokeLinecap="round"
-                  strokeWidth="3.2"
-                />
-                <path
-                  className="perimeter-pulse-beam-right"
-                  d="M 290 0 C 370 40 470 52 570 55 C 575 220 545 420 290 610"
-                  fill="none"
-                  filter="url(#beamGlow)"
-                  stroke="url(#photonCircuitGradRight)"
-                  strokeLinecap="round"
-                  strokeWidth="3.2"
-                />
-              </svg>
-
-              {/* Apex Flare crosshair with synchronized breathing shimmer (Top Apex) */}
-              <div className="apex-flare" />
-
-              {/* Outer Corner Flares (Left & Right Shoulders) */}
-              <div className="corner-flare-left" />
-              <div className="corner-flare-right" />
-
-              {/* Bottom Convergence Flare where dual beams meet at lower tip (50% mark) */}
-              <div className="bottom-apex-flare" />
-
-              {/* Downward light beam projection connecting shield tip towards central scroll axis */}
-              <div className="convergence-projector-stream" />
-
-              {/* Frosted Glass Shield Vector */}
-              <div className="shield-glass" />
-            </div>
-          </div>
-
-          {/* Foreground Centered Content (Maintains ~10% Safe Horizontal Inset from Shield Edges) */}
-          <div
-            className="relative z-10 w-full flex flex-col items-center text-center px-[8%] sm:px-[10%]"
-            style={{
-              paddingTop: "calc(65px * var(--shield-scale, 1))",
-            }}
-          >
-            {/* Eyebrow Tagline with delicate hairline rules */}
+        <div className="relative w-full max-w-[min(680px,calc(100vw-2rem))] mx-auto flex flex-col items-center text-center px-2 sm:px-4">
+          {/* Eyebrow Tagline with delicate hairline rules */}
             <div
               className="hero-stagger-1 flex items-center justify-center gap-2 sm:gap-4 mb-2.5 sm:mb-4 lg:mb-5 w-full max-w-[200px] xs:max-w-[240px] sm:max-w-sm"
               data-purpose="category-eyebrow"
@@ -508,7 +334,6 @@ export default function HomePage() {
               <span id="statusHintText">{statusHint}</span>
             </div>
           </div>
-        </div>
       </main>
 
       {/* ------------------------------------------------------------------- */}

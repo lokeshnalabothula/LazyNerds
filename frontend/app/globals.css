@@ -1134,14 +1134,17 @@
 
   /* ==========================================================================
      Page Transition & Premium Motion System
-     - Smooth GPU-accelerated enter: opacity 0->1, translateY 8px->0, scale 0.995->1
-     - Staggered entrances for hero typography & interactive capsule
+     - Coordinated two-stage transition system:
+       * Enter: Opacity 0->1, translateY 8px->0, scale 0.99->1 (300ms)
+       * Exit: Opacity 1->0, translateY 0->-4px (180ms)
+       * Easing: smooth cubic-bezier(0.22, 1, 0.36, 1)
+     - Persistent cosmic background & shield stay completely mounted & rock-solid
      - Zero bounce, zero excessive blur, zero delay
      ========================================================================== */
   @keyframes fixopsPageEnter {
     0% {
       opacity: 0;
-      transform: translateY(8px) scale(0.995);
+      transform: translateY(8px) scale(0.99);
     }
     100% {
       opacity: 1;
@@ -1149,9 +1152,26 @@
     }
   }
 
+  @keyframes fixopsPageExit {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
   .fixops-page-enter {
-    animation: fixopsPageEnter 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: fixopsPageEnter 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
     will-change: opacity, transform;
+  }
+
+  .fixops-page-exit {
+    animation: fixopsPageExit 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: opacity, transform;
+    pointer-events: none;
   }
 
   @keyframes fixopsHeroStagger {
@@ -1191,6 +1211,7 @@
     scroll-behavior: auto !important;
   }
   .fixops-page-enter,
+  .fixops-page-exit,
   .hero-stagger-1,
   .hero-stagger-2,
   .hero-stagger-3,

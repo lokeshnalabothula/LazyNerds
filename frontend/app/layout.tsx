@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07080b",
+  themeColor: "#030407",
 };
 
 export default function RootLayout({
@@ -42,7 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#07080b] font-sans antialiased text-[#F1F5F9] selection:bg-white/20 selection:text-white relative">
+      <body className="min-h-screen bg-[#030407] font-sans antialiased text-[#F1F5F9] selection:bg-white/20 selection:text-white relative">
         <AuthProvider>
           <ToastProvider>
             <PersistentBackground />

@@ -107,7 +107,7 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="bg-[#030407] text-[#e2e8f0] antialiased min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-white/20 selection:text-white font-sans">
+    <div className="bg-transparent text-[#e2e8f0] antialiased min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-white/20 selection:text-white font-sans">
       {/* Persistent atmospheric background provided by RootLayout PersistentBackground */}
 
       {/* Minimalist Top Navigation Bar */}

@@ -12,6 +12,7 @@ from app.api.v1.overview import router as overview_router
 from app.api.v1.health import router as health_router
 from app.api.v1.registrations import router as registrations_router
 from app.api.v1.workers import router as workers_router
+from app.api.v1.domains import router as domains_router
 
 api_router = APIRouter()
 api_router.include_router(health_router, tags=["Health"])
@@ -20,6 +21,7 @@ api_router.include_router(registrations_router, prefix="/registrations", tags=["
 api_router.include_router(clients_router, prefix="/clients", tags=["Clients"])
 api_router.include_router(engagements_router, prefix="/engagements", tags=["Engagements"])
 api_router.include_router(assets_router, prefix="/assets", tags=["Assets"])
+api_router.include_router(domains_router, prefix="/domains", tags=["Domains"])
 api_router.include_router(findings_router, prefix="/findings", tags=["Findings"])
 api_router.include_router(workers_router, prefix="/workers", tags=["Workers"])
 api_router.include_router(automation_router, prefix="/automation", tags=["Automation"])

@@ -15,6 +15,7 @@ import {
   Radar,
   Layers,
   Shield,
+  ShieldCheck,
   FileCheck2,
   Zap,
   PieChart,
@@ -34,7 +35,7 @@ export interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
-  badge?: "Scan" | "Live" | "Review";
+  badge?: "Scan" | "Live" | "Review" | "DNS";
   role?: "founder" | "employee" | "client" | "all";
 }
 
@@ -107,6 +108,13 @@ export const FloatingNav: React.FC = () => {
       href: "/assets",
       icon: Shield,
       description: "In-Scope Infrastructure & APIs",
+    },
+    {
+      name: "Domains",
+      href: "/domains",
+      icon: ShieldCheck,
+      badge: "DNS" as const,
+      description: "Domain Ownership & Verification",
     },
     {
       name: "Findings",
@@ -272,6 +280,8 @@ export const FloatingNav: React.FC = () => {
                           item.badge === "Live" &&
                             "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40",
                           item.badge === "Review" &&
+                            "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40",
+                          item.badge === "DNS" &&
                             "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
                         )}
                       >
@@ -507,6 +517,8 @@ export const FloatingNav: React.FC = () => {
                         item.badge === "Live" &&
                           "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40",
                         item.badge === "Review" &&
+                          "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40",
+                        item.badge === "DNS" &&
                           "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
                       )}
                     >
@@ -594,6 +606,8 @@ export const FloatingNav: React.FC = () => {
                             item.badge === "Live" &&
                               "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40",
                             item.badge === "Review" &&
+                              "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40",
+                            item.badge === "DNS" &&
                               "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
                           )}
                         >

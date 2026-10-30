@@ -28,6 +28,7 @@ class Client(Base):
     # Relationships
     engagements = relationship("Engagement", back_populates="client")
     assets = relationship("Asset", back_populates="client")
+    domains = relationship("Domain", back_populates="client", cascade="all, delete-orphan")
     users = relationship("User", foreign_keys="User.client_id", back_populates="client")
     assigned_employee = relationship("User", foreign_keys=[assigned_employee_id], backref="assigned_clients")
 

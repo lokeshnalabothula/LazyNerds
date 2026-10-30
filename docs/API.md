@@ -282,3 +282,145 @@ Immutable append-only administrative ledger. Records operator actions, authentic
 ### `GET /overview/metrics`
 Aggregates high-level telemetry: active client count, active engagements, open vulnerabilities by severity, and recent audit activity.
 - **Authentication:** Required (scoped to client tenancy for client role).
+
+---
+
+## 14. Domain Ownership Verification (`Domains`)
+
+Method A: Cryptographic DNS TXT domain challenge and verification system. Proves administrative control of an internet domain prior to security scope authorization.
+
+### `POST /domains`
+Registers a domain name and generates a high-entropy DNS TXT challenge token.
+- **Authentication:** Required (customer client or founder/employee).
+- **Request Body:**
+```json
+{
+  "domain": "example.com",
+  "client_id": "optional-client-uuid-for-founder"
+}
+```
+- **Response `201 Created`:**
+```json
+{
+  "domain": {
+    "id": "e309f30e-e395-4673-90d2-8b6526eb6df1",
+    "client_id": "a110a110-a110-4110-8110-a110a110a110",
+    "domain": "example.com",
+    "normalized_domain": "example.com",
+    "verification_status": "pending",
+    "challenge_created_at": "2026-10-30T10:00:00Z",
+    "challenge_expires_at": "2026-10-31T10:00:00Z",
+    "verified_at": null,
+    "last_verification_attempt_at": null,
+    "verification_attempt_count": 0,
+    "failure_reason": null,
+    "created_at": "2026-10-30T10:00:00Z",
+    "updated_at": "2026-10-30T10:00:00Z",
+    "dns_instructions": {
+      "record_type": "TXT",
+      "record_name": "_lazynerds-verification.example.com",
+      "record_host": "_lazynerds-verification",
+      "record_value": "lazynerds-verification=4K9e...32_urlsafe_token...",
+      "expected_format": "lazynerds-verification=<token>",
+      "ttl": 300
+    }
+  },
+  "token": "4K9e...32_urlsafe_token...",
+  "dns_instructions": {
+    "record_type": "TXT",
+    "record_name": "_lazynerds-verification.example.com",
+    "record_host": "_lazynerds-verification",
+    "record_value": "lazynerds-verification=4K9e...32_urlsafe_token...",
+    "expected_format": "lazynerds-verification=<token>",
+    "ttl": 300
+  }
+}
+```
+*Note: The plaintext token is returned only upon initial generation and regeneration. The database strictly stores the SHA-256 digest of the token.*
+
+### `GET /domains`
+Lists registered domains. Automatically scoped to the authenticated customer's client tenancy.
+- **Authentication:** Required.
+- **Query Parameters:** `page`, `page_size`, `status` (`pending`, `verified`, `failed`, `expired`), `search`.
+- **Response `200 OK`:**
+```json
+{
+  "items": [
+    {
+      "id": "e309f30e-e395-4673-90d2-8b6526eb6df1",
+      "client_id": "a110a110-a110-4110-8110-a110a110a110",
+      "domain": "example.com",
+      "normalized_domain": "example.com",
+      "verification_status": "pending",
+      "challenge_created_at": "2026-10-30T10:00:00Z",
+      "challenge_expires_at": "2026-10-31T10:00:00Z",
+      "verified_at": null,
+      "last_verification_attempt_at": null,
+      "verification_attempt_count": 0,
+      "failure_reason": null,
+      "created_at": "2026-10-30T10:00:00Z",
+      "updated_at": "2026-10-30T10:00:00Z",
+      "dns_instructions": {
+        "record_type": "TXT",
+        "record_name": "_lazynerds-verification.example.com",
+        "record_host": "_lazynerds-verification",
+        "record_value": null,
+        "expected_format": "lazynerds-verification=<token>",
+        "ttl": 300
+      }
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 50,
+  "total_pages": 1
+}
+```
+
+### `GET /domains/{domain_id}`
+Retrieves details for a specific registered domain.
+- **Authentication:** Required (tenant-scoped; returns 404 for domains belonging to another client organization).
+
+### `POST /domains/{domain_id}/verify`
+Performs an authoritative live DNS TXT lookup at `_lazynerds-verification.<domain>`, reconstructs RFC 1035 strings, verifies SHA-256 hash match via constant-time comparison, and transitions status to `verified`.
+- **Authentication:** Required.
+- **Rate Limit:** 1 attempt per 5 seconds per domain; maximum 50 attempts per challenge cycle.
+- **Response `200 OK` (Verified):**
+```json
+{
+  "verified": true,
+  "status": "verified",
+  "message": "Domain example.com verified successfully via DNS TXT record.",
+  "domain": {
+    "id": "e309f30e-e395-4673-90d2-8b6526eb6df1",
+    "verification_status": "verified",
+    "verified_at": "2026-10-30T10:05:00Z",
+    "last_verification_attempt_at": "2026-10-30T10:05:00Z",
+    "verification_attempt_count": 1
+  }
+}
+```
+- **Response `200 OK` (Not Yet Verified / Failed):**
+```json
+{
+  "verified": false,
+  "status": "failed",
+  "message": "DNS TXT record '_lazynerds-verification.example.com' was not found (NXDOMAIN).",
+  "domain": {
+    "id": "e309f30e-e395-4673-90d2-8b6526eb6df1",
+    "verification_status": "failed",
+    "failure_reason": "DNS TXT record '_lazynerds-verification.example.com' was not found (NXDOMAIN)."
+  }
+}
+```
+
+### `POST /domains/{domain_id}/regenerate`
+Invalidates previous verification token, generates a new cryptographic token, resets the 24-hour expiration window, and resets attempt counters.
+- **Authentication:** Required.
+- **Response `200 OK`:** Returns new token and updated DNS instructions.
+
+### `DELETE /domains/{domain_id}`
+Deletes the domain and ownership challenge record.
+- **Authentication:** Required.
+- **Response `204 No Content`**
+

@@ -66,6 +66,15 @@ from app.schemas.audit_log import (
     AuditLogListResponse,
 )
 from app.schemas.overview import OverviewMetrics
+from app.schemas.domain import (
+    DnsRecordInstructions,
+    DomainCreate,
+    DomainOut,
+    DomainCreateResponse,
+    DomainRegenerateResponse,
+    DomainVerificationResult,
+    DomainListResponse,
+)
 
 __all__ = [
     "ClientBase",
@@ -118,4 +127,11 @@ __all__ = [
     "AuditLogOut",
     "AuditLogListResponse",
     "OverviewMetrics",
+    "DnsRecordInstructions",
+    "DomainCreate",
+    "DomainOut",
+    "DomainCreateResponse",
+    "DomainRegenerateResponse",
+    "DomainVerificationResult",
+    "DomainListResponse",
 ]

@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import {
   Users,
   Shield,
+  ShieldCheck,
   Layers,
   FileCheck2,
   PieChart,
@@ -89,6 +90,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       href: "/assets",
       icon: Shield,
       description: "In-Scope Infrastructure & APIs",
+    },
+    {
+      name: "Domains",
+      href: "/domains",
+      icon: ShieldCheck,
+      badge: "DNS",
+      description: "Domain Ownership & Verification",
     },
     {
       name: "Findings",

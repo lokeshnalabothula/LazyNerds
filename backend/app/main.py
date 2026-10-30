@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.v1.api import api_router
+from app.api.v1.domains import router as domains_router
 from app.core.config import settings
 import app.db.session as db_session
 from app.db.session import Base, SessionLocal, engine
@@ -130,6 +131,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # Mount versioned API
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(domains_router, prefix="/api/domains", tags=["Domains (Direct)"])
 
 
 @app.get("/")

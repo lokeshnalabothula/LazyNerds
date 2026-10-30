@@ -61,6 +61,14 @@ import {
   OverviewMetrics,
   AuditLog,
 } from "@/types/overview";
+import {
+  Domain,
+  DomainCreateInput,
+  DomainCreateResponse,
+  DomainRegenerateResponse,
+  DomainVerificationResult,
+  DomainListResponse,
+} from "@/types/domain";
 
 const API_BASE_URL = typeof window !== "undefined"
   ? "/api/v1"
@@ -674,6 +682,53 @@ export const api = {
   // Audit Logs (Module J)
   async getAuditLogs(page: number = 1): Promise<{ items: AuditLog[]; total: number; total_pages: number }> {
     return request(`/audit-logs?page=${page}`);
+  },
+
+  // Domains & DNS TXT Verification
+  async getDomains(params?: {
+    page?: number;
+    page_size?: number;
+    client_id?: string;
+    status?: string;
+    search?: string;
+  }): Promise<DomainListResponse> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set("page", params.page.toString());
+    if (params?.page_size) query.set("page_size", params.page_size.toString());
+    if (params?.client_id) query.set("client_id", params.client_id);
+    if (params?.status) query.set("status", params.status);
+    if (params?.search) query.set("search", params.search);
+    const qs = query.toString();
+    return request<DomainListResponse>(`/domains${qs ? `?${qs}` : ""}`);
+  },
+
+  async getDomain(id: string): Promise<Domain> {
+    return request<Domain>(`/domains/${encodeURIComponent(id)}`);
+  },
+
+  async createDomain(input: DomainCreateInput): Promise<DomainCreateResponse> {
+    return request<DomainCreateResponse>("/domains", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async verifyDomain(id: string): Promise<DomainVerificationResult> {
+    return request<DomainVerificationResult>(`/domains/${encodeURIComponent(id)}/verify`, {
+      method: "POST",
+    });
+  },
+
+  async regenerateDomainChallenge(id: string): Promise<DomainRegenerateResponse> {
+    return request<DomainRegenerateResponse>(`/domains/${encodeURIComponent(id)}/regenerate`, {
+      method: "POST",
+    });
+  },
+
+  async deleteDomain(id: string): Promise<void> {
+    return request<void>(`/domains/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
   },
 
   async getHealth(): Promise<{

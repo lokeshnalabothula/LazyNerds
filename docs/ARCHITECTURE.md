@@ -91,6 +91,35 @@ erDiagram
 12. **`reports`**: Formal assessment summaries with executive metrics, vulnerability registers, and Markdown/PDF exports.
 13. **`notifications`**: User-scoped operational alert stream.
 14. **`audit_logs`**: Append-only administrative event log capturing all mutations, scan dispatches, and role elevations.
+15. **`domains`**: Tenant-scoped registered domains, cryptographic challenge hash, 24-hour expiration timestamp, verification attempt counter, and verification status (`pending`, `verified`, `failed`, `expired`).
+
+---
+
+## 3.2 Domain Ownership Verification Architecture (Method A)
+
+FixOps implements **Method A: Cryptographic DNS TXT Challenge Verification** to verify administrative ownership of domain names:
+
+1. **Challenge Generation**:
+   - High-entropy cryptographic token generated via `secrets.token_urlsafe(32)`.
+   - Plaintext token returned strictly once upon creation or regeneration.
+   - Database stores only the SHA-256 digest (`hashlib.sha256(token.encode()).hexdigest()`), preventing database token leakage.
+2. **DNS Challenge Specification**:
+   - Record Type: `TXT`
+   - Record Name (Host): `_lazynerds-verification` (FQDN: `_lazynerds-verification.<domain>`)
+   - Record Value: `lazynerds-verification=<token>`
+   - TTL: `300` seconds (5 minutes)
+3. **Verification Resolution Engine**:
+   - Queries authoritative DNS using `dnspython` resolver.
+   - Reconstructs RFC 1035 split strings chunks (`b"".join(rdata.strings)`).
+   - Extracts token prefix and computes SHA-256 hash.
+   - Uses constant-time equality comparison (`hmac.compare_digest`) against stored hash to prevent timing attacks.
+4. **Resilience & Rate Limiting**:
+   - Handles `NXDOMAIN`, `NoAnswer`, `Timeout`, and `SERVFAIL` gracefully without throwing unhandled exceptions.
+   - Enforces 5-second minimum interval between checks and a 50-attempt limit per challenge cycle.
+   - Challenge tokens expire after 24 hours. A regeneration endpoint issues a new token and resets the cycle.
+5. **Strict Tenancy & Authorization Separation**:
+   - Registered domains are strictly tenant-isolated by `client_id`.
+   - Domain verification confirms administrative DNS control; explicit Rules of Engagement (RoE) authorization remains required before initiating automated scans.
 
 ---
 

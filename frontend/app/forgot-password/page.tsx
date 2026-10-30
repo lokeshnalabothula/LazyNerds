@@ -22,12 +22,27 @@ export default function ForgotPasswordPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     getValues,
     formState: { errors },
   } = useForm<ForgotPasswordForm>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
+
+  // Seamless form state preservation across auth card transitions
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("fixops_auth_email");
+        if (saved) {
+          setValue("email", saved);
+        }
+      } catch {
+        // Safe no-op
+      }
+    }
+  }, [setValue]);
 
   const onSubmit = async (data: ForgotPasswordForm) => {
     setServerError(null);
@@ -156,7 +171,17 @@ export default function ForgotPasswordPage() {
                         required
                         placeholder="operator@company.com"
                         className="w-full bg-transparent py-2.5 sm:py-3 pr-3.5 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
-                        {...register("email")}
+                        {...register("email", {
+                          onChange: (e) => {
+                            if (typeof window !== "undefined") {
+                              try {
+                                sessionStorage.setItem("fixops_auth_email", e.target.value.trim());
+                              } catch {
+                                // Safe no-op
+                              }
+                            }
+                          },
+                        })}
                       />
                     </div>
                     {errors.email && (

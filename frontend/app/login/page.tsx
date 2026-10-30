@@ -50,7 +50,30 @@ export default function LoginPage() {
         // Safe no-op on malformed URLs
       }
     }
+
+    // Preserve entered email seamlessly across auth card transitions
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("fixops_auth_email");
+        if (saved) {
+          setEmail((prev) => prev || saved);
+        }
+      } catch {
+        // Safe no-op
+      }
+    }
   }, []);
+
+  const handleEmailChange = (val: string) => {
+    setEmail(val);
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("fixops_auth_email", val.trim());
+      } catch {
+        // Safe no-op
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,7 +181,7 @@ export default function LoginPage() {
                     required
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                   />
                 </div>
               </div>

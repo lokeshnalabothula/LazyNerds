@@ -26,6 +26,31 @@ export default function RegisterPage() {
     }
   }, [user, loading, router]);
 
+  // Seamless form state preservation across auth card transitions
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("fixops_auth_email");
+        if (saved) {
+          setEmail((prev) => prev || saved);
+        }
+      } catch {
+        // Safe no-op
+      }
+    }
+  }, []);
+
+  const handleEmailChange = (val: string) => {
+    setEmail(val);
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("fixops_auth_email", val.trim());
+      } catch {
+        // Safe no-op
+      }
+    }
+  };
+
   // Cooldown timer interval
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -190,7 +215,7 @@ export default function RegisterPage() {
                         required
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => handleEmailChange(e.target.value)}
                       />
                     </div>
                   </div>

@@ -1133,43 +1133,404 @@
   }
 
   /* ==========================================================================
-     Page Transition & Premium Motion System
-     - Subtle tactile card-flip enter: opacity 0->1, rotateX 1.2deg->0deg, translateY 6px->0, scale 0.995->1
-     - Duration: 240ms, cubic-bezier(0.22, 1, 0.36, 1)
-     - Immediate navigation without artificial waiting timers
-     - Persistent cosmic background & shield stay completely mounted & stationary
+     Tactile 3D Card-Flip & Premium Auth Transition System
+     - Auth form behaves as a physical double-sided frosted-glass panel
+     - Coordinated directional 3D transitions:
+       * Login <-> Register: 3D horizontal card-flip (rotateY 16deg, translate3d)
+       * Login <-> Forgot Password: 3D vertical tilt & directional slide (rotateX 9deg)
+       * Forgot Password <-> Reset Password: 3D directional flow
+       * Landing <-> Login: smooth emergence from / retreat to cyber shield
+       * Direct / Default: subtle elevation & opacity appearance
+     - Pinned headers and footers remain rock-solid and stationary
+     - Persistent cosmic background & cyber shield remain completely stationary
+     - Apple-inspired cubic-bezier(0.16, 1, 0.3, 1) spring-like deceleration
+     - Zero artificial delays or setTimeout blocking navigation
+     - Full accessibility and prefers-reduced-motion support
      ========================================================================== */
-  @keyframes fixopsPageEnter {
+  .fixops-transition-stage {
+    perspective: 1200px;
+    perspective-origin: 50% 50%;
+  }
+
+  .fixops-transition-layer {
+    transform-style: preserve-3d;
+  }
+
+  /* Exiting layer: completely non-interactive, hidden header/footer to prevent duplicates */
+  .fixops-exit-layer {
+    pointer-events: none !important;
+    user-select: none !important;
+  }
+  .fixops-exit-layer header,
+  .fixops-exit-layer footer {
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+
+  /* Entering layer: header and footer remain pinned and stationary */
+  .fixops-enter-layer header,
+  .fixops-enter-layer footer {
+    transform: none !important;
+  }
+
+  /* Specular card 3D rendering stabilization */
+  .stitch-specular-card {
+    transform-origin: center center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+
+  /* --------------------------------------------------------------------------
+     1. Login -> Register (Card-Flip Forward)
+     -------------------------------------------------------------------------- */
+  @keyframes fixopsCardFlipForwardExit {
     0% {
-      opacity: 0;
-      transform: perspective(1200px) rotateX(1.2deg) translateY(6px) scale(0.995);
+      opacity: 1;
+      transform: perspective(1200px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 50px -12px rgba(0, 0, 0, 0.85);
+      filter: brightness(1);
     }
     100% {
-      opacity: 1;
-      transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
+      opacity: 0;
+      transform: perspective(1200px) rotateY(16deg) translate3d(-20px, 0, -36px) scale(0.97);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+      filter: brightness(0.92);
     }
   }
 
-  @keyframes fixopsPageExit {
+  @keyframes fixopsCardFlipForwardEnter {
     0% {
-      opacity: 1;
-      transform: perspective(1200px) rotateX(0deg) translateY(0);
+      opacity: 0;
+      transform: perspective(1200px) rotateY(-16deg) translate3d(20px, 0, -36px) scale(0.97);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 32px 64px -12px rgba(0, 0, 0, 0.95);
+      filter: brightness(1.08);
+    }
+    60% {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 28px 56px -12px rgba(0, 0, 0, 0.9);
     }
     100% {
-      opacity: 0;
-      transform: perspective(1200px) rotateX(-1deg) translateY(-4px);
+      opacity: 1;
+      transform: perspective(1200px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 50px -12px rgba(0, 0, 0, 0.85);
+      filter: brightness(1);
     }
   }
 
+  .fixops-card-flip-forward-exit .stitch-specular-card {
+    animation: fixopsCardFlipForwardExit 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-card-flip-forward-enter .stitch-specular-card {
+    animation: fixopsCardFlipForwardEnter 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* --------------------------------------------------------------------------
+     2. Register -> Login (Card-Flip Backward)
+     -------------------------------------------------------------------------- */
+  @keyframes fixopsCardFlipBackwardExit {
+    0% {
+      opacity: 1;
+      transform: perspective(1200px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 50px -12px rgba(0, 0, 0, 0.85);
+      filter: brightness(1);
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1200px) rotateY(-16deg) translate3d(20px, 0, -36px) scale(0.97);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+      filter: brightness(0.92);
+    }
+  }
+
+  @keyframes fixopsCardFlipBackwardEnter {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) rotateY(16deg) translate3d(-20px, 0, -36px) scale(0.97);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 32px 64px -12px rgba(0, 0, 0, 0.95);
+      filter: brightness(1.08);
+    }
+    60% {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 28px 56px -12px rgba(0, 0, 0, 0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 50px -12px rgba(0, 0, 0, 0.85);
+      filter: brightness(1);
+    }
+  }
+
+  .fixops-card-flip-backward-exit .stitch-specular-card {
+    animation: fixopsCardFlipBackwardExit 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-card-flip-backward-enter .stitch-specular-card {
+    animation: fixopsCardFlipBackwardEnter 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* --------------------------------------------------------------------------
+     3. Login -> Forgot Password (Card-Tilt Forward)
+     -------------------------------------------------------------------------- */
+  @keyframes fixopsCardTiltForwardExit {
+    0% {
+      opacity: 1;
+      transform: perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1);
+      filter: brightness(1);
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1200px) rotateX(9deg) translate3d(0, -18px, -28px) scale(0.975);
+      filter: brightness(0.92);
+    }
+  }
+
+  @keyframes fixopsCardTiltForwardEnter {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) rotateX(-9deg) translate3d(0, 18px, -28px) scale(0.975);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 30px 60px -12px rgba(0, 0, 0, 0.95);
+      filter: brightness(1.06);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 50px -12px rgba(0, 0, 0, 0.85);
+      filter: brightness(1);
+    }
+  }
+
+  .fixops-card-tilt-forward-exit .stitch-specular-card {
+    animation: fixopsCardTiltForwardExit 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-card-tilt-forward-enter .stitch-specular-card {
+    animation: fixopsCardTiltForwardEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* --------------------------------------------------------------------------
+     4. Forgot Password -> Login (Card-Tilt Backward)
+     -------------------------------------------------------------------------- */
+  @keyframes fixopsCardTiltBackwardExit {
+    0% {
+      opacity: 1;
+      transform: perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1);
+      filter: brightness(1);
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1200px) rotateX(-9deg) translate3d(0, 18px, -28px) scale(0.975);
+      filter: brightness(0.92);
+    }
+  }
+
+  @keyframes fixopsCardTiltBackwardEnter {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) rotateX(9deg) translate3d(0, -18px, -28px) scale(0.975);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 30px 60px -12px rgba(0, 0, 0, 0.95);
+      filter: brightness(1.06);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) rotateX(0deg) translate3d(0, 0, 0) scale(1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 50px -12px rgba(0, 0, 0, 0.85);
+      filter: brightness(1);
+    }
+  }
+
+  .fixops-card-tilt-backward-exit .stitch-specular-card {
+    animation: fixopsCardTiltBackwardExit 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-card-tilt-backward-enter .stitch-specular-card {
+    animation: fixopsCardTiltBackwardEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* --------------------------------------------------------------------------
+     5. Forgot Password <-> Reset Password (Card-Flow Forward / Backward)
+     -------------------------------------------------------------------------- */
+  @keyframes fixopsCardFlowForwardExit {
+    0% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(-24px, 0, -20px) scale(0.98);
+    }
+  }
+
+  @keyframes fixopsCardFlowForwardEnter {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(24px, 0, -20px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  .fixops-card-flow-forward-exit .stitch-specular-card {
+    animation: fixopsCardFlowForwardExit 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-card-flow-forward-enter .stitch-specular-card {
+    animation: fixopsCardFlowForwardEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fixopsCardFlowBackwardExit {
+    0% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(24px, 0, -20px) scale(0.98);
+    }
+  }
+
+  @keyframes fixopsCardFlowBackwardEnter {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(-24px, 0, -20px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  .fixops-card-flow-backward-exit .stitch-specular-card {
+    animation: fixopsCardFlowBackwardExit 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-card-flow-backward-enter .stitch-specular-card {
+    animation: fixopsCardFlowBackwardEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* --------------------------------------------------------------------------
+     6. Landing (/) <-> Auth (Emergence & Retreat from Cyber Shield)
+     -------------------------------------------------------------------------- */
+  @keyframes fixopsLandingToAuthExit {
+    0% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(0, -12px, -20px) scale(0.99);
+    }
+  }
+
+  @keyframes fixopsLandingToAuthEnter {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(0, 16px, -20px) scale(0.985);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  .fixops-landing-to-auth-exit main {
+    animation: fixopsLandingToAuthExit 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-landing-to-auth-enter .stitch-specular-card {
+    animation: fixopsLandingToAuthEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fixopsAuthToLandingExit {
+    0% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(0, 16px, -20px) scale(0.985);
+    }
+  }
+
+  @keyframes fixopsAuthToLandingEnter {
+    0% {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(0, -12px, -20px) scale(0.99);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  .fixops-auth-to-landing-exit .stitch-specular-card {
+    animation: fixopsAuthToLandingExit 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .fixops-auth-to-landing-enter main {
+    animation: fixopsAuthToLandingEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* --------------------------------------------------------------------------
+     7. Default / Initial / Direct Route Appearance
+     -------------------------------------------------------------------------- */
+  @keyframes fixopsSubtleAppear {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fixops-subtle-appear {
+    animation: fixopsSubtleAppear 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Backward compatibility alias */
   .fixops-page-enter {
-    animation: fixopsPageEnter 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: fixopsSubtleAppear 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
     will-change: opacity, transform;
   }
 
-  .fixops-page-exit {
-    animation: fixopsPageExit 140ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    will-change: opacity, transform;
-    pointer-events: none;
+  /* Mobile Responsive Rotation Restraint */
+  @media (max-width: 640px) {
+    @keyframes fixopsCardFlipForwardExit {
+      0% {
+        opacity: 1;
+        transform: perspective(900px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: perspective(900px) rotateY(12deg) translate3d(-12px, 0, -24px) scale(0.97);
+      }
+    }
+    @keyframes fixopsCardFlipForwardEnter {
+      0% {
+        opacity: 0;
+        transform: perspective(900px) rotateY(-12deg) translate3d(12px, 0, -24px) scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: perspective(900px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      }
+    }
+    @keyframes fixopsCardFlipBackwardExit {
+      0% {
+        opacity: 1;
+        transform: perspective(900px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: perspective(900px) rotateY(-12deg) translate3d(12px, 0, -24px) scale(0.97);
+      }
+    }
+    @keyframes fixopsCardFlipBackwardEnter {
+      0% {
+        opacity: 0;
+        transform: perspective(900px) rotateY(12deg) translate3d(-12px, 0, -24px) scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: perspective(900px) rotateY(0deg) translate3d(0, 0, 0) scale(1);
+      }
+    }
   }
 
   @keyframes fixopsHeroStagger {
@@ -1208,8 +1569,13 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .fixops-exit-layer {
+    display: none !important;
+  }
   .fixops-page-enter,
   .fixops-page-exit,
+  .fixops-subtle-appear,
+  .stitch-specular-card,
   .hero-stagger-1,
   .hero-stagger-2,
   .hero-stagger-3,

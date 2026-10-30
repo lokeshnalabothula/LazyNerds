@@ -26,14 +26,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = getStoredToken();
       if (!token) {
         setUser(null);
+        if (typeof document !== "undefined") {
+          document.cookie = "fixops_access_token=; path=/; max-age=0; SameSite=Lax;";
+        }
         setLoading(false);
         return;
+      }
+      if (typeof document !== "undefined" && !document.cookie.includes("fixops_access_token=")) {
+        const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `fixops_access_token=${encodeURIComponent(token)}; path=/; max-age=86400; SameSite=Lax${secureFlag}`;
       }
       const currentUser = await api.getCurrentUser();
       setUser(currentUser);
     } catch {
       setUser(null);
       setStoredToken(null);
+      if (typeof document !== "undefined") {
+        document.cookie = "fixops_access_token=; path=/; max-age=0; SameSite=Lax;";
+      }
     } finally {
       setLoading(false);
     }
@@ -48,6 +58,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await api.login(email, password);
       setUser(result.user);
+      setStoredToken(result.access_token);
+
+      if (typeof document !== "undefined") {
+        const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `fixops_access_token=${encodeURIComponent(result.access_token)}; path=/; max-age=86400; SameSite=Lax${secureFlag}`;
+      }
 
       // Redirect to overview landing page by default, or to safe preserved redirect path
       let targetPath = "/overview";
@@ -58,7 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           redirectParam &&
           redirectParam.startsWith("/") &&
           !redirectParam.startsWith("//") &&
-          redirectParam !== "/login"
+          redirectParam !== "/login" &&
+          redirectParam !== "/register"
         ) {
           targetPath = redirectParam;
         }
@@ -78,6 +95,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setStoredToken(null);
+      if (typeof document !== "undefined") {
+        document.cookie = "fixops_access_token=; path=/; max-age=0; SameSite=Lax;";
+      }
       setLoading(false);
       router.push("/login");
     }
@@ -85,6 +105,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const setSession = useCallback((session: { user: User; access_token: string }) => {
     setStoredToken(session.access_token);
+    if (typeof document !== "undefined") {
+      const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+      document.cookie = `fixops_access_token=${encodeURIComponent(session.access_token)}; path=/; max-age=86400; SameSite=Lax${secureFlag}`;
+    }
     setUser(session.user);
   }, []);
 

@@ -119,11 +119,11 @@ export function PageTransition({ children }: PageTransitionProps) {
 
       prevPathnameRef.current = pathname;
 
-      // Clean up the exiting layer once the 300ms transition finishes
+      // Clean up the exiting layer once the 320ms transition finishes
       timerRef.current = setTimeout(() => {
         setExitingState(null);
         setActiveKind("default");
-      }, 320);
+      }, 340);
     }
 
     prevChildrenRef.current = children;

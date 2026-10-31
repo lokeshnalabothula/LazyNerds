@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { OverviewMetrics } from "@/types/overview";
+import { OverviewSkeleton } from "@/components/ui/skeleton";
 
 interface QueueFinding {
   id: string;
@@ -183,9 +184,9 @@ export default function OverviewPage() {
   const handleExportSummary = () => {
     const reportData = {
       timestamp: new Date().toISOString(),
-      activeEngagements: metrics?.engagements_active ?? 8,
-      openVulnerabilities: metrics?.findings_open ?? 42,
-      criticalFindingsBreached: 2,
+      activeEngagements: metrics?.engagements_active ?? 0,
+      openVulnerabilities: metrics?.findings_open ?? 0,
+      criticalFindingsBreached: metrics?.critical_findings_open ?? 0,
       mttrDays: 3.8,
       status: "OPTIMAL",
     };
@@ -201,11 +202,8 @@ export default function OverviewPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center text-text-muted">
-        <div className="flex items-center gap-2 font-code-sm text-code-sm">
-          <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse" />
-          <span>AUTHENTICATING FIXOPS CONSOLE SESSION...</span>
-        </div>
+      <div className="bg-surface-container-lowest text-text-primary min-h-screen p-6 sm:p-8 max-w-7xl mx-auto">
+        <OverviewSkeleton />
       </div>
     );
   }
@@ -680,7 +678,11 @@ export default function OverviewPage() {
         {/* MAIN CONTENT VIEWPORT: Executive Command Center                         */}
         {/* ======================================================================= */}
         <main className="flex-1 p-space-md sm:p-space-lg lg:p-space-xl max-w-7xl w-full mx-auto space-y-space-xl">
-          {/* 1. HEADER BAR: Title, Subtitle & Action Bar */}
+          {loading ? (
+            <OverviewSkeleton />
+          ) : (
+            <>
+              {/* 1. HEADER BAR: Title, Subtitle & Action Bar */}
           <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md border-b border-border-subtle pb-space-lg">
             <div>
               <div className="flex items-center gap-3">
@@ -816,13 +818,13 @@ export default function OverviewPage() {
               <div className="my-3">
                 <div className="flex items-baseline gap-2">
                   <span className="text-metric-stat font-metric-stat text-text-primary">
-                    {metrics?.engagements_active ?? 8}
+                    {metrics?.engagements_active ?? 0}
                   </span>
                   <span className="text-caption font-caption text-text-muted">Authorized</span>
                 </div>
               </div>
               <div className="pt-2 border-t border-border-subtle text-[11px] font-code-sm text-text-secondary truncate">
-                3 Web App · 2 Cloud · 3 Mobile API
+                Active Assessment Scope
               </div>
             </div>
 
@@ -837,23 +839,23 @@ export default function OverviewPage() {
               <div className="my-3">
                 <div className="flex items-baseline gap-2">
                   <span className="text-metric-stat font-metric-stat text-text-primary">
-                    {metrics?.findings_open ?? 42}
+                    {metrics?.findings_open ?? 0}
                   </span>
                   <span className="text-caption font-caption text-text-muted">Total Unresolved</span>
                 </div>
               </div>
               <div className="pt-2 border-t border-border-subtle flex items-center gap-1.5 overflow-x-auto text-[10px] font-label-caps font-bold">
                 <span className="px-1.5 py-0.5 rounded bg-severity-critical-bg text-severity-critical border border-severity-critical-border">
-                  4 Crit
+                  {metrics?.severity_distribution?.critical ?? 0} Crit
                 </span>
                 <span className="px-1.5 py-0.5 rounded bg-severity-high-bg text-severity-high border border-severity-high-border">
-                  11 High
+                  {metrics?.severity_distribution?.high ?? 0} High
                 </span>
                 <span className="px-1.5 py-0.5 rounded bg-severity-medium-bg text-severity-medium border border-severity-medium-border">
-                  18 Med
+                  {metrics?.severity_distribution?.medium ?? 0} Med
                 </span>
                 <span className="px-1.5 py-0.5 rounded bg-severity-low-bg text-severity-low border border-severity-low-border">
-                  9 Low
+                  {metrics?.severity_distribution?.low ?? 0} Low
                 </span>
               </div>
             </div>
@@ -1336,7 +1338,9 @@ export default function OverviewPage() {
               <span>Build e971bc3</span>
             </div>
           </footer>
-        </main>
+        </>
+      )}
+    </main>
       </div>
 
       {/* Deploy Fix & Scan Dispatch Modal */}

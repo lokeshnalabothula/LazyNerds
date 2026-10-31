@@ -209,6 +209,31 @@ export const api = {
     });
   },
 
+  async sendForgotPasswordOtp(email: string): Promise<{ message: string; cooldown_seconds: number }> {
+    return request<{ message: string; cooldown_seconds: number }>("/auth/forgot-password/send-otp", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async verifyForgotPasswordOtp(email: string, code: string): Promise<{ reset_token: string; message: string }> {
+    return request<{ reset_token: string; message: string }>("/auth/forgot-password/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, code }),
+    });
+  },
+
+  async resetPasswordWithOtp(
+    email: string,
+    reset_token: string,
+    new_password: string
+  ): Promise<{ message: string }> {
+    return request<{ message: string }>("/auth/forgot-password/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ email, reset_token, new_password }),
+    });
+  },
+
   async verifyResetToken(token: string): Promise<{ valid: boolean; email_masked?: string; message?: string }> {
     return request<{ valid: boolean; email_masked?: string; message?: string }>("/auth/verify-reset-token", {
       method: "POST",

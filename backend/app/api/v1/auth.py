@@ -12,6 +12,10 @@ from app.models.registration import ClientRegistration
 from app.schemas.auth import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
+    SendForgotPasswordOtpResponse,
+    VerifyForgotPasswordOtpRequest,
+    VerifyForgotPasswordOtpResponse,
+    ResetPasswordWithOtpRequest,
     LoginRequest,
     ResetPasswordRequest,
     SendRegistrationOtpRequest,
@@ -388,6 +392,123 @@ def reset_password(
             details=f"Password successfully reset via single-use token for '{user.email}'",
         )
         return {"message": "Your password has been successfully reset. You may now sign in."}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/forgot-password/send-otp", response_model=SendForgotPasswordOtpResponse)
+def forgot_password_send_otp(
+    data: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """
+    Sends a 6-digit OTP code to the provided email for password recovery.
+    Always returns generic 200 response to prevent email enumeration.
+    Enforces cooldown and hourly rate limits.
+    """
+    if settings.ENVIRONMENT == "production":
+        provider = email_service.get_active_email_provider()
+        if provider not in ("resend", "smtp"):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Password recovery service is temporarily unavailable because email delivery is not yet configured on this environment. Please contact the administrator.",
+            )
+
+    try:
+        raw_code, record, user = password_reset_service.request_password_reset_otp(db, email=data.email)
+        if user and record:
+            background_tasks.add_task(
+                email_service.send_password_reset_otp_email,
+                to_email=user.email,
+                recipient_name=user.full_name,
+                code=raw_code,
+                expires_in_minutes=15,
+            )
+
+        audit_service.log_audit(
+            db=db,
+            user_email=str(data.email).strip().lower(),
+            action="FORGOT_PASSWORD_OTP_REQUESTED",
+            resource_type="auth",
+            resource_id="password_reset_code",
+            details=f"Password recovery OTP requested for {data.email}.",
+        )
+
+        return SendForgotPasswordOtpResponse(
+            message="If an account matches that email address, a 6-digit password recovery code has been dispatched.",
+            cooldown_seconds=60,
+        )
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/forgot-password/verify-otp", response_model=VerifyForgotPasswordOtpResponse)
+def forgot_password_verify_otp(
+    data: VerifyForgotPasswordOtpRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Verifies the 6-digit OTP code for password reset.
+    Returns a single-use session reset token valid for 15 minutes.
+    """
+    try:
+        reset_token = password_reset_service.verify_password_reset_otp(
+            db=db,
+            email=data.email,
+            code=data.code,
+        )
+        audit_service.log_audit(
+            db=db,
+            user_email=str(data.email).strip().lower(),
+            action="FORGOT_PASSWORD_OTP_VERIFIED",
+            resource_type="auth",
+            resource_id="password_reset_code",
+            details=f"Password recovery OTP verified successfully for {data.email}.",
+        )
+        return VerifyForgotPasswordOtpResponse(
+            reset_token=reset_token,
+            message="Verification code confirmed. You may now set your new password.",
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/forgot-password/reset-password", status_code=status.HTTP_200_OK)
+def forgot_password_reset_password(
+    data: ResetPasswordWithOtpRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Resets user password using the single-use reset token obtained after verifying OTP.
+    """
+    try:
+        user = password_reset_service.reset_password_with_verified_otp(
+            db=db,
+            email=data.email,
+            reset_token=data.reset_token,
+            new_password=data.new_password,
+        )
+        audit_service.log_audit(
+            db=db,
+            user_email=user.email,
+            action="RESET_PASSWORD_WITH_OTP_SUCCESS",
+            resource_type="user",
+            resource_id=user.id,
+            details=f"Password successfully reset via verified OTP for '{user.email}'",
+        )
+        return {"message": "Your password has been successfully reset. You may now sign in with your new credentials."}
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

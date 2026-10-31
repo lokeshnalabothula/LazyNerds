@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { TimeDisplay } from "@/components/ui/time-display";
-import { FixOpsAppLoader } from "@/components/ui/loading";
+import { RegistrationsSkeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { RegistrationOut, RegistrationStatus } from "@/types/registration";
@@ -264,10 +264,7 @@ function RegistrationsContent() {
 
         {/* Content List */}
         {loading ? (
-          <FixOpsAppLoader
-            label="LOADING REGISTRATIONS"
-            subtext="Retrieving isolated onboarding requests…"
-          />
+          <RegistrationsSkeleton />
         ) : filteredItems.length === 0 ? (
           <div data-empty="true" className="cockpit-card specular-top rounded-xl border border-zinc-200 dark:border-white/[0.08] p-12 text-center space-y-3">
             <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center mx-auto">
@@ -576,14 +573,7 @@ function RegistrationsContent() {
 
 export default function RegistrationsPage() {
   return (
-    <Suspense
-      fallback={
-        <FixOpsAppLoader
-          label="INITIALIZING REGISTRATIONS WORKSPACE"
-          subtext="Loading secure founder queue…"
-        />
-      }
-    >
+    <Suspense fallback={<RegistrationsSkeleton />}>
       <RegistrationsContent />
     </Suspense>
   );

@@ -36,10 +36,15 @@ export default function LoginPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    // Sanitize any sensitive credentials accidentally passed in query strings
+    // Check for prefilled email from registration or password reset
     if (typeof window !== "undefined" && window.location.search) {
       try {
         const url = new URL(window.location.href);
+        const emailQuery = url.searchParams.get("email");
+        if (emailQuery) {
+          setEmail(emailQuery);
+          sessionStorage.setItem("fixops_auth_email", emailQuery.trim());
+        }
         if (url.searchParams.has("password") || url.searchParams.has("email")) {
           url.searchParams.delete("password");
           url.searchParams.delete("email");
@@ -144,7 +149,7 @@ export default function LoginPage() {
           {/* Persistent specular auth shield provided by RootLayout PersistentBackground */}
 
           {/* Authentication Frosted Glass Module */}
-          <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-6 sm:p-8 z-10 w-full">
+          <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-6 sm:p-8 z-10 w-full min-h-[440px] flex flex-col justify-between">
             {/* Header Section */}
             <div className="text-center mb-6 sm:mb-7">
               <h1 className="text-2xl sm:text-[32px] font-headline font-semibold text-white tracking-[-0.02em] mb-2 leading-tight">

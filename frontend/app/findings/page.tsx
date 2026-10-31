@@ -13,6 +13,7 @@ import { ScanLauncherModal } from "@/components/findings/scan-launcher-modal";
 import { ScanTelemetryModal } from "@/components/findings/scan-telemetry-modal";
 import { VerificationModal } from "@/components/findings/verification-modal";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
+import { FindingsSkeleton } from "@/components/ui/skeleton";
 import { useViewMode } from "@/lib/use-view-mode";
 import { formatDateTime } from "@/lib/utils";
 import {
@@ -853,10 +854,7 @@ export default function FindingsPage() {
     <Suspense
       fallback={
         <AppShell title="Assessment & Findings">
-          <div className="py-24 flex flex-col items-center justify-center gap-3 text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-[#F5C518]" />
-            <span className="text-xs font-mono">Loading security findings...</span>
-          </div>
+          <FindingsSkeleton />
         </AppShell>
       }
     >

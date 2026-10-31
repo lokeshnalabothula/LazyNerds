@@ -5,14 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { FixOpsBackground, FixOpsAuthShield } from "@/components/ui/fixops-background";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { user, loading, setSession } = useAuth();
 
-  const [step, setStep] = useState<"email" | "verify">("email");
+  const [step, setStep] = useState<"details" | "verify">("details");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -60,10 +62,23 @@ export default function RegisterPage() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
+  // Password requirements calculation
+  const hasMinLength = password.length >= 10;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const isPasswordValid = hasMinLength && hasUpper && hasLower && hasNumber;
+
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setInfoMessage(null);
+
+    const cleanName = fullName.trim();
+    if (cleanName.length < 2) {
+      setErrorMessage("Please enter your full name (minimum 2 characters).");
+      return;
+    }
 
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
@@ -71,10 +86,15 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!isPasswordValid) {
+      setErrorMessage("Password must be at least 10 characters and contain an uppercase letter, lowercase letter, and number.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await api.sendRegistrationOtp(cleanEmail);
-      setInfoMessage(res.message || "A verification code has been dispatched to your email.");
+      setInfoMessage(res.message || "A 6-digit verification code has been dispatched to your email.");
       setCooldown(res.cooldown_seconds || 60);
       setStep("verify");
     } catch (err: any) {
@@ -94,7 +114,7 @@ export default function RegisterPage() {
 
     try {
       const res = await api.resendRegistrationOtp(email.trim().toLowerCase());
-      setInfoMessage(res.message || "A new verification code has been sent.");
+      setInfoMessage(res.message || "A new 6-digit verification code has been dispatched.");
       setCooldown(res.cooldown_seconds || 60);
       setCode("");
     } catch (err: any) {
@@ -122,6 +142,8 @@ export default function RegisterPage() {
       const tokenResponse = await api.verifyRegistrationOtp({
         email: email.trim().toLowerCase(),
         code: cleanCode,
+        password: password,
+        full_name: fullName.trim(),
       });
 
       if (setSession) {
@@ -139,11 +161,8 @@ export default function RegisterPage() {
 
   return (
     <div className="bg-transparent text-[#e2e8f0] antialiased min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-white/20 selection:text-white font-sans">
-      {/* Persistent atmospheric background provided by RootLayout PersistentBackground */}
-
       {/* Minimalist Top Navigation Bar */}
       <header className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-5 sm:py-6 flex items-center justify-between">
-        {/* Brand Anchor */}
         <Link
           aria-label="Lazy Nerds FixOps Home"
           className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus:ring-1 focus:ring-white/30 rounded px-1 shrink-0"
@@ -160,7 +179,6 @@ export default function RegisterPage() {
           </span>
         </Link>
 
-        {/* Secondary Action / Link to Sign in */}
         <nav aria-label="Primary Navigation" className="shrink-0">
           <Link
             className="inline-flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/20 bg-white/[0.03] backdrop-blur-md text-[12px] sm:text-[13px] font-medium text-white/90 hover:text-white hover:border-white/40 hover:bg-white/[0.08] transition-all duration-200 group active:scale-[0.98] whitespace-nowrap shrink-0"
@@ -174,72 +192,148 @@ export default function RegisterPage() {
         </nav>
       </header>
 
-      {/* Central Registration Canvas */}
+      {/* Central Registration Canvas - Shared FixOpsBackground rendered persistently via RootLayout */}
       <main className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-10 my-auto">
         <div className="relative w-full max-w-[min(440px,calc(100vw-2rem))] mx-auto">
-          {/* Persistent specular auth shield provided by RootLayout PersistentBackground */}
-
-          {/* Registration Frosted Glass Card */}
-          <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-6 sm:p-8 z-10 w-full">
-            {step === "email" ? (
+          {/* Registration Frosted Glass Card with stable panel dimensions */}
+          <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-6 sm:p-8 z-10 w-full min-h-[440px] flex flex-col justify-between">
+            {step === "details" ? (
               <>
-                <div className="text-center mb-6 sm:mb-7">
-                  <h1 className="text-2xl sm:text-[32px] font-headline font-semibold text-white tracking-[-0.02em] mb-2 leading-tight">
-                    Create an account.
-                  </h1>
+                <div>
+                  <div className="text-center mb-5 sm:mb-6">
+                    <h1 className="text-2xl sm:text-[30px] font-headline font-semibold text-white tracking-[-0.02em] mb-1.5 leading-tight">
+                      Create an account.
+                    </h1>
+                    <p className="text-[13px] text-[#949dae]">
+                      Join FixOps for autonomous vulnerability remediation.
+                    </p>
+                  </div>
+
+                  {errorMessage && (
+                    <div className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-[13px] leading-snug">
+                      {errorMessage}
+                    </div>
+                  )}
+
+                  <form className="space-y-3.5" onSubmit={handleSendCode}>
+                    {/* Full Name */}
+                    <div className="space-y-1">
+                      <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide uppercase" htmlFor="register-name">
+                        Full Name
+                      </label>
+                      <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[44px]">
+                        <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
+                          <span className="material-symbols-outlined text-[18px]">person</span>
+                        </div>
+                        <input
+                          autoComplete="name"
+                          className="w-full bg-transparent py-2.5 pr-3.5 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
+                          id="register-name"
+                          name="name"
+                          placeholder="Alex Mercer"
+                          required
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Work Email */}
+                    <div className="space-y-1">
+                      <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide uppercase" htmlFor="register-email">
+                        Work Email
+                      </label>
+                      <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[44px]">
+                        <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
+                          <span className="material-symbols-outlined text-[18px]">alternate_email</span>
+                        </div>
+                        <input
+                          autoComplete="email"
+                          className="w-full bg-transparent py-2.5 pr-3.5 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
+                          id="register-email"
+                          name="email"
+                          placeholder="operator@company.com"
+                          required
+                          type="email"
+                          value={email}
+                          onChange={(e) => handleEmailChange(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Password */}
+                    <div className="space-y-1">
+                      <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide uppercase" htmlFor="register-password">
+                        Password
+                      </label>
+                      <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[44px]">
+                        <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
+                          <span className="material-symbols-outlined text-[18px]">lock</span>
+                        </div>
+                        <input
+                          autoComplete="new-password"
+                          className="w-full bg-transparent py-2.5 pr-10 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
+                          id="register-password"
+                          name="password"
+                          placeholder="••••••••••••"
+                          required
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 text-[#758195] hover:text-white transition-colors cursor-pointer"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            {showPassword ? "visibility_off" : "visibility"}
+                          </span>
+                        </button>
+                      </div>
+
+                      {/* Password Requirements Checklist */}
+                      {password.length > 0 && (
+                        <div className="pt-1.5 grid grid-cols-2 gap-1 text-[11px] font-mono text-[#8e96a4]">
+                          <span className={`flex items-center gap-1 ${hasMinLength ? "text-emerald-400" : ""}`}>
+                            <span className="text-[12px]">{hasMinLength ? "✓" : "○"}</span> 10+ characters
+                          </span>
+                          <span className={`flex items-center gap-1 ${hasUpper ? "text-emerald-400" : ""}`}>
+                            <span className="text-[12px]">{hasUpper ? "✓" : "○"}</span> Uppercase
+                          </span>
+                          <span className={`flex items-center gap-1 ${hasLower ? "text-emerald-400" : ""}`}>
+                            <span className="text-[12px]">{hasLower ? "✓" : "○"}</span> Lowercase
+                          </span>
+                          <span className={`flex items-center gap-1 ${hasNumber ? "text-emerald-400" : ""}`}>
+                            <span className="text-[12px]">{hasNumber ? "✓" : "○"}</span> Number
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold min-h-[46px] py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                        type="submit"
+                        disabled={isSubmitting}
+                      >
+                        <span>{isSubmitting ? "Sending verification code..." : "Continue"}</span>
+                        <svg
+                          className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  </form>
                 </div>
 
-                {errorMessage && (
-                  <div className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-[13px] leading-snug">
-                    {errorMessage}
-                  </div>
-                )}
-
-                <form className="space-y-4" onSubmit={handleSendCode}>
-                  <div className="space-y-1.5">
-                    <label className="block font-mono text-[12px] text-[#949dae] font-medium tracking-wide" htmlFor="register-email">
-                      Work Email
-                    </label>
-                    <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[46px]">
-                      <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
-                        <span className="material-symbols-outlined text-[19px]" data-icon="alternate_email">
-                          alternate_email
-                        </span>
-                      </div>
-                      <input
-                        autoComplete="email"
-                        className="w-full bg-transparent py-2.5 sm:py-3 pr-3.5 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
-                        id="register-email"
-                        name="email"
-                        placeholder="operator@company.com"
-                        required
-                        type="email"
-                        value={email}
-                        onChange={(e) => handleEmailChange(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <button
-                      className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold min-h-[46px] py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
-                      type="submit"
-                      disabled={isSubmitting}
-                    >
-                      <span>{isSubmitting ? "Sending code..." : "Continue"}</span>
-                      <svg
-                        className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  </div>
-                </form>
-
-                <div className="mt-6 pt-5 border-t border-white/[0.08] text-center">
+                <div className="mt-5 pt-4 border-t border-white/[0.08] text-center">
                   <p className="text-[13px] text-[#949dae]">
                     Already have an account?{" "}
                     <Link className="text-white font-medium hover:underline underline-offset-4 transition-colors" href="/login">
@@ -250,94 +344,96 @@ export default function RegisterPage() {
               </>
             ) : (
               <>
-                <div className="text-center mb-6">
-                  <h1 className="text-2xl sm:text-[32px] font-headline font-semibold text-white tracking-[-0.02em] mb-2 leading-tight">
-                    Verify email.
-                  </h1>
-                  <p className="text-[13px] text-[#949dae]">
-                    Enter the code sent to <span className="text-white font-mono">{email}</span>
-                  </p>
+                <div>
+                  <div className="text-center mb-5 sm:mb-6">
+                    <h1 className="text-2xl sm:text-[30px] font-headline font-semibold text-white tracking-[-0.02em] mb-1.5 leading-tight">
+                      Verify email.
+                    </h1>
+                    <p className="text-[13px] text-[#949dae]">
+                      Enter the 6-digit code dispatched to <span className="text-white font-mono">{email}</span>
+                    </p>
+                  </div>
+
+                  {errorMessage && (
+                    <div className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-[13px] leading-snug">
+                      {errorMessage}
+                    </div>
+                  )}
+
+                  {infoMessage && (
+                    <div className="mb-4 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 text-[13px] leading-snug">
+                      {infoMessage}
+                    </div>
+                  )}
+
+                  <form className="space-y-4" onSubmit={handleVerifyCode}>
+                    <div className="space-y-1.5">
+                      <label className="block font-mono text-[12px] text-[#949dae] font-medium tracking-wide text-center uppercase" htmlFor="verification-code">
+                        6-Digit Verification Code
+                      </label>
+                      <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[48px]">
+                        <input
+                          autoComplete="one-time-code"
+                          autoFocus
+                          className="w-full bg-transparent py-2.5 sm:py-3 px-4 text-white placeholder-[#505a6c] font-mono text-[22px] tracking-[0.35em] text-center border-0 focus:ring-0 focus:outline-none"
+                          id="verification-code"
+                          inputMode="numeric"
+                          maxLength={6}
+                          name="code"
+                          pattern="[0-9]*"
+                          placeholder="••••••"
+                          required
+                          type="text"
+                          value={code}
+                          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[12px] font-mono text-[#8e96a4] px-1">
+                      <button
+                        className="hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        disabled={cooldown > 0 || isSubmitting}
+                        type="button"
+                        onClick={handleResendCode}
+                      >
+                        {cooldown > 0 ? `Resend code (${cooldown}s)` : "Resend code"}
+                      </button>
+                      <button
+                        className="hover:text-white transition-colors cursor-pointer"
+                        type="button"
+                        onClick={() => {
+                          setStep("details");
+                          setErrorMessage(null);
+                          setInfoMessage(null);
+                          setCode("");
+                        }}
+                      >
+                        Edit details
+                      </button>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold min-h-[46px] py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                        type="submit"
+                        disabled={isSubmitting || code.length !== 6}
+                      >
+                        <span>{isSubmitting ? "Verifying & activating..." : "Verify & activate"}</span>
+                        <svg
+                          className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  </form>
                 </div>
 
-                {errorMessage && (
-                  <div className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-[13px] leading-snug">
-                    {errorMessage}
-                  </div>
-                )}
-
-                {infoMessage && (
-                  <div className="mb-4 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 text-[13px] leading-snug">
-                    {infoMessage}
-                  </div>
-                )}
-
-                <form className="space-y-4" onSubmit={handleVerifyCode}>
-                  <div className="space-y-1.5">
-                    <label className="block font-mono text-[12px] text-[#949dae] font-medium tracking-wide text-center" htmlFor="verification-code">
-                      6-Digit Verification Code
-                    </label>
-                    <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[46px]">
-                      <input
-                        autoComplete="one-time-code"
-                        autoFocus
-                        className="w-full bg-transparent py-2.5 sm:py-3 px-4 text-white placeholder-[#505a6c] font-mono text-[20px] sm:text-[22px] tracking-[0.35em] text-center border-0 focus:ring-0 focus:outline-none"
-                        id="verification-code"
-                        inputMode="numeric"
-                        maxLength={6}
-                        name="code"
-                        pattern="[0-9]*"
-                        placeholder="••••••"
-                        required
-                        type="text"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[12px] font-mono text-[#8e96a4] px-1">
-                    <button
-                      className="hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                      disabled={cooldown > 0 || isSubmitting}
-                      type="button"
-                      onClick={handleResendCode}
-                    >
-                      {cooldown > 0 ? `Resend code (${cooldown}s)` : "Resend code"}
-                    </button>
-                    <button
-                      className="hover:text-white transition-colors cursor-pointer"
-                      type="button"
-                      onClick={() => {
-                        setStep("email");
-                        setErrorMessage(null);
-                        setInfoMessage(null);
-                        setCode("");
-                      }}
-                    >
-                      Change email
-                    </button>
-                  </div>
-
-                  <div className="pt-2">
-                    <button
-                      className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold min-h-[46px] py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
-                      type="submit"
-                      disabled={isSubmitting || code.length !== 6}
-                    >
-                      <span>{isSubmitting ? "Verifying..." : "Verify & activate"}</span>
-                      <svg
-                        className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  </div>
-                </form>
-
-                <div className="mt-6 pt-5 border-t border-white/[0.08] text-center">
+                <div className="mt-5 pt-4 border-t border-white/[0.08] text-center">
                   <p className="text-[13px] text-[#949dae]">
                     Already have an account?{" "}
                     <Link className="text-white font-medium hover:underline underline-offset-4 transition-colors" href="/login">

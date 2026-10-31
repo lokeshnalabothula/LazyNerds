@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
+import { EngagementsSkeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useViewMode } from "@/lib/use-view-mode";
 import {
@@ -621,10 +622,7 @@ export default function EngagementsPage() {
     <Suspense
       fallback={
         <AppShell title="Engagements">
-          <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-            <span className="text-xs font-mono">Loading Engagements Workspace...</span>
-          </div>
+          <EngagementsSkeleton />
         </AppShell>
       }
     >

@@ -47,6 +47,27 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class SendForgotPasswordOtpResponse(BaseModel):
+    message: str
+    cooldown_seconds: int = 60
+
+
+class VerifyForgotPasswordOtpRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=6, max_length=6, description="6-digit verification code")
+
+
+class VerifyForgotPasswordOtpResponse(BaseModel):
+    reset_token: str
+    message: str
+
+
+class ResetPasswordWithOtpRequest(BaseModel):
+    email: EmailStr
+    reset_token: str = Field(..., min_length=16, description="Cryptographic single-use reset session token")
+    new_password: str = Field(..., min_length=10, max_length=128, description="New password (minimum 10 characters)")
+
+
 class VerifyResetTokenRequest(BaseModel):
     token: str = Field(..., min_length=16, description="Cryptographic reset token")
 

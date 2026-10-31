@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
+import { ClientsSkeleton } from "@/components/ui/skeleton";
 import { ArchiveDialog } from "@/components/clients/archive-dialog";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -1204,10 +1205,7 @@ export default function ClientsPage() {
     <Suspense
       fallback={
         <AppShell title="Client Directory">
-          <div className="py-24 flex flex-col items-center justify-center gap-3 text-zinc-400">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-            <span className="text-xs font-mono">Loading client directory...</span>
-          </div>
+          <ClientsSkeleton />
         </AppShell>
       }
     >

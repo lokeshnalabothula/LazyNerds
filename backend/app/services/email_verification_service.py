@@ -8,7 +8,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.security import hash_password
+from app.core.security import hash_password, validate_password_strength
 from app.models.client import Client
 from app.models.user import User
 from app.models.registration import ClientRegistration
@@ -244,8 +244,14 @@ def verify_registration_code_and_activate(
         prefix = normalized_email.split("@")[0].replace(".", " ").replace("_", " ").replace("-", " ")
         clean_name = prefix.title() or "FixOps Operator"
 
-    # Password setup: if user entered password, hash it; otherwise generate random secure token
-    final_password = password.strip() if (password and password.strip()) else secrets.token_urlsafe(32)
+    # Password setup: if user entered password, validate strength and hash it; otherwise generate random secure token
+    if password and password.strip():
+        valid_pwd, pwd_err = validate_password_strength(password.strip())
+        if not valid_pwd:
+            raise ValueError(pwd_err)
+        final_password = password.strip()
+    else:
+        final_password = secrets.token_urlsafe(32)
     hashed_pwd = hash_password(final_password)
 
     # Establish Client tenant for the user

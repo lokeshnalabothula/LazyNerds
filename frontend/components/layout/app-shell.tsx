@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { FloatingNav } from "@/components/layout/floating-nav";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter, usePathname } from "next/navigation";
-import { FixOpsAppLoader } from "@/components/ui/loading";
+import { AppShellSkeleton } from "@/components/ui/skeleton";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -23,12 +23,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
   }, [user, loading, router, pathname]);
 
   if (loading) {
-    return (
-      <FixOpsAppLoader
-        label="AUTHENTICATING SESSION"
-        subtext="Connecting to FixOps secure operational bus…"
-      />
-    );
+    return <AppShellSkeleton />;
   }
 
   if (!user) {

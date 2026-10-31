@@ -160,3 +160,113 @@ def test_production_unconfigured_email_fails_safely(client, test_user, monkeypat
     assert "temporarily unavailable" in res.json()["detail"].lower()
 
 
+def test_forgot_password_otp_flow_end_to_end(client, db_session, test_user):
+    """
+    Tests the complete OTP-based password reset flow:
+    1. Request OTP via /forgot-password/send-otp
+    2. Unknown email returns identical generic response
+    3. 60s cooldown is enforced on immediate resend
+    4. Verify OTP via /forgot-password/verify-otp
+    5. Reset password via /forgot-password/reset-password
+    6. Single-use session token invalidation
+    7. Sign in with updated credentials
+    """
+    from app.models.password_reset import PasswordResetCode
+
+    # 1. Unknown user returns generic response without error or account leaking
+    res_unknown = client.post(
+        "/api/v1/auth/forgot-password/send-otp",
+        json={"email": "nobody_exists@lazynerds.com"}
+    )
+    assert res_unknown.status_code == 200
+    assert "password recovery code has been dispatched" in res_unknown.json()["message"]
+    assert res_unknown.json()["cooldown_seconds"] == 60
+
+    # 2. Known user requests OTP
+    res_known = client.post(
+        "/api/v1/auth/forgot-password/send-otp",
+        json={"email": test_user.email}
+    )
+    assert res_known.status_code == 200
+    assert "password recovery code has been dispatched" in res_known.json()["message"]
+
+    # 3. Cooldown enforcement: immediate second request returns 429
+    res_cooldown = client.post(
+        "/api/v1/auth/forgot-password/send-otp",
+        json={"email": test_user.email}
+    )
+    assert res_cooldown.status_code == 429
+    assert "Please wait" in res_cooldown.json()["detail"]
+
+    # 4. Use service helper on another test email for deterministic OTP verification
+    reset_email = "otp_reset_user@lazynerds.com"
+    from app.services.auth_service import create_user
+    from app.schemas.auth import UserCreate
+    other_user = create_user(
+        db_session,
+        UserCreate(
+            email=reset_email,
+            password="OldPassword123!",
+            full_name="OTP Reset User",
+            role="client",
+        ),
+    )
+
+    raw_code, record, user = password_reset_service.request_password_reset_otp(db_session, reset_email)
+    assert len(raw_code) == 6
+    assert raw_code.isdigit()
+    assert record is not None
+    assert record.user_id == other_user.id
+
+    # 5. Incorrect OTP increments attempt count
+    bad_res = client.post(
+        "/api/v1/auth/forgot-password/verify-otp",
+        json={"email": reset_email, "code": "000000" if raw_code != "000000" else "111111"}
+    )
+    assert bad_res.status_code == 400
+    assert "Invalid verification code" in bad_res.json()["detail"]
+    assert "4 attempts remaining" in bad_res.json()["detail"]
+
+    # 6. Correct OTP verifies and returns single-use session reset token
+    verify_res = client.post(
+        "/api/v1/auth/forgot-password/verify-otp",
+        json={"email": reset_email, "code": raw_code}
+    )
+    assert verify_res.status_code == 200
+    reset_token = verify_res.json()["reset_token"]
+    assert len(reset_token) > 20
+
+    # 7. Weak password is rejected
+    weak_res = client.post(
+        "/api/v1/auth/forgot-password/reset-password",
+        json={"email": reset_email, "reset_token": reset_token, "new_password": "weak"}
+    )
+    assert weak_res.status_code == 422  # validation min_length=10
+
+    # 8. Valid password succeeds
+    new_password = "BrandNewOtpPassword2026!"
+    reset_res = client.post(
+        "/api/v1/auth/forgot-password/reset-password",
+        json={"email": reset_email, "reset_token": reset_token, "new_password": new_password}
+    )
+    assert reset_res.status_code == 200
+    assert "successfully reset" in reset_res.json()["message"]
+
+    # 9. Reset token is single-use: reuse fails
+    reuse_res = client.post(
+        "/api/v1/auth/forgot-password/reset-password",
+        json={"email": reset_email, "reset_token": reset_token, "new_password": "AnotherNewPassword2026!"}
+    )
+    assert reuse_res.status_code == 400
+    assert "invalid, expired, or already-used" in reuse_res.json()["detail"].lower()
+
+    # 10. Sign in with updated credentials succeeds
+    login_res = client.post(
+        "/api/v1/auth/login",
+        json={"email": reset_email, "password": new_password}
+    )
+    assert login_res.status_code == 200
+    assert "access_token" in login_res.json()
+
+
+

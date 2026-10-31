@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { Report } from "@/types/report";
 import { ReportFormModal } from "@/components/reports/report-form-modal";
 import { Button } from "@/components/ui/button";
+import { ReportsSkeleton } from "@/components/ui/skeleton";
 import { CardGridSkeleton } from "@/components/ui/loading";
 import { formatDateTime } from "@/lib/utils";
 import {
@@ -79,10 +80,109 @@ export default function ReportsPage() {
           </Button>
         </div>
 
+        {/* Framework Deliverable Templates Ribbon (Stitch Screen 10) */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            onClick={() => setIsModalOpen(true)}
+            className="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-white/30 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono text-cyan-300 font-semibold">PENTEST BRIEF</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                ZERO-TRUST
+              </span>
+            </div>
+            <div className="my-2">
+              <h3 className="text-sm font-semibold text-white group-hover:text-[#F5C518] transition-colors">
+                Multi-Tier Infrastructure Pentest
+              </h3>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Full external scope, verified CVE deductions, and remediation timeline.
+              </p>
+            </div>
+            <div className="text-[10px] font-mono text-zinc-500 flex items-center justify-between pt-1 border-t border-white/[0.06]">
+              <span>PDF / JSON Export</span>
+              <span className="text-white group-hover:translate-x-0.5 transition-transform">Deploy →</span>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setIsModalOpen(true)}
+            className="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-white/30 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono text-emerald-400 font-semibold">COMPLIANCE</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                PCI-DSS v4.0
+              </span>
+            </div>
+            <div className="my-2">
+              <h3 className="text-sm font-semibold text-white group-hover:text-[#F5C518] transition-colors">
+                PCI-DSS Level 1 Attestation
+              </h3>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Cardholder data environment boundaries, encryption, and audit signs.
+              </p>
+            </div>
+            <div className="text-[10px] font-mono text-zinc-500 flex items-center justify-between pt-1 border-t border-white/[0.06]">
+              <span>Executive Brief</span>
+              <span className="text-white group-hover:translate-x-0.5 transition-transform">Deploy →</span>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setIsModalOpen(true)}
+            className="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-white/30 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono text-amber-300 font-semibold">GOVERNANCE</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                SOC 2 TYPE II
+              </span>
+            </div>
+            <div className="my-2">
+              <h3 className="text-sm font-semibold text-white group-hover:text-[#F5C518] transition-colors">
+                Trust Services Criteria Audit
+              </h3>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Security, availability, and confidentiality control effectiveness mapping.
+              </p>
+            </div>
+            <div className="text-[10px] font-mono text-zinc-500 flex items-center justify-between pt-1 border-t border-white/[0.06]">
+              <span>AICPA Aligned</span>
+              <span className="text-white group-hover:translate-x-0.5 transition-transform">Deploy →</span>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setIsModalOpen(true)}
+            className="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-white/30 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono text-rose-300 font-semibold">SECURITY AUDIT</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                HIPAA / HITECH
+              </span>
+            </div>
+            <div className="my-2">
+              <h3 className="text-sm font-semibold text-white group-hover:text-[#F5C518] transition-colors">
+                ePHI Protection Assessment
+              </h3>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Administrative, physical, and technical safeguard validation.
+              </p>
+            </div>
+            <div className="text-[10px] font-mono text-zinc-500 flex items-center justify-between pt-1 border-t border-white/[0.06]">
+              <span>Full Dossier</span>
+              <span className="text-white group-hover:translate-x-0.5 transition-transform">Deploy →</span>
+            </div>
+          </div>
+        </section>
+
         {/* Reports List */}
         <div data-loading-state={loading && reports.length === 0 ? "loading" : "complete"}>
         {loading && reports.length === 0 ? (
-          <CardGridSkeleton count={6} />
+          <ReportsSkeleton />
         ) : reports.length === 0 ? (
           <div data-empty="true" className="p-12 text-center border border-dashed border-zinc-300 dark:border-[#222630] rounded-xl bg-zinc-50/50 dark:bg-[#111318]">
             <PieChart className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />

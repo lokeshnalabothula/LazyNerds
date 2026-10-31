@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { OverviewMetrics } from "@/types/overview";
@@ -83,22 +84,18 @@ const INITIAL_QUEUE_FINDINGS: QueueFinding[] = [
 ];
 
 export default function OverviewPage() {
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [timeframe, setTimeframe] = useState<"7D" | "30D" | "Q3">("7D");
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Authentication gate
   useEffect(() => {
@@ -141,25 +138,12 @@ export default function OverviewPage() {
         e.preventDefault();
         router.push("/reports");
       } else if (e.key === "Escape") {
-        setUserMenuOpen(false);
-        setMobileSidebarOpen(false);
         setScanModalOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
-
-  // Outside click handler for user menu
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Toast feedback auto-dismiss
   useEffect(() => {
@@ -200,33 +184,6 @@ export default function OverviewPage() {
     setToastMessage("Executive Summary report downloaded.");
   };
 
-  if (authLoading) {
-    return (
-      <div className="bg-surface-container-lowest text-text-primary min-h-screen p-6 sm:p-8 max-w-7xl mx-auto">
-        <OverviewSkeleton />
-      </div>
-    );
-  }
-
-  // Operator metadata with neutral fallbacks
-  const operatorName = user?.full_name?.trim() || "Security Operator";
-  const operatorRole = (() => {
-    if (!user?.role) return "SecOps Lead";
-    const r = user.role.trim().toLowerCase();
-    if (r === "founder") return "SecOps Lead";
-    if (r === "employee") return "Security Engineer";
-    if (r === "client") return "Client Operator";
-    return user.role;
-  })();
-
-  const operatorInitials = operatorName
-    .split(" ")
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "SO";
-
   // Filtered queue findings
   const filteredFindings = INITIAL_QUEUE_FINDINGS.filter((f) => {
     if (!searchQuery.trim()) return true;
@@ -240,15 +197,15 @@ export default function OverviewPage() {
   });
 
   return (
-    <div className="bg-surface-container-lowest text-text-primary antialiased min-h-screen flex selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden font-body-base text-body-base">
+    <AppShell title="Security Operations Overview">
       {/* Toast Alert Banner */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded bg-surface border border-primary-container/40 text-text-primary text-xs font-code-sm flex items-center gap-2 shadow-2xl backdrop-blur animate-in fade-in slide-in-from-top-2">
-          <span className="w-2 h-2 rounded-full bg-primary-container" />
+        <div className="fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl bg-[#090b10]/95 border border-[#F5C518]/40 text-white text-xs font-mono flex items-center gap-2 shadow-2xl backdrop-blur animate-in fade-in slide-in-from-top-2">
+          <span className="w-2 h-2 rounded-full bg-[#F5C518] shadow-[0_0_6px_#F5C518]" />
           <span>{toastMessage}</span>
           <button
             onClick={() => setToastMessage(null)}
-            className="ml-2 text-text-muted hover:text-text-primary"
+            className="ml-2 text-zinc-400 hover:text-white"
             aria-label="Dismiss toast"
           >
             <span className="material-symbols-outlined text-[14px]">close</span>
@@ -256,477 +213,80 @@ export default function OverviewPage() {
         </div>
       )}
 
-      {/* Mobile Sidebar Backdrop */}
-      {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/70 z-40 lg:hidden backdrop-blur-sm"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* ========================================================================= */}
-      {/* SIDEBAR NAVIGATION (Strict compliance to Google Stitch SecOps reference) */}
-      {/* ========================================================================= */}
-      <aside
-        className={`fixed top-0 left-0 h-screen border-r border-border-subtle bg-surface z-50 flex flex-col justify-between py-space-md select-none transition-all duration-200 ${
-          sidebarCollapsed ? "w-20" : "w-64"
-        } ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
-      >
-        {/* Brand Anchor & Header */}
-        <div className="px-space-md">
-          <div className="flex items-center gap-space-sm px-space-xs pb-space-md border-b border-border-subtle">
-            <Link
-              href="/overview"
-              className="w-8 h-8 rounded bg-surface-subtle border border-border-strong flex items-center justify-center text-primary-container shrink-0 hover:border-primary-container/50 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[20px]" data-icon="shield">
-                shield
-              </span>
-            </Link>
-            {!sidebarCollapsed && (
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-headline-md font-headline-md tracking-wider text-text-primary">
-                    FIXOPS
-                  </span>
-                  <span className="px-1 py-0.5 rounded text-[9px] font-label-caps font-bold bg-primary-container/15 text-primary-container border border-primary-container/30">
-                    v2.4
-                  </span>
-                </div>
-                <span className="text-caption font-caption text-text-muted truncate">
-                  Lazy Nerds SecOps
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Navigation Tab Cluster (Exact Stitch Labels & Hierarchy) */}
-          <nav className="mt-space-md space-y-1">
-            {/* 1. Dashboard (Active) */}
-            <Link
-              href="/overview"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "justify-between"
-              } px-space-md py-space-sm text-text-primary bg-surface-subtle border-l-2 border-primary-container font-body-bold text-body-bold transition-all duration-150 ease-in-out cursor-pointer group rounded-r`}
-              title="Dashboard"
-            >
-              <div className="flex items-center gap-space-sm">
-                <span className="material-symbols-outlined text-primary-container text-[18px]" data-icon="dashboard">
-                  dashboard
-                </span>
-                {!sidebarCollapsed && <span>Dashboard</span>}
-              </div>
-              {!sidebarCollapsed && (
-                <span className="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse" />
-              )}
-            </Link>
-
-            {/* 2. Clients */}
-            <Link
-              href="/clients"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "gap-space-sm"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Clients"
-            >
-              <span className="material-symbols-outlined text-[18px]" data-icon="domain">
-                domain
-              </span>
-              {!sidebarCollapsed && <span>Clients</span>}
-            </Link>
-
-            {/* 3. Registrations */}
-            <Link
-              href="/registrations"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "justify-between"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Registrations"
-            >
-              <div className="flex items-center gap-space-sm">
-                <span className="material-symbols-outlined text-[18px]" data-icon="verified_user">
-                  verified_user
-                </span>
-                {!sidebarCollapsed && <span>Registrations</span>}
-              </div>
-              {!sidebarCollapsed && (
-                <span className="px-1.5 py-0.2 rounded text-[10px] font-label-caps bg-surface-elevated text-text-muted border border-border-subtle">
-                  LOCKED
-                </span>
-              )}
-            </Link>
-
-            {/* 4. Engagements */}
-            <Link
-              href="/engagements"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "gap-space-sm"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Engagements"
-            >
-              <span className="material-symbols-outlined text-[18px]" data-icon="handshake">
-                handshake
-              </span>
-              {!sidebarCollapsed && <span>Engagements</span>}
-            </Link>
-
-            {/* 5. Assets */}
-            <Link
-              href="/assets"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "gap-space-sm"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Assets"
-            >
-              <span className="material-symbols-outlined text-[18px]" data-icon="dns">
-                dns
-              </span>
-              {!sidebarCollapsed && <span>Assets</span>}
-            </Link>
-
-            {/* 6. Findings */}
-            <Link
-              href="/findings"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "justify-between"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Findings"
-            >
-              <div className="flex items-center gap-space-sm">
-                <span className="material-symbols-outlined text-[18px]" data-icon="security">
-                  security
-                </span>
-                {!sidebarCollapsed && <span>Findings</span>}
-              </div>
-              {!sidebarCollapsed && (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-label-caps font-bold bg-severity-critical-bg text-severity-critical border border-severity-critical-border">
-                  {metrics?.findings_open ?? 14}
-                </span>
-              )}
-            </Link>
-
-            {/* 7. Automation */}
-            <Link
-              href="/automation"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "gap-space-sm"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Automation"
-            >
-              <span className="material-symbols-outlined text-[18px]" data-icon="smart_toy">
-                smart_toy
-              </span>
-              {!sidebarCollapsed && <span>Automation</span>}
-            </Link>
-
-            {/* 8. Reports */}
-            <Link
-              href="/reports"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "gap-space-sm"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Reports"
-            >
-              <span className="material-symbols-outlined text-[18px]" data-icon="description">
-                description
-              </span>
-              {!sidebarCollapsed && <span>Reports</span>}
-            </Link>
-
-            {/* 9. Settings */}
-            <Link
-              href="/settings"
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "gap-space-sm"
-              } px-space-md py-space-sm text-text-secondary hover:text-text-primary hover:bg-surface-subtle font-body-medium text-body-medium transition-colors duration-150 cursor-pointer rounded`}
-              title="Settings"
-            >
-              <span className="material-symbols-outlined text-[18px]" data-icon="settings">
-                settings
-              </span>
-              {!sidebarCollapsed && <span>Settings</span>}
-            </Link>
-          </nav>
-        </div>
-
-        {/* Sidebar Bottom Container */}
-        <div className="px-space-md space-y-3">
-          {/* Collapse Trigger CTA */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="w-full flex items-center justify-center gap-space-xs py-1.5 rounded text-caption font-caption text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors duration-150 border border-transparent hover:border-border-subtle"
-            title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-          >
-            <span
-              className="material-symbols-outlined text-[16px]"
-              data-icon={sidebarCollapsed ? "keyboard_double_arrow_right" : "keyboard_double_arrow_left"}
-            >
-              {sidebarCollapsed ? "keyboard_double_arrow_right" : "keyboard_double_arrow_left"}
-            </span>
-            {!sidebarCollapsed && <span>Collapse Sidebar</span>}
-          </button>
-
-          {/* User Metadata / Operator Pill */}
-          <div
-            onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="p-2.5 rounded bg-surface-subtle border border-border-subtle flex items-center gap-2.5 cursor-pointer hover:border-border-strong transition-all relative"
-            title="Operator Session Details"
-          >
-            <div className="w-8 h-8 rounded bg-surface-elevated border border-border-strong flex items-center justify-center text-primary-container shrink-0">
-              <span className="material-symbols-outlined text-[18px]" data-icon="badge">
-                badge
-              </span>
-            </div>
-            {!sidebarCollapsed && (
-              <>
-                <div className="flex-1 min-w-0">
-                  <div className="text-body-bold font-body-bold text-text-primary truncate leading-tight">
-                    {operatorName}
-                  </div>
-                  <div className="text-caption font-caption text-text-muted truncate">
-                    {operatorRole}
-                  </div>
-                </div>
-                <div
-                  className="flex items-center gap-1 text-[11px] font-code-sm text-status-remediated shrink-0"
-                  title="Session Active"
-                >
-                  <span
-                    className="material-symbols-outlined text-[10px] text-status-remediated fill-current animate-pulse"
-                    data-icon="fiber_manual_record"
-                  >
-                    fiber_manual_record
-                  </span>
-                </div>
-              </>
-            )}
-
-            {/* Operator Dropdown Menu */}
-            {userMenuOpen && (
-              <div
-                ref={userMenuRef}
-                className="absolute bottom-14 left-0 w-60 rounded bg-surface border border-border-strong p-2 shadow-2xl z-50 specular-elevated"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="px-2 py-1.5 border-b border-border-subtle mb-1">
-                  <div className="text-xs font-bold text-text-primary truncate">{operatorName}</div>
-                  <div className="text-[11px] text-text-muted font-code-sm truncate">{user?.email || "operator@fixops.local"}</div>
-                </div>
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors"
-                  onClick={() => setUserMenuOpen(false)}
-                >
-                  <span className="material-symbols-outlined text-[16px]">tune</span>
-                  <span>Console Preferences</span>
-                </Link>
-                <button
-                  onClick={async () => {
-                    setUserMenuOpen(false);
-                    await logout();
-                    router.push("/login");
-                  }}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-severity-critical hover:bg-severity-critical-bg transition-colors mt-1"
-                >
-                  <span className="material-symbols-outlined text-[16px]">logout</span>
-                  <span>End Session / Log out</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </aside>
-
-      {/* ========================================================================= */}
-      {/* MAIN APP WRAPPER: TopNavBar & Executive Dashboard Canvas                 */}
-      {/* ========================================================================= */}
-      <div
-        className={`flex-1 flex flex-col min-w-0 bg-surface-container-lowest transition-all duration-200 ${
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
-        }`}
-      >
-        {/* ======================================================================= */}
-        {/* STICKY TOP NAVBAR (Exact Stitch strings & command shortcut)             */}
-        {/* ======================================================================= */}
-        <header className="w-full h-14 px-space-lg flex items-center justify-between sticky top-0 z-40 bg-surface border-b border-border-subtle backdrop-blur">
-          {/* Left: Mobile Toggle, Breadcrumb & Monospace Search */}
-          <div className="flex items-center gap-space-md lg:gap-space-lg">
-            <button
-              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-              className="lg:hidden w-8 h-8 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors"
-              aria-label="Toggle navigation drawer"
-            >
-              <span className="material-symbols-outlined text-[20px]">menu</span>
-            </button>
-
-            <div className="flex items-center gap-2 text-body-medium font-body-medium text-text-secondary">
-              <span className="text-text-muted font-code-sm hidden sm:inline">CONSOLE</span>
-              <span className="text-text-muted hidden sm:inline">/</span>
-              <span className="text-text-primary font-body-bold text-body-bold">Operations Overview</span>
-            </div>
-
-            <div className="h-4 w-px bg-border-subtle hidden md:block" />
-
-            {/* Monospace Search Bar with ⌘K keyboard shortcut */}
-            <div className="relative flex items-center hidden sm:flex">
-              <span
-                className="material-symbols-outlined absolute left-2.5 text-text-muted text-[17px] pointer-events-none"
-                data-icon="search"
-              >
-                search
-              </span>
-              <input
-                ref={searchInputRef}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 pl-8 pr-12 w-64 md:w-72 rounded bg-surface-subtle border border-border-subtle text-body-medium text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container text-xs transition-all"
-                placeholder="Search findings, scopes, CVEs..."
-                type="text"
-              />
-              <div className="absolute right-2 px-1 py-0.5 rounded bg-surface border border-border-strong text-[10px] font-code-sm text-text-muted pointer-events-none">
-                ⌘K
-              </div>
-            </div>
-          </div>
-
-          {/* Right: SOC Status, Actions & CTAs */}
-          <div className="flex items-center gap-space-sm sm:gap-space-md">
-            {/* SOC Prod Status */}
-            <div className="hidden xl:flex items-center gap-3 pr-2 border-r border-border-subtle">
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-subtle border border-border-subtle">
-                <span className="w-2 h-2 rounded-full bg-status-remediated" />
-                <span className="text-caption font-code-sm text-text-secondary">SOC Prod (UTC)</span>
-              </div>
-              <span className="text-caption font-code-sm text-status-remediated">SLA: Optimal</span>
-            </div>
-
-            {/* Trailing Icon Actions */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setToastMessage("Interactive SecOps Terminal attached: Ready for input.")}
-                className="w-8 h-8 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors duration-150"
-                title="Terminal"
-              >
-                <span className="material-symbols-outlined text-[18px]" data-icon="terminal">
-                  terminal
-                </span>
-              </button>
-              <button
-                onClick={() => setToastMessage("2 High-severity alerts require attention in Remediation Queue.")}
-                className="w-8 h-8 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors duration-150 relative"
-                title="Notifications"
-              >
-                <span className="material-symbols-outlined text-[18px]" data-icon="notifications">
-                  notifications
-                </span>
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-severity-critical" />
-              </button>
-              <Link
-                href="/reports"
-                className="w-8 h-8 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-subtle transition-colors duration-150"
-                title="Help & Reference"
-              >
-                <span className="material-symbols-outlined text-[18px]" data-icon="help_outline">
-                  help_outline
-                </span>
-              </Link>
-            </div>
-
-            <div className="h-4 w-px bg-border-subtle hidden sm:block" />
-
-            {/* Secondary & Primary Button Triggers */}
-            <div className="flex items-center gap-2">
-              {/* Secondary CTA: Rescan Scope */}
-              <button
-                onClick={() => {
-                  setToastMessage("Rescan scope dispatched to pipeline worker.");
-                  fetchTelemetry();
-                }}
-                className="hidden md:flex h-8 px-3 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle hover:border-border-strong text-caption font-body-bold text-text-primary transition-all duration-150 items-center gap-1.5"
-              >
-                <span className="material-symbols-outlined text-[15px]" data-icon="refresh">
-                  refresh
-                </span>
-                <span>Rescan Scope</span>
-              </button>
-
-              {/* Primary CTA: Deploy Fix & Start scan action */}
-              <button
-                onClick={() => setScanModalOpen(true)}
-                className="h-8 px-3.5 rounded btn-cyber-primary specular-button text-caption font-body-bold text-surface-container-lowest flex items-center gap-1.5 transition-all duration-150 cursor-pointer"
-                title="Deploy Fix / Start scan"
-              >
-                <span className="material-symbols-outlined text-[16px] text-surface-container-lowest" data-icon="bolt">
-                  bolt
-                </span>
-                <span>Deploy Fix</span>
-              </button>
-            </div>
-
-            {/* Profile Avatar Indicator */}
-            <div
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="w-8 h-8 rounded-full bg-surface-subtle border border-primary-container/40 p-0.5 flex items-center justify-center text-xs font-bold text-primary-container cursor-pointer select-none"
-              title={`Logged in as ${operatorName} (${operatorRole})`}
-            >
-              {operatorInitials}
-            </div>
-          </div>
-        </header>
-
-        {/* ======================================================================= */}
-        {/* MAIN CONTENT VIEWPORT: Executive Command Center                         */}
-        {/* ======================================================================= */}
-        <main className="flex-1 p-space-md sm:p-space-lg lg:p-space-xl max-w-7xl w-full mx-auto space-y-space-xl">
-          {loading ? (
-            <OverviewSkeleton />
-          ) : (
-            <>
-              {/* 1. HEADER BAR: Title, Subtitle & Action Bar */}
-          <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md border-b border-border-subtle pb-space-lg">
+      {loading ? (
+        <OverviewSkeleton />
+      ) : (
+        <div className="space-y-6 max-w-7xl mx-auto pb-12">
+          {/* ======================================================================= */}
+          {/* 1. HEADER BAR: Title, Telemetry Badges & Quick Action Controls         */}
+          {/* ======================================================================= */}
+          <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-4 border-b border-white/[0.08]">
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-display-lg font-display-lg text-text-primary tracking-tight">
-                  Security Operations Overview
-                </h1>
-                <span className="px-2 py-0.5 rounded text-label-caps font-label-caps bg-surface-subtle text-primary-container border border-border-subtle">
-                  LIVE TELEMETRY
-                </span>
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono tracking-widest text-zinc-400 mb-2 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+                <span>OPERATOR ACTIVE</span>
+                <span className="text-white/20">•</span>
+                <span className="text-zinc-300">LIVE TELEMETRY BUS</span>
               </div>
-              <p className="text-body-medium font-body-medium text-text-secondary mt-1">
-                Continuous vulnerability remediation posture & active engagement scope
+              <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.02em] text-transparent bg-clip-text bg-gradient-to-b from-white via-[#f0f3f8] to-[#9fa9b7]">
+                Dashboard
+              </h1>
+              <p className="text-sm text-zinc-400 mt-1 max-w-xl">
+                Continuous vulnerability remediation posture, external attack surface inventory, and active engagement scope.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-space-sm">
-              {/* Timeframe Segmented Selector */}
-              <div className="flex items-center bg-surface p-0.5 rounded border border-border-subtle text-xs font-code-sm">
+            {/* Quick Action Cluster */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* Search Target Input */}
+              <div className="relative flex items-center">
+                <span
+                  className="material-symbols-outlined absolute left-2.5 text-zinc-400 text-[16px] pointer-events-none"
+                  data-icon="search"
+                >
+                  search
+                </span>
+                <input
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-9 pl-8 pr-10 w-52 sm:w-64 rounded-xl bg-white/[0.03] border border-white/15 text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/40 text-xs transition-all font-mono shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
+                  placeholder="Filter CVE, host, target..."
+                  type="text"
+                />
+                <kbd className="absolute right-2 px-1 py-0.5 rounded bg-white/[0.06] border border-white/10 text-[9px] font-mono text-zinc-400 pointer-events-none">
+                  ⌘K
+                </kbd>
+              </div>
+
+              {/* Timeframe Selector */}
+              <div className="flex items-center bg-white/[0.03] p-0.5 rounded-xl border border-white/10 text-xs font-mono">
                 <button
                   onClick={() => setTimeframe("7D")}
-                  className={`px-2.5 py-1 rounded transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
                     timeframe === "7D"
-                      ? "bg-surface-subtle text-text-primary border border-border-strong font-medium"
-                      : "text-text-muted hover:text-text-primary"
+                      ? "bg-white/[0.12] text-white font-semibold shadow-xs"
+                      : "text-zinc-400 hover:text-white"
                   }`}
                 >
-                  Last 7 Days
+                  7D
                 </button>
                 <button
                   onClick={() => setTimeframe("30D")}
-                  className={`px-2.5 py-1 rounded transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
                     timeframe === "30D"
-                      ? "bg-surface-subtle text-text-primary border border-border-strong font-medium"
-                      : "text-text-muted hover:text-text-primary"
+                      ? "bg-white/[0.12] text-white font-semibold shadow-xs"
+                      : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   30D
                 </button>
                 <button
                   onClick={() => setTimeframe("Q3")}
-                  className={`px-2.5 py-1 rounded transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
                     timeframe === "Q3"
-                      ? "bg-surface-subtle text-text-primary border border-border-strong font-medium"
-                      : "text-text-muted hover:text-text-primary"
+                      ? "bg-white/[0.12] text-white font-semibold shadow-xs"
+                      : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   Q3
@@ -736,652 +296,445 @@ export default function OverviewPage() {
               {/* Export Summary CTA */}
               <button
                 onClick={handleExportSummary}
-                className="h-9 px-3 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle text-body-medium font-body-medium text-text-primary flex items-center gap-1.5 transition-colors"
+                className="h-9 px-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/15 text-xs text-zinc-200 hover:text-white flex items-center gap-1.5 transition-all shadow-xs"
+                title="Export Executive JSON Summary"
               >
-                <span className="material-symbols-outlined text-[16px]" data-icon="file_download">
+                <span className="material-symbols-outlined text-[15px]" data-icon="file_download">
                   file_download
                 </span>
-                <span>Export Executive Summary</span>
+                <span className="hidden sm:inline">Export Summary</span>
               </button>
 
-              {/* Primary Remediation Sync Button */}
+              {/* Sync Button */}
               <button
                 onClick={handleSyncRemediation}
                 disabled={syncing}
-                className="h-9 px-4 rounded btn-cyber-primary text-body-bold font-body-bold text-surface-container-lowest flex items-center gap-2 cursor-pointer disabled:opacity-70"
+                className="h-9 px-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/20 text-xs text-white font-medium flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                title="Synchronize telemetry"
               >
                 <span
-                  className={`material-symbols-outlined text-[17px] text-surface-container-lowest ${
-                    syncing ? "animate-spin" : ""
-                  }`}
+                  className={`material-symbols-outlined text-[15px] ${syncing ? "animate-spin" : ""}`}
                   data-icon="sync"
                 >
                   sync
                 </span>
-                <span>{syncing ? "Syncing..." : "Run Remediation Sync"}</span>
+                <span>{syncing ? "Syncing..." : "Sync"}</span>
               </button>
-            </div>
-          </section>
 
-          {/* 2. CRITICAL OPERATIONAL ALERTS BANNER */}
-          <section className="rounded-lg bg-surface border border-severity-critical-border p-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md specular-card relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-severity-critical" />
-            <div className="flex items-center gap-space-md">
-              <div className="w-9 h-9 rounded bg-severity-critical-bg border border-severity-critical-border flex items-center justify-center text-severity-critical shrink-0">
-                <span className="material-symbols-outlined text-[20px]" data-icon="warning">
-                  warning
-                </span>
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-body-bold font-body-bold text-text-primary">
-                    2 Critical Findings breach 48h Remediation SLA
-                  </span>
-                  <span className="text-xs px-1.5 py-0.5 rounded font-code-sm bg-severity-critical-bg text-severity-critical font-bold">
-                    CRITICAL ESCALATION
-                  </span>
-                </div>
-                <p className="text-caption font-caption text-text-secondary mt-0.5">
-                  Client <span className="font-code-sm text-text-primary font-medium">Acme Fintech (Core API)</span> — Immediate mitigation required before contractual audit cutoff.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-              <Link
-                href="/findings"
-                className="px-3 py-1.5 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle text-xs font-code-sm text-text-primary flex items-center gap-1.5 transition-colors"
-              >
-                <span>Inspect Finding #LN-2024-884</span>
-                <span className="material-symbols-outlined text-[14px]" data-icon="open_in_new">
-                  open_in_new
-                </span>
-              </Link>
+              {/* Deploy Fix Button */}
               <button
-                onClick={() => setToastMessage("Senior Security Engineer paged for immediate remediation.")}
-                className="px-3 py-1.5 rounded bg-severity-critical-bg hover:bg-severity-critical/20 text-severity-critical border border-severity-critical-border text-xs font-body-bold transition-colors"
+                onClick={() => setScanModalOpen(true)}
+                className="h-9 px-4 rounded-xl liquid-specular-button text-xs font-semibold text-[#07090E] flex items-center gap-1.5 transition-all active:scale-95 shadow-md"
               >
-                Reassign Engineer
+                <span className="material-symbols-outlined text-[16px]" data-icon="bolt">
+                  bolt
+                </span>
+                <span>Deploy Fix</span>
               </button>
             </div>
           </section>
 
-          {/* 3. EXECUTIVE SECURITY KPI CARDS (4 Grid Bento) */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
-            {/* Card 1: Active Engagements */}
-            <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-caption font-label-caps text-text-muted">ACTIVE ENGAGEMENTS</span>
-                <span className="material-symbols-outlined text-text-muted text-[18px]" data-icon="handshake">
-                  handshake
-                </span>
-              </div>
-              <div className="my-3">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-metric-stat font-metric-stat text-text-primary">
-                    {metrics?.engagements_active ?? 0}
+          {/* ======================================================================= */}
+          {/* 2. CRITICAL SLA ESCALATION BANNER                                      */}
+          {/* ======================================================================= */}
+          {(metrics?.critical_findings_open ?? 2) > 0 && (
+            <section className="rounded-2xl bg-rose-950/20 border border-rose-500/30 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl relative overflow-hidden shadow-[0_0_24px_rgba(244,63,94,0.1)]">
+              <div className="flex items-center gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="warning">
+                    warning
                   </span>
-                  <span className="text-caption font-caption text-text-muted">Authorized</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-semibold text-white">
+                      {metrics?.critical_findings_open ?? 2} Critical Findings breach 48h Remediation SLA
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                      CRITICAL ESCALATION
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Target <span className="font-mono text-zinc-200">auth.mesh.internal/v2/handshake</span> — Contractual retest probe required before audit cutoff.
+                  </p>
                 </div>
               </div>
-              <div className="pt-2 border-t border-border-subtle text-[11px] font-code-sm text-text-secondary truncate">
-                Active Assessment Scope
+              <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+                <Link
+                  href="/findings"
+                  className="px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 text-xs font-mono text-white flex items-center gap-1.5 transition-colors"
+                >
+                  <span>Inspect CVE-2026-2184</span>
+                  <span className="material-symbols-outlined text-[13px]" data-icon="open_in_new">
+                    open_in_new
+                  </span>
+                </Link>
+                <button
+                  onClick={() => setToastMessage("Senior Security Engineer dispatched to remediation pipeline.")}
+                  className="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/40 text-xs font-semibold transition-all"
+                >
+                  Dispatch Retest
+                </button>
               </div>
+            </section>
+          )}
+
+          {/* ======================================================================= */}
+          {/* 3. SECURITY SUMMARY ROW: 4 Frosted Bento KPI Cards (Stitch Screen 4)    */}
+          {/* ======================================================================= */}
+          <section className="glass-card rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-white/[0.08] gap-y-4 lg:gap-y-0">
+            {/* Card 1: Active Clients / Organizations */}
+            <div className="p-4 flex flex-col justify-between">
+              <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+                Active Organizations
+              </span>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-semibold text-white tracking-tight">
+                  {metrics?.clients_total ?? 14}
+                </span>
+                <span className="text-[12px] font-mono text-cyan-200">100% verified</span>
+              </div>
+              <span className="text-[12px] text-white/50 font-mono mt-1">
+                {metrics?.clients_active ?? 12} continuous SecOps watch
+              </span>
             </div>
 
             {/* Card 2: Open Vulnerabilities */}
-            <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-caption font-label-caps text-text-muted">OPEN VULNERABILITIES</span>
-                <span className="material-symbols-outlined text-severity-critical text-[18px]" data-icon="bug_report">
-                  bug_report
+            <div className="p-4 flex flex-col justify-between">
+              <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+                Open Vulnerabilities
+              </span>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-semibold text-white tracking-tight">
+                  {metrics?.findings_open ?? 17}
+                </span>
+                <span className="text-[12px] font-mono text-rose-300">
+                  {metrics?.severity_distribution?.critical ?? 2} Critical
                 </span>
               </div>
-              <div className="my-3">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-metric-stat font-metric-stat text-text-primary">
-                    {metrics?.findings_open ?? 0}
-                  </span>
-                  <span className="text-caption font-caption text-text-muted">Total Unresolved</span>
-                </div>
-              </div>
-              <div className="pt-2 border-t border-border-subtle flex items-center gap-1.5 overflow-x-auto text-[10px] font-label-caps font-bold">
-                <span className="px-1.5 py-0.5 rounded bg-severity-critical-bg text-severity-critical border border-severity-critical-border">
-                  {metrics?.severity_distribution?.critical ?? 0} Crit
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-severity-high-bg text-severity-high border border-severity-high-border">
-                  {metrics?.severity_distribution?.high ?? 0} High
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-severity-medium-bg text-severity-medium border border-severity-medium-border">
-                  {metrics?.severity_distribution?.medium ?? 0} Med
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-severity-low-bg text-severity-low border border-severity-low-border">
-                  {metrics?.severity_distribution?.low ?? 0} Low
-                </span>
-              </div>
+              <span className="text-[12px] text-white/50 font-mono mt-1">
+                {metrics?.severity_distribution?.high ?? 5} High · {metrics?.severity_distribution?.medium ?? 5} Med
+              </span>
             </div>
 
-            {/* Card 3: Mean Time to Remediate (MTTR) */}
-            <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-caption font-label-caps text-text-muted">MEAN TIME TO REMEDIATE</span>
-                <span className="material-symbols-outlined text-status-remediated text-[18px]" data-icon="timelapse">
-                  timelapse
+            {/* Card 3: Active Engagements & Retainers */}
+            <div className="p-4 flex flex-col justify-between">
+              <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+                Active Engagements
+              </span>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-semibold text-white tracking-tight">
+                  {metrics?.engagements_active ?? 12}
                 </span>
+                <span className="text-[12px] font-mono text-cyan-200">3.8d MTTR</span>
               </div>
-              <div className="my-3">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-metric-stat font-metric-stat text-text-primary">3.8</span>
-                  <span className="text-caption font-caption text-text-muted">Days MTTR</span>
-                </div>
-              </div>
-              <div className="pt-2 border-t border-border-subtle flex items-center justify-between text-[11px] font-code-sm">
-                <span className="text-text-muted">Target: &lt; 5.0 Days</span>
-                <span className="text-status-remediated font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-status-remediated" />
-                  Optimal
-                </span>
-              </div>
+              <span className="text-[12px] text-white/50 font-mono mt-1">
+                Zero contractual SLA breaches
+              </span>
             </div>
 
-            {/* Card 4: Awaiting Verification */}
-            <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-caption font-label-caps text-text-muted">AWAITING VERIFICATION</span>
-                <span className="material-symbols-outlined text-primary-container text-[18px]" data-icon="flaky">
-                  flaky
-                </span>
+            {/* Card 4: Security Health Score */}
+            <div className="p-4 flex flex-col justify-between">
+              <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+                Security Score
+              </span>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-semibold text-white tracking-tight">89</span>
+                <span className="text-[12px] font-mono text-white/50">/ 100</span>
               </div>
-              <div className="my-3">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-metric-stat font-metric-stat text-primary-container">9</span>
-                  <span className="text-caption font-caption text-text-muted">Patches Ready</span>
-                </div>
-              </div>
-              <div className="pt-2 border-t border-border-subtle flex items-center justify-between text-[11px] font-code-sm text-text-secondary">
-                <span>Ready for SecOps retest</span>
-                <span className="text-text-muted">42m ago</span>
-              </div>
+              <span className="text-[12px] text-white/50 font-mono mt-1">
+                Optimal across perimeters
+              </span>
             </div>
           </section>
 
-          {/* 4. TWO-COLUMN OPERATIONS LAYOUT (65% / 35%) */}
-          <section className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
-            {/* =================================================================== */}
-            {/* LEFT COLUMN (65% width / 8 cols): High Priority Remediation Queue   */}
-            {/* =================================================================== */}
-            <div className="lg:col-span-8 space-y-space-lg">
-              <div className="rounded-lg bg-surface border border-border-subtle specular-card overflow-hidden">
-                {/* Table Action Header */}
-                <div className="p-space-lg border-b border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-elevated">
-                  <div>
-                    <h2 className="text-headline-sm font-headline-sm text-text-primary">
-                      High Priority Remediation Queue
-                    </h2>
-                    <p className="text-caption font-caption text-text-secondary mt-0.5">
-                      Critical & High security findings requiring active intervention
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 text-xs font-code-sm text-text-muted bg-surface-subtle px-2.5 py-1 rounded border border-border-subtle">
-                      <span>FILTER:</span>
-                      <span className="text-text-primary">SLA &lt; 24h</span>
-                    </div>
-                    <button
-                      onClick={() => setToastMessage("Filter applied: Findings breaching SLA within 24 hours.")}
-                      className="w-7 h-7 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-                      title="Toggle Filter"
-                    >
-                      <span className="material-symbols-outlined text-[16px]" data-icon="filter_list">
-                        filter_list
-                      </span>
-                    </button>
-                  </div>
+          {/* ======================================================================= */}
+          {/* 4. TWO-COLUMN WORKSTATION GRID (7 cols / 5 cols)                        */}
+          {/* ======================================================================= */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left (7 cols): Recent Scans & Targets */}
+            <div className="lg:col-span-7 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[15px] font-medium text-white tracking-tight">Recent Scans</h2>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-zinc-400 border border-white/10">
+                    L4-L7 PROBES
+                  </span>
                 </div>
+                <Link
+                  className="text-[11px] font-mono text-white/50 hover:text-white transition-colors flex items-center gap-1"
+                  href="/audit"
+                >
+                  <span>View all</span>
+                  <span className="material-symbols-outlined text-[13px]">chevron_right</span>
+                </Link>
+              </div>
 
-                {/* Dense Technical Remediation Table */}
+              <div className="glass-card rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-border-subtle bg-surface-subtle text-[11px] font-label-caps text-text-muted">
-                        <th className="py-2.5 px-4 font-bold">FINDING TITLE & IDENTIFIER</th>
-                        <th className="py-2.5 px-3 font-bold">TARGET ASSET</th>
-                        <th className="py-2.5 px-3 font-bold">SEVERITY</th>
-                        <th className="py-2.5 px-3 font-bold">CLIENT SCOPE</th>
-                        <th className="py-2.5 px-3 font-bold">SLA DEADLINE</th>
-                        <th className="py-2.5 px-3 font-bold">STATUS</th>
-                        <th className="py-2.5 px-3 text-right font-bold">ACTION</th>
+                      <tr className="border-b border-white/[0.08] bg-white/[0.02] text-[11px] font-mono uppercase tracking-wider text-white/50">
+                        <th className="py-3 px-4">Domain / Target</th>
+                        <th className="py-3 px-3">Status</th>
+                        <th className="py-3 px-3">Score</th>
+                        <th className="py-3 px-4 text-right">Age</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-subtle text-xs font-body-base">
-                      {filteredFindings.map((finding) => (
-                        <tr key={finding.id} className="hover:bg-surface-subtle transition-colors group">
-                          <td className="py-3 px-4">
-                            <div className="flex flex-col">
-                              <span className="text-body-bold font-body-bold text-text-primary group-hover:text-primary transition-colors">
-                                {finding.title}
-                              </span>
-                              <span
-                                className={`text-[11px] font-code-sm ${
-                                  finding.cvssScore >= 9.0 ? "text-severity-critical" : "text-severity-high"
-                                }`}
-                              >
-                                {finding.identifier}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-3">
-                            <div className="flex items-center gap-1 font-code-sm text-text-secondary bg-surface-elevated px-2 py-0.5 rounded border border-border-subtle w-fit">
-                              <span className="material-symbols-outlined text-[13px] text-text-muted" data-icon={finding.targetIcon}>
-                                {finding.targetIcon}
-                              </span>
-                              <span>{finding.targetAsset}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-3">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-label-caps ${
-                                finding.cvssScore >= 9.0
-                                  ? "bg-severity-critical-bg text-severity-critical border border-severity-critical-border"
-                                  : "bg-severity-high-bg text-severity-high border border-severity-high-border"
-                              }`}
-                            >
-                              {finding.cvssScore === 10.0 && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-severity-critical animate-pulse" />
-                              )}
-                              {finding.cvss}
-                            </span>
-                          </td>
-                          <td className="py-3 px-3">
-                            <span className="font-body-medium text-text-secondary">{finding.clientScope}</span>
-                          </td>
-                          <td className="py-3 px-3 font-code-sm">
-                            <div
-                              className={`font-bold ${
-                                finding.slaRemaining.includes("4h")
-                                  ? "text-severity-critical"
-                                  : finding.slaRemaining.includes("12h")
-                                  ? "text-severity-high"
-                                  : "text-text-primary"
-                              }`}
-                            >
-                              {finding.slaRemaining}
-                            </div>
-                            <div className="text-[10px] text-text-muted">{finding.slaDeadline}</div>
-                          </td>
-                          <td className="py-3 px-3">
-                            {finding.statusType === "awaiting_retest" ? (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-code-sm bg-status-remediated-bg text-status-remediated border border-status-remediated-border flex items-center gap-1 w-fit">
-                                <span className="w-1.5 h-1.5 rounded-full bg-status-remediated" />
-                                {finding.status}
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-code-sm bg-surface-elevated text-severity-high border border-border-strong flex items-center gap-1 w-fit">
-                                <span className="w-1.5 h-1.5 rounded-full bg-severity-high" />
-                                {finding.status}
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3 px-3 text-right">
-                            <button
-                              onClick={() => {
-                                setToastMessage(`Navigating to finding ${finding.id}...`);
-                                router.push("/findings");
-                              }}
-                              className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-surface-highlight transition-colors"
-                              title="Inspect Finding Details"
-                            >
-                              <span className="material-symbols-outlined text-[18px]" data-icon="more_vert">
-                                more_vert
-                              </span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                    <tbody className="divide-y divide-white/[0.06] text-[13px]">
+                      <tr className="hover:bg-white/[0.03] transition-colors">
+                        <td className="py-3.5 px-4 font-mono text-white font-medium">acroba.io</td>
+                        <td className="py-3.5 px-3">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                            Verified
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3 font-mono text-[12px] text-white/80">
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                            94 / 100
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-mono text-[11px] text-white/40 text-right">14m ago</td>
+                      </tr>
+                      <tr className="hover:bg-white/[0.03] transition-colors">
+                        <td className="py-3.5 px-4 font-mono text-white font-medium">novapay.com</td>
+                        <td className="py-3.5 px-3">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                            Verified
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3 font-mono text-[12px] text-white/80">
+                          <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                            78 / 100
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-mono text-[11px] text-white/40 text-right">42m ago</td>
+                      </tr>
+                      <tr className="hover:bg-white/[0.03] transition-colors">
+                        <td className="py-3.5 px-4 font-mono text-white font-medium">zenith-health.internal</td>
+                        <td className="py-3.5 px-3">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-amber-300">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            Pending DNS
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3 font-mono text-[12px] text-white/80">
+                          <span className="px-2 py-0.5 rounded bg-white/[0.05] text-white/70 border border-white/10">
+                            52 / 100
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-mono text-[11px] text-white/40 text-right">1h ago</td>
+                      </tr>
+                      <tr className="hover:bg-white/[0.03] transition-colors">
+                        <td className="py-3.5 px-4 font-mono text-white font-medium">cloud-mesh.io</td>
+                        <td className="py-3.5 px-3">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                            Verified
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3 font-mono text-[12px] text-white/80">
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                            89 / 100
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-mono text-[11px] text-white/40 text-right">3h ago</td>
+                      </tr>
                     </tbody>
                   </table>
-                </div>
-
-                {/* Table Footer Pagination / Quick Summary */}
-                <div className="py-2.5 px-4 bg-surface-subtle border-t border-border-subtle flex items-center justify-between text-caption font-code-sm text-text-muted">
-                  <span>Showing {filteredFindings.length} of 14 Critical/High Findings</span>
-                  <Link
-                    href="/findings"
-                    className="text-primary-container hover:underline flex items-center gap-1 font-body-medium"
-                  >
-                    <span>View Full Findings Inventory</span>
-                    <span className="material-symbols-outlined text-[14px]" data-icon="arrow_forward">
-                      arrow_forward
-                    </span>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Secondary Metric Sub-Panel: Asset Attack Surface Density */}
-              <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary-container text-[18px]" data-icon="radar">
-                      radar
-                    </span>
-                    <span className="text-body-bold font-body-bold text-text-primary">
-                      Engagement Attack Surface Coverage
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-code-sm text-text-muted">142 Host Endpoints Monitored</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-                  <div className="p-3 rounded bg-surface-subtle border border-border-subtle">
-                    <div className="text-caption font-label-caps text-text-muted">CLOUD INFRASTRUCTURE</div>
-                    <div className="text-headline-sm font-code-sm text-text-primary mt-1">98.4% Posture</div>
-                    <div className="w-full bg-surface h-1.5 rounded mt-2 overflow-hidden">
-                      <div className="bg-status-remediated h-full" style={{ width: "98.4%" }} />
-                    </div>
-                  </div>
-                  <div className="p-3 rounded bg-surface-subtle border border-border-subtle">
-                    <div className="text-caption font-label-caps text-text-muted">PUBLIC APIS & GW</div>
-                    <div className="text-headline-sm font-code-sm text-severity-high mt-1">84.2% Posture</div>
-                    <div className="w-full bg-surface h-1.5 rounded mt-2 overflow-hidden">
-                      <div className="bg-severity-high h-full" style={{ width: "84.2%" }} />
-                    </div>
-                  </div>
-                  <div className="p-3 rounded bg-surface-subtle border border-border-subtle">
-                    <div className="text-caption font-label-caps text-text-muted">INTERNAL BASTIONS</div>
-                    <div className="text-headline-sm font-code-sm text-severity-critical mt-1">71.0% Posture</div>
-                    <div className="w-full bg-surface h-1.5 rounded mt-2 overflow-hidden">
-                      <div className="bg-severity-critical h-full" style={{ width: "71.0%" }} />
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
 
-            {/* =================================================================== */}
-            {/* RIGHT COLUMN (35% width / 4 cols): Posture Meters & Audit Stream    */}
-            {/* =================================================================== */}
-            <div className="lg:col-span-4 space-y-space-lg">
-              {/* 1. Severity Breakdown & Posture Meter */}
-              <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card">
-                <div className="flex items-center justify-between pb-space-sm border-b border-border-subtle">
-                  <h3 className="text-headline-sm font-headline-sm text-text-primary">Severity Breakdown</h3>
-                  <span className="text-caption font-code-sm text-text-muted">56 Total Tracked</span>
-                </div>
-
-                {/* Segmented Multi-Color Distribution Bar */}
-                <div className="mt-space-md">
-                  <div className="h-2 w-full rounded flex overflow-hidden gap-0.5 bg-surface-container-low">
-                    <div className="bg-severity-critical h-full" style={{ width: "7.1%" }} title="Critical (4)" />
-                    <div className="bg-severity-high h-full" style={{ width: "19.6%" }} title="High (11)" />
-                    <div className="bg-severity-medium h-full" style={{ width: "32.1%" }} title="Medium (18)" />
-                    <div className="bg-severity-low h-full" style={{ width: "16.1%" }} title="Low (9)" />
-                    <div className="bg-status-remediated h-full" style={{ width: "25.1%" }} title="Remediated (14)" />
-                  </div>
-
-                  {/* Legend & Granular Counts */}
-                  <div className="mt-4 space-y-2.5 text-xs font-code-sm">
-                    {/* Critical */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-severity-critical" />
-                        <span className="text-text-primary">Critical (CVSS 9.0 - 10.0)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-text-primary font-bold">4</span>
-                        <span className="text-text-muted text-[11px]">(7.1%)</span>
-                      </div>
-                    </div>
-                    {/* High */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-severity-high" />
-                        <span className="text-text-primary">High (CVSS 7.0 - 8.9)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-text-primary font-bold">11</span>
-                        <span className="text-text-muted text-[11px]">(19.6%)</span>
-                      </div>
-                    </div>
-                    {/* Medium */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-severity-medium" />
-                        <span className="text-text-primary">Medium (CVSS 4.0 - 6.9)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-text-primary font-bold">18</span>
-                        <span className="text-text-muted text-[11px]">(32.1%)</span>
-                      </div>
-                    </div>
-                    {/* Low */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-severity-low" />
-                        <span className="text-text-primary">Low (CVSS 0.1 - 3.9)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-text-primary font-bold">9</span>
-                        <span className="text-text-muted text-[11px]">(16.1%)</span>
-                      </div>
-                    </div>
-                    {/* Remediated & Verified */}
-                    <div className="flex items-center justify-between pt-1 border-t border-border-subtle">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-status-remediated" />
-                        <span className="text-status-remediated font-medium">Verified Remediated</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-status-remediated font-bold">14</span>
-                        <span className="text-text-muted text-[11px]">(25.1%)</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {/* Right (5 cols): Findings by Severity Breakdown */}
+            <div className="lg:col-span-5 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[15px] font-medium text-white tracking-tight">Findings by Severity</h2>
+                <Link
+                  href="/findings"
+                  className="text-[11px] font-mono text-rose-300 hover:underline flex items-center gap-1"
+                >
+                  <span>{metrics?.critical_findings_open ?? 2} action required</span>
+                </Link>
               </div>
 
-              {/* 2. Live Remediation & Chronological Audit Stream */}
-              <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card">
-                <div className="flex items-center justify-between pb-space-sm border-b border-border-subtle">
+              <div className="glass-card rounded-2xl p-5 flex flex-col justify-between gap-3">
+                <Link
+                  href="/findings?severity=critical"
+                  className="flex items-center justify-between py-2 border-b border-white/[0.06] hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors group"
+                >
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[17px] text-primary-container" data-icon="history">
-                      history
-                    </span>
-                    <h3 className="text-headline-sm font-headline-sm text-text-primary">Live Remediation & Audit</h3>
+                    <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
+                    <span className="text-[13px] text-white font-medium">Critical</span>
                   </div>
-                  <span className="w-2 h-2 rounded-full bg-status-remediated animate-ping" />
-                </div>
+                  <span className="text-[13px] font-mono font-bold text-rose-300">
+                    {metrics?.severity_distribution?.critical ?? 2}
+                  </span>
+                </Link>
 
-                {/* Chronological Event Feed */}
-                <div className="mt-space-md space-y-4 relative before:absolute before:top-2 before:bottom-2 before:left-[11px] before:w-px before:bg-border-subtle">
-                  {/* Event 1: Patch Verified */}
-                  <div className="flex items-start gap-3 relative">
-                    <div className="w-6 h-6 rounded-full bg-status-remediated-bg border border-status-remediated-border flex items-center justify-center text-status-remediated shrink-0 z-10">
-                      <span className="material-symbols-outlined text-[13px]" data-icon="check_circle">
-                        check_circle
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-body-base text-text-primary leading-snug">
-                        Security patch verified fixed:{" "}
-                        <span className="font-code-sm text-status-remediated">SQL Injection on Auth Gateway</span>
-                      </p>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-caption text-text-muted">
-                        <span>Sarah Chen (SecOps)</span>
-                        <span>·</span>
-                        <span>18m ago</span>
-                      </div>
-                    </div>
+                <Link
+                  href="/findings?severity=high"
+                  className="flex items-center justify-between py-2 border-b border-white/[0.06] hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_6px_#fb923c]" />
+                    <span className="text-[13px] text-white font-medium">High</span>
                   </div>
+                  <span className="text-[13px] font-mono font-semibold text-orange-300">
+                    {metrics?.severity_distribution?.high ?? 5}
+                  </span>
+                </Link>
 
-                  {/* Event 2: New Finding Imported */}
-                  <div className="flex items-start gap-3 relative">
-                    <div className="w-6 h-6 rounded-full bg-surface-subtle border border-border-strong flex items-center justify-center text-severity-high shrink-0 z-10">
-                      <span className="material-symbols-outlined text-[13px]" data-icon="sync_alt">
-                        sync_alt
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-body-base text-text-primary leading-snug">
-                        New finding imported from Burp Enterprise:{" "}
-                        <span className="font-code-sm text-text-secondary">Stored XSS on Profile Settings</span>
-                      </p>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-caption text-text-muted">
-                        <span>Scanner Engine #2</span>
-                        <span>·</span>
-                        <span>1h ago</span>
-                      </div>
-                    </div>
+                <Link
+                  href="/findings?severity=medium"
+                  className="flex items-center justify-between py-2 border-b border-white/[0.06] hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-[13px] text-white/80">Medium</span>
                   </div>
+                  <span className="text-[13px] font-mono text-white/80">
+                    {metrics?.severity_distribution?.medium ?? 5}
+                  </span>
+                </Link>
 
-                  {/* Event 3: Client Sign-off */}
-                  <div className="flex items-start gap-3 relative">
-                    <div className="w-6 h-6 rounded-full bg-surface-subtle border border-border-strong flex items-center justify-center text-primary-container shrink-0 z-10">
-                      <span className="material-symbols-outlined text-[13px]" data-icon="draw">
-                        draw
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-body-base text-text-primary leading-snug">
-                        Client <span className="font-bold text-text-primary">Meridian Corp</span> signed off on Penetration Testing Rules of Engagement
-                      </p>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-caption text-text-muted">
-                        <span>Portal Audit Contract</span>
-                        <span>·</span>
-                        <span>3h ago</span>
-                      </div>
-                    </div>
+                <Link
+                  href="/findings?severity=low"
+                  className="flex items-center justify-between py-2 border-b border-white/[0.06] hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-400" />
+                    <span className="text-[13px] text-white/60">Low</span>
                   </div>
+                  <span className="text-[13px] font-mono text-white/60">
+                    {metrics?.severity_distribution?.low ?? 3}
+                  </span>
+                </Link>
 
-                  {/* Event 4: Automated Retest */}
-                  <div className="flex items-start gap-3 relative">
-                    <div className="w-6 h-6 rounded-full bg-surface-subtle border border-border-strong flex items-center justify-center text-text-secondary shrink-0 z-10">
-                      <span className="material-symbols-outlined text-[13px]" data-icon="smart_toy">
-                        smart_toy
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-body-base text-text-primary leading-snug">
-                        Automated retest triggered for 3 assets following CI/CD webhook dispatch
-                      </p>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-caption text-text-muted">
-                        <span>FixOps Pipeline Agent</span>
-                        <span>·</span>
-                        <span>4h ago</span>
-                      </div>
-                    </div>
+                <Link
+                  href="/findings?severity=info"
+                  className="flex items-center justify-between py-2 hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-zinc-500" />
+                    <span className="text-[13px] text-white/40">Informational</span>
                   </div>
-                </div>
-              </div>
-
-              {/* 3. Quick Operations Shortcuts Panel */}
-              <div className="p-space-lg rounded-lg bg-surface border border-border-subtle specular-card">
-                <h3 className="text-headline-sm font-headline-sm text-text-primary pb-3 border-b border-border-subtle">
-                  Operations Shortcuts
-                </h3>
-                <div className="mt-3 space-y-2">
-                  <button
-                    onClick={() => router.push("/findings")}
-                    className="w-full h-9 px-3 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle flex items-center justify-between text-body-medium font-body-medium text-text-primary transition-colors group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[17px] text-primary-container" data-icon="add_circle">
-                        add_circle
-                      </span>
-                      <span>Add New Finding</span>
-                    </div>
-                    <span className="text-caption font-code-sm text-text-muted group-hover:text-text-primary">⌘N</span>
-                  </button>
-
-                  <button
-                    onClick={() => router.push("/clients")}
-                    className="w-full h-9 px-3 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle flex items-center justify-between text-body-medium font-body-medium text-text-primary transition-colors group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[17px] text-text-secondary" data-icon="domain_add">
-                        domain_add
-                      </span>
-                      <span>Register New Scope</span>
-                    </div>
-                    <span className="text-caption font-code-sm text-text-muted group-hover:text-text-primary">⌘S</span>
-                  </button>
-
-                  <button
-                    onClick={() => router.push("/reports")}
-                    className="w-full h-9 px-3 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle flex items-center justify-between text-body-medium font-body-medium text-text-primary transition-colors group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[17px] text-text-secondary" data-icon="summarize">
-                        summarize
-                      </span>
-                      <span>Generate Audit Report</span>
-                    </div>
-                    <span className="text-caption font-code-sm text-text-muted group-hover:text-text-primary">⌘R</span>
-                  </button>
-                </div>
+                  <span className="text-[13px] font-mono text-white/40">
+                    {metrics?.severity_distribution?.info ?? 12}
+                  </span>
+                </Link>
               </div>
             </div>
           </section>
 
-          {/* System Diagnostic Terminal Strip */}
-          <footer className="pt-space-md border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-2 text-caption font-code-sm text-text-muted">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 text-status-remediated">
-                <span className="w-1.5 h-1.5 rounded-full bg-status-remediated" />
-                ALL SUBSYSTEMS NOMINAL
-              </span>
-              <span>·</span>
-              <span>SCAN ENGINE LATENCY: 24ms</span>
-              <span>·</span>
-              <span>INGEST QUEUE: 0 PENDING</span>
+          {/* ======================================================================= */}
+          {/* 5. RECENT OPERATIONAL ACTIVITY STREAM                                  */}
+          {/* ======================================================================= */}
+          <section className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className="text-[15px] font-medium text-white tracking-tight">Activity Ledger</h2>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+              <span className="text-[11px] font-mono text-white/40">Realtime Stream</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span>Lazy Nerds FixOps Security Console</span>
-              <span>·</span>
-              <span>Build e971bc3</span>
+
+            <div className="glass-card rounded-2xl px-5 py-2 divide-y divide-white/[0.06]">
+              {metrics?.recent_activity && metrics.recent_activity.length > 0 ? (
+                metrics.recent_activity.slice(0, 4).map((log) => (
+                  <div key={log.id} className="py-3 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0" />
+                      <p className="text-[13px] font-mono text-white truncate">
+                        {log.action} on <span className="text-cyan-200">{log.resource_type}</span>{" "}
+                        <span className="text-white/40 hidden sm:inline">— {log.user_email}</span>
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-mono text-white/40 shrink-0">
+                      {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="py-3.5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] shrink-0" />
+                      <p className="text-[13px] font-mono text-white truncate">
+                        Scan LN-902 completed on <span className="text-cyan-200">api.acroba.internal</span>{" "}
+                        <span className="text-white/40 hidden sm:inline">— 2 vulnerabilities triaged</span>
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-mono text-white/40 shrink-0">14m ago</span>
+                  </div>
+                  <div className="py-3.5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-[0_0_6px_#7bd0ff] shrink-0" />
+                      <p className="text-[13px] font-mono text-white truncate">
+                        Domain DNS TXT verification renewed for <span className="text-cyan-200">novapay.com</span>{" "}
+                        <span className="text-white/40 hidden sm:inline">— Autonomous validator</span>
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-mono text-white/40 shrink-0">42m ago</span>
+                  </div>
+                  <div className="py-3.5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] shrink-0" />
+                      <p className="text-[13px] font-mono text-white truncate">
+                        CVE-2026-2184 verified resolved on <span className="text-cyan-200">bastion-01</span>{" "}
+                        <span className="text-white/40 hidden sm:inline">— Patch probe passed</span>
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-mono text-white/40 shrink-0">1h ago</span>
+                  </div>
+                </>
+              )}
             </div>
-          </footer>
-        </>
+          </section>
+        </div>
       )}
-    </main>
-      </div>
 
       {/* Deploy Fix & Scan Dispatch Modal */}
       {scanModalOpen && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-lg bg-surface border border-border-strong p-6 shadow-2xl specular-elevated">
-            <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-[#0c0e14] border border-white/20 p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary-container text-[20px]">bolt</span>
-                <h3 className="text-headline-sm font-headline-sm text-text-primary">Deploy Remediation Patch</h3>
+                <span className="material-symbols-outlined text-[#F5C518] text-[20px]">bolt</span>
+                <h3 className="text-base font-semibold text-white">Deploy Remediation Patch</h3>
               </div>
               <button
                 onClick={() => setScanModalOpen(false)}
-                className="text-text-muted hover:text-text-primary"
+                className="text-zinc-400 hover:text-white transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
             <div className="mt-4 space-y-3 text-xs">
-              <p className="text-text-secondary leading-relaxed">
+              <p className="text-zinc-400 leading-relaxed">
                 Dispatch automated verification scan and stage automated hotfix for active high-priority findings.
               </p>
-              <div className="p-3 rounded bg-surface-subtle border border-border-subtle space-y-2">
-                <div className="flex justify-between font-code-sm">
-                  <span className="text-text-muted">Target Host:</span>
-                  <span className="text-text-primary font-bold">bastion-01.acmefin.internal</span>
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="flex justify-between font-mono">
+                  <span className="text-zinc-500">Target Host:</span>
+                  <span className="text-white font-medium">bastion-01.acmefin.internal</span>
                 </div>
-                <div className="flex justify-between font-code-sm">
-                  <span className="text-text-muted">Fix Script:</span>
-                  <span className="text-status-remediated">fixops-patch-ssh-3094.sh</span>
+                <div className="flex justify-between font-mono">
+                  <span className="text-zinc-500">Fix Script:</span>
+                  <span className="text-emerald-400">fixops-patch-ssh-3094.sh</span>
                 </div>
-                <div className="flex justify-between font-code-sm">
-                  <span className="text-text-muted">Verification Mode:</span>
-                  <span className="text-primary-container">Start scan & verify fix</span>
+                <div className="flex justify-between font-mono">
+                  <span className="text-zinc-500">Verification:</span>
+                  <span className="text-cyan-200">Start scan & verify fix</span>
                 </div>
               </div>
             </div>
             <div className="mt-6 flex items-center justify-end gap-2">
               <button
                 onClick={() => setScanModalOpen(false)}
-                className="px-3 py-1.5 rounded bg-surface-subtle hover:bg-surface-highlight border border-border-subtle text-xs text-text-primary"
+                className="px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-zinc-300 transition-colors"
               >
                 Cancel
               </button>
@@ -1390,15 +743,15 @@ export default function OverviewPage() {
                   setScanModalOpen(false);
                   setToastMessage("Remediation patch deployed and verification scan started.");
                 }}
-                className="px-4 py-1.5 rounded btn-cyber-primary text-xs font-bold text-surface-container-lowest flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl liquid-specular-button text-xs font-semibold text-[#07090E] flex items-center gap-1.5 transition-all active:scale-95 shadow-md"
               >
                 <span className="material-symbols-outlined text-[15px]">send</span>
-                <span>Confirm & Start scan</span>
+                <span>Confirm & Start Scan</span>
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }

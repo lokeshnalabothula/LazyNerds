@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { Asset } from "@/types/asset";
 import { AssetFormModal } from "@/components/assets/asset-form-modal";
 import { Button } from "@/components/ui/button";
+import { AssetsSkeleton } from "@/components/ui/skeleton";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/loading";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -272,13 +273,7 @@ export default function AssetsPage() {
         {/* Assets List */}
         <div data-loading-state={loading && assets.length === 0 ? "loading" : "complete"}>
         {loading && assets.length === 0 ? (
-          viewMode === "cards" ? (
-            <CardGridSkeleton count={6} />
-          ) : (
-            <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
-              <TableSkeleton rows={5} cols={6} />
-            </div>
-          )
+          <AssetsSkeleton />
         ) : assets.length === 0 ? (
           <div className="p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30" data-empty="true">
             <Shield className="h-8 w-8 text-zinc-400 mx-auto mb-2 opacity-60" />

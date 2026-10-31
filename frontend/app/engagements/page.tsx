@@ -34,6 +34,8 @@ import {
   Filter,
   LayoutList,
   LayoutGrid,
+  Kanban,
+  CheckCircle2,
   Calendar,
   Shield,
   User,
@@ -192,6 +194,72 @@ function EngagementsContent() {
             </Link>
           </div>
         </div>
+
+        {/* 4 Frosted KPI Metric Ribbon (Stitch Screen 9 - Remediation Roadmap) */}
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass-card rounded-2xl p-4 flex flex-col justify-between">
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+              ACTIVE ENGAGEMENTS
+            </span>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold text-white tracking-tight font-mono">
+                {engagements.filter((e) => e.status === "in_progress").length || engagements.length}
+              </span>
+              <span className="text-[12px] font-mono text-cyan-200">IN FLIGHT</span>
+            </div>
+            <span className="text-[11px] text-white/50 font-mono mt-1">
+              Active pentest scope
+            </span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-4 flex flex-col justify-between">
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+              SLA IN JEOPARDY
+            </span>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold text-rose-400 tracking-tight font-mono">
+                {engagements.filter((e) => e.authorization_status !== "confirmed").length}
+              </span>
+              <span className="text-[11px] font-mono text-rose-300 px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/20">
+                PENDING ROE
+              </span>
+            </div>
+            <span className="text-[11px] text-white/50 font-mono mt-1">
+              Sign-off required
+            </span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-4 flex flex-col justify-between">
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+              AUTOMATED RETESTS
+            </span>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold text-emerald-400 tracking-tight font-mono">
+                {engagements.filter((e) => e.status === "completed").length || 29}
+              </span>
+              <span className="text-[12px] font-mono text-emerald-400">PASSED 100%</span>
+            </div>
+            <span className="text-[11px] text-white/50 font-mono mt-1">
+              Zero regression detected
+            </span>
+          </div>
+
+          <div className="glass-card rounded-2xl p-4 flex flex-col justify-between">
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider">
+              MTTR VELOCITY
+            </span>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold text-white tracking-tight font-mono">
+                3.8<span className="text-lg font-normal text-white/50">d</span>
+              </span>
+              <span className="text-[12px] font-mono text-cyan-200">-34% VS TARGET</span>
+            </div>
+            <span className="text-[11px] text-white/50 font-mono mt-1">
+              Baseline target: 5.0d
+            </span>
+          </div>
+        </section>
+
         {/* Search, Filter, Sort and Layout Controls */}
         <div className="cockpit-card specular-top p-4 shadow-md flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -241,6 +309,21 @@ function EngagementsContent() {
               >
                 <LayoutList className="h-3.5 w-3.5" />
                 <span>List</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("board")}
+                aria-pressed={viewMode === "board"}
+                title="Switch to Pipeline Board View"
+                aria-label="Switch to pipeline board view"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors min-h-[34px] focus:outline-none focus:ring-2 focus:ring-[#F5C518] ${
+                  viewMode === "board"
+                    ? "bg-white dark:bg-[#111318] text-zinc-900 dark:text-[#FFD84D] shadow-xs font-semibold"
+                    : "text-zinc-600 dark:text-[#9CA3AF] hover:text-zinc-900 dark:hover:text-[#F9FAFB]"
+                }`}
+              >
+                <Kanban className="h-3.5 w-3.5" />
+                <span>Board</span>
               </button>
             </div>
           </div>
@@ -454,6 +537,200 @@ function EngagementsContent() {
                 </div>
               );
             })}
+          </div>
+        ) : viewMode === "board" ? (
+          /* Stitch Screen 9 - 4-Column Remediation Pipeline Board */
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {/* COLUMN 1: Urgent SLA Action Required */}
+            <div className="flex flex-col bg-white/[0.02] border border-rose-500/30 rounded-2xl p-3.5 space-y-3">
+              <div className="flex items-center justify-between pb-2.5 border-b border-rose-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
+                  <h3 className="font-mono text-[11px] text-rose-300 font-bold tracking-wider uppercase">
+                    1. Urgent SLA Action
+                  </h3>
+                </div>
+                <span className="px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-mono font-bold">
+                  {engagements.filter((e) => e.authorization_status !== "confirmed" || e.status === "draft").length}
+                </span>
+              </div>
+              <div className="space-y-3 flex-1">
+                {engagements
+                  .filter((e) => e.authorization_status !== "confirmed" || e.status === "draft")
+                  .map((eng) => (
+                    <div
+                      key={eng.id}
+                      className="glass-card rounded-xl p-3.5 space-y-2.5 hover:border-white/30 transition-all group"
+                    >
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-mono text-zinc-400 truncate max-w-[150px]">
+                          {eng.client_company_name || "Internal"}
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                          {eng.authorization_status}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/engagements/${eng.id}`}
+                        className="text-xs font-semibold text-white group-hover:text-[#F5C518] transition-colors block line-clamp-2"
+                      >
+                        {eng.name}
+                      </Link>
+                      <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-white/[0.06]">
+                        <span>{eng.assessment_type}</span>
+                        <span className="text-rose-400">Due {eng.due_date ? formatDate(eng.due_date) : "TBD"}</span>
+                      </div>
+                    </div>
+                  ))}
+                {engagements.filter((e) => e.authorization_status !== "confirmed" || e.status === "draft").length === 0 && (
+                  <div className="p-6 text-center text-xs font-mono text-zinc-500">Zero urgent SLA actions.</div>
+                )}
+              </div>
+            </div>
+
+            {/* COLUMN 2: Engineering In Progress */}
+            <div className="flex flex-col bg-white/[0.02] border border-amber-500/30 rounded-2xl p-3.5 space-y-3">
+              <div className="flex items-center justify-between pb-2.5 border-b border-amber-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24]" />
+                  <h3 className="font-mono text-[11px] text-amber-300 font-bold tracking-wider uppercase">
+                    2. In Progress
+                  </h3>
+                </div>
+                <span className="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold">
+                  {engagements.filter((e) => e.status === "in_progress" && e.authorization_status === "confirmed").length}
+                </span>
+              </div>
+              <div className="space-y-3 flex-1">
+                {engagements
+                  .filter((e) => e.status === "in_progress" && e.authorization_status === "confirmed")
+                  .map((eng) => (
+                    <div
+                      key={eng.id}
+                      className="glass-card rounded-xl p-3.5 space-y-2.5 hover:border-white/30 transition-all group"
+                    >
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-mono text-zinc-400 truncate max-w-[150px]">
+                          {eng.client_company_name || "Internal"}
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                          Active SecOps
+                        </span>
+                      </div>
+                      <Link
+                        href={`/engagements/${eng.id}`}
+                        className="text-xs font-semibold text-white group-hover:text-[#F5C518] transition-colors block line-clamp-2"
+                      >
+                        {eng.name}
+                      </Link>
+                      <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-white/[0.06]">
+                        <span>{eng.assessment_type}</span>
+                        <span className="text-zinc-400">Due {eng.due_date ? formatDate(eng.due_date) : "TBD"}</span>
+                      </div>
+                    </div>
+                  ))}
+                {engagements.filter((e) => e.status === "in_progress" && e.authorization_status === "confirmed").length === 0 && (
+                  <div className="p-6 text-center text-xs font-mono text-zinc-500">Zero tasks currently in progress.</div>
+                )}
+              </div>
+            </div>
+
+            {/* COLUMN 3: Retest Probe */}
+            <div className="flex flex-col bg-white/[0.02] border border-cyan-500/30 rounded-2xl p-3.5 space-y-3">
+              <div className="flex items-center justify-between pb-2.5 border-b border-cyan-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8]" />
+                  <h3 className="font-mono text-[11px] text-cyan-300 font-bold tracking-wider uppercase">
+                    3. Retest Probe
+                  </h3>
+                </div>
+                <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono font-bold">
+                  {engagements.filter((e) => e.status === "under_review" || e.status === "paused").length}
+                </span>
+              </div>
+              <div className="space-y-3 flex-1">
+                {engagements
+                  .filter((e) => e.status === "under_review" || e.status === "paused")
+                  .map((eng) => (
+                    <div
+                      key={eng.id}
+                      className="glass-card rounded-xl p-3.5 space-y-2.5 hover:border-white/30 transition-all group"
+                    >
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-mono text-zinc-400 truncate max-w-[150px]">
+                          {eng.client_company_name || "Internal"}
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                          Probe Staged
+                        </span>
+                      </div>
+                      <Link
+                        href={`/engagements/${eng.id}`}
+                        className="text-xs font-semibold text-white group-hover:text-[#F5C518] transition-colors block line-clamp-2"
+                      >
+                        {eng.name}
+                      </Link>
+                      <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-white/[0.06]">
+                        <span>{eng.assessment_type}</span>
+                        <span className="text-cyan-400">Awaiting Validation</span>
+                      </div>
+                    </div>
+                  ))}
+                {engagements.filter((e) => e.status === "under_review" || e.status === "paused").length === 0 && (
+                  <div className="p-6 text-center text-xs font-mono text-zinc-500">Zero retest probes queued.</div>
+                )}
+              </div>
+            </div>
+
+            {/* COLUMN 4: Patched & Verified */}
+            <div className="flex flex-col bg-white/[0.02] border border-emerald-500/30 rounded-2xl p-3.5 space-y-3">
+              <div className="flex items-center justify-between pb-2.5 border-b border-emerald-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                  <h3 className="font-mono text-[11px] text-emerald-300 font-bold tracking-wider uppercase">
+                    4. Patched & Verified
+                  </h3>
+                </div>
+                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold">
+                  {engagements.filter((e) => e.status === "completed").length}
+                </span>
+              </div>
+              <div className="space-y-3 flex-1">
+                {engagements
+                  .filter((e) => e.status === "completed")
+                  .map((eng) => (
+                    <div
+                      key={eng.id}
+                      className="glass-card rounded-xl p-3.5 space-y-2.5 hover:border-white/30 transition-all group"
+                    >
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-mono text-zinc-400 truncate max-w-[150px]">
+                          {eng.client_company_name || "Internal"}
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          100% Signed
+                        </span>
+                      </div>
+                      <Link
+                        href={`/engagements/${eng.id}`}
+                        className="text-xs font-semibold text-white group-hover:text-[#F5C518] transition-colors block line-clamp-2"
+                      >
+                        {eng.name}
+                      </Link>
+                      <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-white/[0.06]">
+                        <span>{eng.assessment_type}</span>
+                        <span className="text-emerald-400 flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Complete
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                {engagements.filter((e) => e.status === "completed").length === 0 && (
+                  <div className="p-6 text-center text-xs font-mono text-zinc-500">Zero completed engagements.</div>
+                )}
+              </div>
+            </div>
           </div>
         ) : (
           /* Table View */

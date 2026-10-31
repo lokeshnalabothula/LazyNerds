@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-export type ViewMode = "table" | "cards";
+export type ViewMode = "table" | "cards" | "board";
 
 /**
  * Device-aware view preference hook.
@@ -23,7 +23,7 @@ export function useViewMode(storageKey: string, desktopBreakpoint: number = 1024
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey) as ViewMode | null;
-      if (saved === "table" || saved === "cards") {
+      if (saved === "table" || saved === "cards" || saved === "board") {
         // Saved preference takes priority
         setViewModeState(saved);
       } else {

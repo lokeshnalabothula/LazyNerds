@@ -33,6 +33,24 @@ def init_db_and_seed_admin():
     try:
         active_engine = getattr(db_session, "engine", engine)
         Base.metadata.create_all(bind=active_engine)
+        # Ensure new schema columns exist in SQLite development databases
+        try:
+            with active_engine.connect() as conn:
+                from sqlalchemy import text
+                res = conn.execute(text("PRAGMA table_info(email_verification_codes)")).fetchall()
+                if res:
+                    existing_cols = {row[1] for row in res}
+                    if "full_name" not in existing_cols:
+                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN full_name VARCHAR(255)"))
+                    if "registration_token_hash" not in existing_cols:
+                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN registration_token_hash VARCHAR(255)"))
+                    if "registration_token_expires_at" not in existing_cols:
+                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN registration_token_expires_at DATETIME"))
+                    if "registration_token_used_at" not in existing_cols:
+                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN registration_token_used_at DATETIME"))
+                    conn.commit()
+        except Exception:
+            pass
         logger.info("Database tables initialized successfully.")
     except Exception as e:
         logger.warning(f"Database table creation check: {e}")

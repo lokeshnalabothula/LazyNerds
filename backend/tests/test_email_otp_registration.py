@@ -223,3 +223,125 @@ def test_duplicate_email_registration_and_authentication_attempts_before_verific
     )
     # Unverified user account does not exist or cannot authenticate
     assert unverif_login.status_code in (401, 403)
+
+
+def test_four_step_registration_flow_end_to_end(client, db_session):
+    """
+    Tests the strict 4-step registration sequence:
+    Step 1: Request OTP with Full Name & Email only (no password).
+    Step 2: Verify 6-digit OTP -> obtains registration_token; account NOT yet created.
+    Step 3/4: Complete registration with registration_token and password.
+    Security checks:
+    - Attempting completion with bad token fails.
+    - Token replay is prevented (single-use).
+    - User account and tenant created and active.
+    - Session cookie and access token issued.
+    """
+    email = "cadet.ripley@weyland.corp"
+    full_name = "Ellen Ripley"
+
+    # Step 1: Send OTP (no password provided)
+    step1_res = client.post(
+        "/api/v1/auth/register/send-otp",
+        json={"email": email, "full_name": full_name},
+    )
+    assert step1_res.status_code == 200
+    assert step1_res.json()["cooldown_seconds"] == 60
+
+    # Retrieve issued OTP code
+    record = (
+        db_session.query(EmailVerificationCode)
+        .filter(EmailVerificationCode.email == email, EmailVerificationCode.used_at.is_(None))
+        .first()
+    )
+    assert record is not None
+    assert record.full_name == full_name
+
+    # Find matching 6-digit code for testing
+    raw_code = None
+    for c in range(100000, 1000000):
+        c_str = str(c)
+        if hash_verification_code(email, c_str) == record.code_hash:
+            raw_code = c_str
+            break
+    assert raw_code is not None
+
+    # Step 2: Verify OTP (no password provided)
+    step2_res = client.post(
+        "/api/v1/auth/register/verify-otp",
+        json={"email": email, "code": raw_code},
+    )
+    assert step2_res.status_code == 200
+    step2_data = step2_res.json()
+    assert step2_data["valid"] is True
+    assert "registration_token" in step2_data
+    assert step2_data["email"] == email
+    registration_token = step2_data["registration_token"]
+
+    # Verify user is NOT yet created in database
+    user_early = db_session.query(User).filter(User.email == email).first()
+    assert user_early is None
+
+    # Step 3/4 failure: Bad token fails
+    bad_token_res = client.post(
+        "/api/v1/auth/register/complete",
+        json={
+            "email": email,
+            "registration_token": "invalid_token_12345678",
+            "password": "NostromoSecurity2026!",
+            "full_name": full_name,
+        },
+    )
+    assert bad_token_res.status_code == 400
+    assert "Invalid or expired registration session" in bad_token_res.json()["detail"]
+
+    # Step 3/4 failure: Weak password fails
+    weak_pwd_res = client.post(
+        "/api/v1/auth/register/complete",
+        json={
+            "email": email,
+            "registration_token": registration_token,
+            "password": "weak",
+            "full_name": full_name,
+        },
+    )
+    assert weak_pwd_res.status_code in (400, 422)
+
+    # Step 4: Valid completion
+    complete_res = client.post(
+        "/api/v1/auth/register/complete",
+        json={
+            "email": email,
+            "registration_token": registration_token,
+            "password": "NostromoSecurity2026!",
+            "full_name": full_name,
+        },
+    )
+    assert complete_res.status_code == 200
+    comp_data = complete_res.json()
+    assert comp_data["token_type"] == "bearer"
+    assert comp_data["user"]["email"] == email
+    assert comp_data["user"]["full_name"] == full_name
+    assert comp_data["user"]["is_active"] is True
+    assert "fixops_access_token" in complete_res.cookies
+
+    # Step 4 replay: Token cannot be reused
+    replay_res = client.post(
+        "/api/v1/auth/register/complete",
+        json={
+            "email": email,
+            "registration_token": registration_token,
+            "password": "NostromoSecurity2026!",
+            "full_name": full_name,
+        },
+    )
+    assert replay_res.status_code == 400
+    assert "already been used" in replay_res.json()["detail"]
+
+    # Verify user can sign in with new password
+    login_res = client.post(
+        "/api/v1/auth/login",
+        json={"email": email, "password": "NostromoSecurity2026!"},
+    )
+    assert login_res.status_code == 200
+    assert login_res.json()["user"]["email"] == email

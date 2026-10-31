@@ -18,11 +18,16 @@ class EmailVerificationCode(Base):
     resend_available_at = Column(DateTime(timezone=True), nullable=False)
     attempts = Column(Integer, default=0, nullable=False)
     used_at = Column(DateTime(timezone=True), nullable=True)
+    full_name = Column(String(255), nullable=True)
+    registration_token_hash = Column(String(255), nullable=True, index=True)
+    registration_token_expires_at = Column(DateTime(timezone=True), nullable=True)
+    registration_token_used_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     __table_args__ = (
         Index("idx_email_verif_email_expires", "email", "expires_at"),
         Index("idx_email_verif_email_used", "email", "used_at"),
+        Index("idx_email_verif_token_hash", "registration_token_hash"),
     )
 
     def __repr__(self) -> str:

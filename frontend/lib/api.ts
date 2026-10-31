@@ -248,11 +248,44 @@ export const api = {
     });
   },
 
-  async sendRegistrationOtp(email: string): Promise<{ message: string; cooldown_seconds: number }> {
-    return request<{ message: string; cooldown_seconds: number }>("/auth/register/send-code", {
+  async sendRegistrationOtp(email: string, full_name?: string): Promise<{ message: string; cooldown_seconds: number }> {
+    return request<{ message: string; cooldown_seconds: number }>("/auth/register/send-otp", {
       method: "POST",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, full_name }),
     });
+  },
+
+  async verifyRegistrationOtpCode(email: string, code: string): Promise<{
+    valid: boolean;
+    registration_token: string;
+    email: string;
+    full_name?: string;
+    message: string;
+  }> {
+    return request<{
+      valid: boolean;
+      registration_token: string;
+      email: string;
+      full_name?: string;
+      message: string;
+    }>("/auth/register/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, code }),
+    });
+  },
+
+  async completeRegistration(params: {
+    email: string;
+    registration_token: string;
+    password: string;
+    full_name?: string;
+  }): Promise<TokenResponse> {
+    const data = await request<TokenResponse>("/auth/register/complete", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    setStoredToken(data.access_token);
+    return data;
   },
 
   async verifyRegistrationOtp(params: {
@@ -269,10 +302,10 @@ export const api = {
     return data;
   },
 
-  async resendRegistrationOtp(email: string): Promise<{ message: string; cooldown_seconds: number }> {
-    return request<{ message: string; cooldown_seconds: number }>("/auth/register/resend-code", {
+  async resendRegistrationOtp(email: string, full_name?: string): Promise<{ message: string; cooldown_seconds: number }> {
+    return request<{ message: string; cooldown_seconds: number }>("/auth/register/resend-otp", {
       method: "POST",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, full_name }),
     });
   },
 

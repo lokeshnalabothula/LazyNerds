@@ -85,6 +85,7 @@ class ResetPasswordRequest(BaseModel):
 
 class SendRegistrationOtpRequest(BaseModel):
     email: EmailStr
+    full_name: Optional[str] = Field(None, max_length=255, description="Optional user full name")
 
 
 class SendRegistrationOtpResponse(BaseModel):
@@ -99,7 +100,23 @@ class VerifyRegistrationOtpRequest(BaseModel):
     full_name: Optional[str] = Field(None, max_length=255, description="Optional user full name")
 
 
+class VerifyRegistrationOtpResponse(BaseModel):
+    valid: bool = True
+    registration_token: Optional[str] = None
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    message: str = "Email verified successfully."
+
+
+class CompleteRegistrationRequest(BaseModel):
+    email: EmailStr
+    registration_token: str = Field(..., min_length=16, description="Cryptographic single-use registration session token")
+    password: str = Field(..., min_length=10, max_length=128, description="Account password (minimum 10 characters)")
+    full_name: Optional[str] = Field(None, max_length=255, description="User full name")
+
+
 class ResendRegistrationOtpRequest(BaseModel):
     email: EmailStr
+    full_name: Optional[str] = Field(None, max_length=255, description="Optional user full name")
 
 

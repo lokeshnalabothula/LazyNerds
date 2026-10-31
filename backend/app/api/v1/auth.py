@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -11,6 +11,7 @@ from app.models.user import User
 from app.models.registration import ClientRegistration
 from app.schemas.auth import (
     ChangePasswordRequest,
+    CompleteRegistrationRequest,
     ForgotPasswordRequest,
     SendForgotPasswordOtpResponse,
     VerifyForgotPasswordOtpRequest,
@@ -23,6 +24,7 @@ from app.schemas.auth import (
     TokenResponse,
     UserOut,
     VerifyRegistrationOtpRequest,
+    VerifyRegistrationOtpResponse,
     VerifyResetTokenRequest,
     VerifyResetTokenResponse,
     ResendRegistrationOtpRequest,
@@ -34,14 +36,16 @@ router = APIRouter()
 
 
 @router.post("/register/send-code", response_model=SendRegistrationOtpResponse)
+@router.post("/register/send-otp", response_model=SendRegistrationOtpResponse)
 def send_registration_code(
     data: SendRegistrationOtpRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
-    Initiates email verification for new user registration.
+    Step 1: Initiates email verification for new user registration.
     Enforces resend cooldown, hourly rate limiting, and email dispatch.
+    Asks only for email (and optional full name). Does not accept a password.
     In production, ensures email service is configured.
     """
     if settings.ENVIRONMENT == "production":
@@ -56,6 +60,7 @@ def send_registration_code(
         raw_code, verif_record = email_verification_service.request_registration_verification(
             db=db,
             email=data.email,
+            full_name=data.full_name,
         )
         background_tasks.add_task(
             email_service.send_verification_code_email,
@@ -74,22 +79,88 @@ def send_registration_code(
         )
 
 
-@router.post("/register/verify-code", response_model=TokenResponse)
+@router.post("/register/verify-code", response_model=Union[TokenResponse, VerifyRegistrationOtpResponse])
+@router.post("/register/verify-otp", response_model=Union[TokenResponse, VerifyRegistrationOtpResponse])
 def verify_registration_code(
     data: VerifyRegistrationOtpRequest,
     response: Response,
     db: Session = Depends(get_db),
 ):
     """
-    Validates single-use 6-digit verification code.
-    If valid, automatically creates and activates the user account (no manual approval required).
-    Signs user in and issues session token and HttpOnly cookie.
+    Step 2: Validates single-use 6-digit verification code.
+    - If password is provided (legacy / direct path): activates user immediately and returns TokenResponse.
+    - If password is NOT provided (standard 4-step sequence): validates OTP and returns
+      a single-use cryptographic registration token (VerifyRegistrationOtpResponse) so the user
+      can proceed to Step 3 (password creation). The user account is NOT created yet.
     """
     try:
-        user = email_verification_service.verify_registration_code_and_activate(
+        # If password is provided, perform direct activation (backwards compatibility)
+        if data.password and data.password.strip():
+            user = email_verification_service.verify_registration_code_and_activate(
+                db=db,
+                email=data.email,
+                code=data.code,
+                password=data.password,
+                full_name=data.full_name,
+            )
+            access_token = create_access_token(
+                subject=user.id,
+                extra_claims={"email": user.email, "role": user.role}
+            )
+
+            is_prod = settings.ENVIRONMENT == "production"
+            response.set_cookie(
+                key="fixops_access_token",
+                value=access_token,
+                httponly=True,
+                secure=is_prod,
+                samesite="lax",
+                max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            )
+
+            return TokenResponse(
+                access_token=access_token,
+                token_type="bearer",
+                user=UserOut.model_validate(user),
+            )
+
+        # Standard Step 2: Validate OTP and issue registration session token
+        raw_token, record = email_verification_service.verify_registration_otp_and_issue_token(
             db=db,
             email=data.email,
             code=data.code,
+        )
+        return VerifyRegistrationOtpResponse(
+            valid=True,
+            registration_token=raw_token,
+            email=data.email,
+            full_name=record.full_name,
+            message="Verification code confirmed. You may now create your password.",
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post("/register/complete", response_model=TokenResponse)
+@router.post("/register/complete-with-token", response_model=TokenResponse)
+def complete_registration(
+    data: CompleteRegistrationRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    """
+    Step 4: Validates the verified registration session token and creates/activates
+    the user account with their chosen password. Sets secure session cookie and returns TokenResponse.
+    Unverified emails or invalid/expired session tokens are rejected.
+    """
+    try:
+        user = email_verification_service.complete_registration_with_token(
+            db=db,
+            email=data.email,
+            registration_token=data.registration_token,
             password=data.password,
             full_name=data.full_name,
         )
@@ -121,6 +192,7 @@ def verify_registration_code(
 
 
 @router.post("/register/resend-code", response_model=SendRegistrationOtpResponse)
+@router.post("/register/resend-otp", response_model=SendRegistrationOtpResponse)
 def resend_registration_code(
     data: ResendRegistrationOtpRequest,
     background_tasks: BackgroundTasks,
@@ -141,6 +213,7 @@ def resend_registration_code(
         raw_code, verif_record = email_verification_service.request_registration_verification(
             db=db,
             email=data.email,
+            full_name=data.full_name,
         )
         background_tasks.add_task(
             email_service.send_verification_code_email,

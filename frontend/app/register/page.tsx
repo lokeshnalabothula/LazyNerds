@@ -6,16 +6,33 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
+function maskEmail(em: string): string {
+  if (!em || !em.includes("@")) return em;
+  const [local, domain] = em.split("@");
+  if (local.length <= 2) {
+    return `${local.charAt(0)}***@${domain}`;
+  }
+  return `${local.slice(0, 2)}***${local.slice(-1)}@${domain}`;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const { user, loading, setSession } = useAuth();
 
-  const [step, setStep] = useState<"details" | "verify">("details");
+  // Step 1: "email" (Name + Email only)
+  // Step 2: "otp" (6-digit OTP verification)
+  // Step 3: "password" (Password creation & account completion)
+  const [step, setStep] = useState<"email" | "otp" | "password">("email");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState("");
+  const [registrationToken, setRegistrationToken] = useState<string | null>(null);
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
@@ -53,7 +70,7 @@ export default function RegisterPage() {
     }
   };
 
-  // Cooldown timer interval
+  // Cooldown timer countdown
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
@@ -67,8 +84,12 @@ export default function RegisterPage() {
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
-  const isPasswordValid = hasMinLength && hasUpper && hasLower && hasNumber;
+  const passwordsMatch = password.length > 0 && password === confirmPassword;
+  const isPasswordValid = hasMinLength && hasUpper && hasLower && hasNumber && passwordsMatch;
 
+  // --------------------------------------------------------------------------
+  // Step 1: Send Verification Code (Name & Email only, NO password)
+  // --------------------------------------------------------------------------
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -86,17 +107,12 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!isPasswordValid) {
-      setErrorMessage("Password must be at least 10 characters and contain an uppercase letter, lowercase letter, and number.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const res = await api.sendRegistrationOtp(cleanEmail);
-      setInfoMessage(res.message || "A 6-digit verification code has been dispatched to your email.");
+      const res = await api.sendRegistrationOtp(cleanEmail, cleanName);
+      setInfoMessage(res.message || "A 6-digit verification code has been dispatched to your email address.");
       setCooldown(res.cooldown_seconds || 60);
-      setStep("verify");
+      setStep("otp");
     } catch (err: any) {
       setErrorMessage(
         err.message || "Failed to send verification code. Please check your email and try again."
@@ -106,6 +122,9 @@ export default function RegisterPage() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Step 2: Resend Verification Code
+  // --------------------------------------------------------------------------
   const handleResendCode = async () => {
     if (cooldown > 0 || isSubmitting) return;
     setErrorMessage(null);
@@ -113,7 +132,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const res = await api.resendRegistrationOtp(email.trim().toLowerCase());
+      const res = await api.resendRegistrationOtp(email.trim().toLowerCase(), fullName.trim());
       setInfoMessage(res.message || "A new 6-digit verification code has been dispatched.");
       setCooldown(res.cooldown_seconds || 60);
       setCode("");
@@ -126,7 +145,10 @@ export default function RegisterPage() {
     }
   };
 
-  const handleVerifyCode = async (e: React.FormEvent) => {
+  // --------------------------------------------------------------------------
+  // Step 2: Verify OTP -> Receive Single-Use Registration Session Token
+  // --------------------------------------------------------------------------
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setInfoMessage(null);
@@ -139,10 +161,52 @@ export default function RegisterPage() {
 
     setIsSubmitting(true);
     try {
-      const tokenResponse = await api.verifyRegistrationOtp({
+      const res = await api.verifyRegistrationOtpCode(email.trim().toLowerCase(), cleanCode);
+      if (res.registration_token) {
+        setRegistrationToken(res.registration_token);
+        setInfoMessage("Email successfully verified! Please create your password.");
+        setStep("password");
+      } else {
+        throw new Error("Unable to obtain registration session token. Please try again.");
+      }
+    } catch (err: any) {
+      setErrorMessage(
+        err.message || "Verification code is invalid or has expired. Please request a new code."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // Step 3 & 4: Complete Registration with Created Password
+  // --------------------------------------------------------------------------
+  const handleCompleteRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    if (!registrationToken) {
+      setErrorMessage("Verification session has expired. Please verify your email again.");
+      setStep("email");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      if (!passwordsMatch) {
+        setErrorMessage("Passwords do not match. Please verify both fields.");
+      } else {
+        setErrorMessage("Password must be at least 10 characters and contain an uppercase letter, lowercase letter, and number.");
+      }
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const tokenResponse = await api.completeRegistration({
         email: email.trim().toLowerCase(),
-        code: cleanCode,
-        password: password,
+        registration_token: registrationToken,
+        password: password.trim(),
         full_name: fullName.trim(),
       });
 
@@ -152,7 +216,7 @@ export default function RegisterPage() {
       router.push("/overview");
     } catch (err: any) {
       setErrorMessage(
-        err.message || "Verification code is invalid or has expired. Please request a new code."
+        err.message || "Failed to complete account registration. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -197,7 +261,10 @@ export default function RegisterPage() {
         <div className="relative w-full max-w-[min(440px,calc(100vw-2rem))] mx-auto">
           {/* Registration Frosted Glass Card with stable panel dimensions */}
           <div className="relative backdrop-blur-2xl stitch-specular-card rounded-2xl p-6 sm:p-8 z-10 w-full min-h-[440px] flex flex-col justify-between">
-            {step === "details" ? (
+            {/* =============================================================
+                STEP 1: Full Name & Work Email only (No password)
+                ============================================================= */}
+            {step === "email" && (
               <>
                 <div>
                   <div className="text-center mb-5 sm:mb-6">
@@ -215,7 +282,7 @@ export default function RegisterPage() {
                     </div>
                   )}
 
-                  <form className="space-y-3.5" onSubmit={handleSendCode}>
+                  <form className="space-y-4" onSubmit={handleSendCode}>
                     {/* Full Name */}
                     <div className="space-y-1">
                       <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide uppercase" htmlFor="register-name">
@@ -262,64 +329,13 @@ export default function RegisterPage() {
                       </div>
                     </div>
 
-                    {/* Password */}
-                    <div className="space-y-1">
-                      <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide uppercase" htmlFor="register-password">
-                        Password
-                      </label>
-                      <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[44px]">
-                        <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
-                          <span className="material-symbols-outlined text-[18px]">lock</span>
-                        </div>
-                        <input
-                          autoComplete="new-password"
-                          className="w-full bg-transparent py-2.5 pr-10 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
-                          id="register-password"
-                          name="password"
-                          placeholder="••••••••••••"
-                          required
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 text-[#758195] hover:text-white transition-colors cursor-pointer"
-                          aria-label={showPassword ? "Hide password" : "Show password"}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            {showPassword ? "visibility_off" : "visibility"}
-                          </span>
-                        </button>
-                      </div>
-
-                      {/* Password Requirements Checklist */}
-                      {password.length > 0 && (
-                        <div className="pt-1.5 grid grid-cols-2 gap-1 text-[11px] font-mono text-[#8e96a4]">
-                          <span className={`flex items-center gap-1 ${hasMinLength ? "text-emerald-400" : ""}`}>
-                            <span className="text-[12px]">{hasMinLength ? "✓" : "○"}</span> 10+ characters
-                          </span>
-                          <span className={`flex items-center gap-1 ${hasUpper ? "text-emerald-400" : ""}`}>
-                            <span className="text-[12px]">{hasUpper ? "✓" : "○"}</span> Uppercase
-                          </span>
-                          <span className={`flex items-center gap-1 ${hasLower ? "text-emerald-400" : ""}`}>
-                            <span className="text-[12px]">{hasLower ? "✓" : "○"}</span> Lowercase
-                          </span>
-                          <span className={`flex items-center gap-1 ${hasNumber ? "text-emerald-400" : ""}`}>
-                            <span className="text-[12px]">{hasNumber ? "✓" : "○"}</span> Number
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
                     <div className="pt-2">
                       <button
                         className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold min-h-[46px] py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                         type="submit"
                         disabled={isSubmitting}
                       >
-                        <span>{isSubmitting ? "Sending verification code..." : "Continue"}</span>
+                        <span>{isSubmitting ? "Sending verification code..." : "Send Verification Code"}</span>
                         <svg
                           className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
                           fill="none"
@@ -342,15 +358,21 @@ export default function RegisterPage() {
                   </p>
                 </div>
               </>
-            ) : (
+            )}
+
+            {/* =============================================================
+                STEP 2: Verify 6-digit OTP (Clean screen, masked email, resend)
+                ============================================================= */}
+            {step === "otp" && (
               <>
                 <div>
                   <div className="text-center mb-5 sm:mb-6">
                     <h1 className="text-2xl sm:text-[30px] font-headline font-semibold text-white tracking-[-0.02em] mb-1.5 leading-tight">
                       Verify email.
                     </h1>
-                    <p className="text-[13px] text-[#949dae]">
-                      Enter the 6-digit code dispatched to <span className="text-white font-mono">{email}</span>
+                    <p className="text-[13px] text-[#949dae] leading-relaxed">
+                      Enter the 6-digit verification code sent to{" "}
+                      <span className="text-white font-mono font-medium">{maskEmail(email)}</span>
                     </p>
                   </div>
 
@@ -366,9 +388,9 @@ export default function RegisterPage() {
                     </div>
                   )}
 
-                  <form className="space-y-4" onSubmit={handleVerifyCode}>
+                  <form className="space-y-4" onSubmit={handleVerifyOtp}>
                     <div className="space-y-1.5">
-                      <label className="block font-mono text-[12px] text-[#949dae] font-medium tracking-wide text-center uppercase" htmlFor="verification-code">
+                      <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide text-center uppercase" htmlFor="verification-code">
                         6-Digit Verification Code
                       </label>
                       <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[48px]">
@@ -397,19 +419,19 @@ export default function RegisterPage() {
                         type="button"
                         onClick={handleResendCode}
                       >
-                        {cooldown > 0 ? `Resend code (${cooldown}s)` : "Resend code"}
+                        {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
                       </button>
                       <button
-                        className="hover:text-white transition-colors cursor-pointer"
+                        className="hover:text-white transition-colors cursor-pointer underline underline-offset-4"
                         type="button"
                         onClick={() => {
-                          setStep("details");
+                          setStep("email");
                           setErrorMessage(null);
                           setInfoMessage(null);
                           setCode("");
                         }}
                       >
-                        Edit details
+                        Change email
                       </button>
                     </div>
 
@@ -419,7 +441,156 @@ export default function RegisterPage() {
                         type="submit"
                         disabled={isSubmitting || code.length !== 6}
                       >
-                        <span>{isSubmitting ? "Verifying & activating..." : "Verify & activate"}</span>
+                        <span>{isSubmitting ? "Verifying..." : "Verify Code"}</span>
+                        <svg
+                          className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-white/[0.08] text-center">
+                  <p className="text-[13px] text-[#949dae]">
+                    Already have an account?{" "}
+                    <Link className="text-white font-medium hover:underline underline-offset-4 transition-colors" href="/login">
+                      Sign in
+                    </Link>
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* =============================================================
+                STEP 3: Create Password (Only after successful OTP verification)
+                ============================================================= */}
+            {step === "password" && (
+              <>
+                <div>
+                  <div className="text-center mb-5 sm:mb-6">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] mb-3">
+                      <span className="material-symbols-outlined text-[14px]">verified</span>
+                      <span>Email Verified</span>
+                    </div>
+                    <h1 className="text-2xl sm:text-[30px] font-headline font-semibold text-white tracking-[-0.02em] mb-1.5 leading-tight">
+                      Create password.
+                    </h1>
+                    <p className="text-[13px] text-[#949dae]">
+                      Choose a secure password for <span className="text-white font-mono">{email}</span>
+                    </p>
+                  </div>
+
+                  {errorMessage && (
+                    <div className="mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-300 text-[13px] leading-snug">
+                      {errorMessage}
+                    </div>
+                  )}
+
+                  {infoMessage && (
+                    <div className="mb-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-200 text-[13px] leading-snug">
+                      {infoMessage}
+                    </div>
+                  )}
+
+                  <form className="space-y-3.5" onSubmit={handleCompleteRegistration}>
+                    {/* New Password */}
+                    <div className="space-y-1">
+                      <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide uppercase" htmlFor="register-password">
+                        New Password
+                      </label>
+                      <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[44px]">
+                        <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
+                          <span className="material-symbols-outlined text-[18px]">lock</span>
+                        </div>
+                        <input
+                          autoComplete="new-password"
+                          autoFocus
+                          className="w-full bg-transparent py-2.5 pr-10 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
+                          id="register-password"
+                          name="password"
+                          placeholder="••••••••••••"
+                          required
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 text-[#758195] hover:text-white transition-colors cursor-pointer"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            {showPassword ? "visibility_off" : "visibility"}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="space-y-1">
+                      <label className="block font-mono text-[11px] text-[#949dae] font-medium tracking-wide uppercase" htmlFor="register-confirm-password">
+                        Confirm Password
+                      </label>
+                      <div className="relative flex items-center stitch-input-chassis rounded-xl min-h-[44px]">
+                        <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#758195]">
+                          <span className="material-symbols-outlined text-[18px]">lock_reset</span>
+                        </div>
+                        <input
+                          autoComplete="new-password"
+                          className="w-full bg-transparent py-2.5 pr-10 pl-1 text-white placeholder-[#505a6c] font-sans text-[14px] leading-6 border-0 focus:ring-0 focus:outline-none"
+                          id="register-confirm-password"
+                          name="confirmPassword"
+                          placeholder="••••••••••••"
+                          required
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 text-[#758195] hover:text-white transition-colors cursor-pointer"
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            {showConfirmPassword ? "visibility_off" : "visibility"}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Interactive Password Requirements Checklist */}
+                    <div className="pt-1.5 grid grid-cols-2 gap-1 text-[11px] font-mono text-[#8e96a4]">
+                      <span className={`flex items-center gap-1 ${hasMinLength ? "text-emerald-400 font-semibold" : ""}`}>
+                        <span className="text-[12px]">{hasMinLength ? "✓" : "○"}</span> 10+ characters
+                      </span>
+                      <span className={`flex items-center gap-1 ${hasUpper ? "text-emerald-400 font-semibold" : ""}`}>
+                        <span className="text-[12px]">{hasUpper ? "✓" : "○"}</span> Uppercase
+                      </span>
+                      <span className={`flex items-center gap-1 ${hasLower ? "text-emerald-400 font-semibold" : ""}`}>
+                        <span className="text-[12px]">{hasLower ? "✓" : "○"}</span> Lowercase
+                      </span>
+                      <span className={`flex items-center gap-1 ${hasNumber ? "text-emerald-400 font-semibold" : ""}`}>
+                        <span className="text-[12px]">{hasNumber ? "✓" : "○"}</span> Number
+                      </span>
+                      <span className={`col-span-2 flex items-center gap-1 ${passwordsMatch ? "text-emerald-400 font-semibold" : ""}`}>
+                        <span className="text-[12px]">{passwordsMatch ? "✓" : "○"}</span> Passwords match
+                      </span>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        className="w-full stitch-liquid-metal-btn text-[#070d18] font-sans text-[15px] font-semibold min-h-[46px] py-3 px-5 rounded-xl flex items-center justify-center gap-2 group transition-all duration-150 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                        type="submit"
+                        disabled={isSubmitting || !isPasswordValid}
+                      >
+                        <span>{isSubmitting ? "Creating account..." : "Complete Registration"}</span>
                         <svg
                           className="w-4 h-4 transform group-hover:translate-x-1 transition-transform stroke-[2.4]"
                           fill="none"

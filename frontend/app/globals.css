@@ -1551,3 +1551,69 @@
     transform: none !important;
   }
 }
+
+/* Stitch VisionOS Liquid Metal & Cyber Precision Controls */
+.font-heading {
+  font-family: var(--font-space, 'Space Grotesk', sans-serif);
+}
+.font-mono-code {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+}
+
+.btn-liquid-metal {
+  background: linear-gradient(180deg, #F2F4F7 0%, #CBD8E8 100%);
+  color: #07080B;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-liquid-metal:hover:not(:disabled) {
+  background: linear-gradient(180deg, #FFFFFF 0%, #D8E4F2 100%);
+  box-shadow: inset 0 1px 0 #FFFFFF, 0 0 18px rgba(184, 216, 242, 0.45);
+  transform: translateY(-1px);
+}
+.btn-liquid-metal:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-metal-ghost {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #E7ECF2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+.btn-metal-ghost:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.glass-card {
+  background: rgba(13, 16, 21, 0.80);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.glass-card-subtle {
+  background: rgba(18, 22, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+.glass-card-subtle:hover {
+  background: rgba(22, 27, 35, 0.85);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.gauge-circle-bg {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+.gauge-circle-progress {
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  stroke-dasharray: 440;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease;
+}

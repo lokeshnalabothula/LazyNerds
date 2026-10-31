@@ -110,25 +110,36 @@ export default function HomePage() {
     e.preventDefault();
     let query = inputValue.trim();
     if (!query) {
-      query = placeholderValue || SAMPLE_DOMAINS[0];
-      setInputValue(query);
+      if (placeholderValue) {
+        query = placeholderValue;
+        setInputValue(query);
+      } else {
+        setStatusHint("Please enter a domain to verify (e.g. acroba-cloud.com)");
+        return;
+      }
     }
 
     userInteractedRef.current = true;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-    setIsScanning(true);
-    const domainClean = query.replace(/^https?:\/\//, "");
-    setStatusHint(`Analyzing ${domainClean} endpoints...`);
+    // Normalize domain candidate: strip protocol, path, port, query
+    let domainCandidate = query.trim().replace(/^https?:\/\//i, "");
+    domainCandidate = domainCandidate.split("/")[0].split("?")[0].split("#")[0].split(":")[0].trim();
 
-    // Ensure scheme is present for router
-    const finalUrl = /^https?:\/\//i.test(query) ? query : `https://${query}`;
+    // Validate domain format (must not be empty and must be valid host)
+    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$|^localhost$|^127\.0\.0\.1$/i;
+    if (!domainCandidate || !domainRegex.test(domainCandidate)) {
+      setStatusHint("Invalid domain format. Enter a valid domain name (e.g. acroba-cloud.com)");
+      return;
+    }
+
+    setIsScanning(true);
+    setStatusHint(`Validating ${domainCandidate} · Preparing domain challenge...`);
 
     setTimeout(() => {
       setIsScanning(false);
-      setStatusHint("Scan initiated · Verifying DNS & SSL records");
-      router.push(`/audit?url=${encodeURIComponent(finalUrl)}`);
-    }, 1200);
+      router.push(`/domain-verification?domain=${encodeURIComponent(domainCandidate)}`);
+    }, 600);
   };
 
   return (

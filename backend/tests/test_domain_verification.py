@@ -503,3 +503,259 @@ def test_delete_domain_success(client, client_auth_headers):
     # Verify 404 after deletion
     get_resp = client.get(f"/api/v1/domains/{domain_id}", headers=client_auth_headers)
     assert get_resp.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_public_challenge_endpoint(client):
+    """Verifies that public challenge endpoint generates tokens and instructions for all 3 methods."""
+    resp = client.post("/api/v1/domains/public-challenge", json={"domain": "https://example.com/foo"})
+    assert resp.status_code == status.HTTP_200_OK
+    data = resp.json()
+    assert data["normalized_domain"] == "example.com"
+    assert len(data["token"]) >= 32
+    # DNS instructions
+    assert data["dns_instructions"]["record_name"] == "_lazynerds-verification.example.com"
+    assert data["dns_instructions"]["record_value"] == f"lazynerds-verification={data['token']}"
+    # File instructions
+    assert data["file_instructions"]["file_name"] == "fixops-verification.txt"
+    assert data["file_instructions"]["expected_content"] == f"lazynerds-verification={data['token']}"
+    # Meta instructions
+    assert data["meta_instructions"]["meta_tag"] == "fixops-verification"
+    assert f'content="{data["token"]}"' in data["meta_instructions"]["snippet"]
+
+
+def test_public_verify_dns_method(client):
+    """Tests public DNS verification with mocked resolver and signed proof token generation."""
+    token = "test_token_1234567890abcdef"
+    mock_rdata = MagicMock()
+    mock_rdata.strings = [f"lazynerds-verification={token}".encode("utf-8")]
+
+    with patch("dns.resolver.Resolver.resolve", return_value=[mock_rdata]):
+        resp = client.post(
+            "/api/v1/domains/public-verify",
+            json={"domain": "example.com", "method": "dns", "token": token},
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        data = resp.json()
+        assert data["verified"] is True
+        assert data["status"] == "verified"
+        assert "verified via DNS TXT" in data["message"]
+        assert data["verification_proof"] is not None
+        assert len(data["verification_proof"]) > 20
+
+
+def test_public_verify_file_method(client):
+    """Tests public file upload verification with mocked safe_http_fetch response and proof token."""
+    token = "test_file_token_1234567890abcdef"
+    file_content = f"lazynerds-verification={token}"
+
+    with patch("app.services.domain_service.safe_http_fetch", return_value=(200, {}, file_content, "https://example.com/.well-known/fixops-verification.txt")):
+        resp = client.post(
+            "/api/v1/domains/public-verify",
+            json={"domain": "example.com", "method": "file", "token": token},
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        data = resp.json()
+        assert data["verified"] is True
+        assert data["status"] == "verified"
+        assert "verified via HTTP file" in data["message"]
+        assert data["verification_proof"] is not None
+
+
+def test_public_verify_meta_method(client):
+    """Tests public HTML meta tag verification with mocked safe_http_fetch response and proof token."""
+    token = "test_meta_token_1234567890abcdef"
+    html_content = f'<html><head><meta name="fixops-verification" content="{token}"></head><body>Hello</body></html>'
+
+    with patch("app.services.domain_service.safe_http_fetch", return_value=(200, {}, html_content, "https://example.com/")):
+        resp = client.post(
+            "/api/v1/domains/public-verify",
+            json={"domain": "example.com", "method": "meta", "token": token},
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        data = resp.json()
+        assert data["verified"] is True
+        assert data["status"] == "verified"
+        assert "verified via HTML meta tag" in data["message"]
+        assert data["verification_proof"] is not None
+
+
+def test_security_score_endpoint_rejects_unverified_domain(client):
+    """Verifies that the server does NOT trust unverified requests or query flags like verified=true."""
+    # Attempt 1: Direct request without token
+    resp = client.get("/api/v1/domains/security-score?domain=example.com")
+    assert resp.status_code == status.HTTP_200_OK
+    data = resp.json()
+    assert data["status"] == "failed"
+    assert data["score"] is None
+    assert data["posture"] == "Score Unavailable"
+    assert "Domain ownership not verified" in data["error"]
+
+    # Attempt 2: Caller passes verified=true query flag (which must be ignored)
+    resp_flag = client.get("/api/v1/domains/security-score?domain=example.com&verified=true")
+    assert resp_flag.status_code == status.HTTP_200_OK
+    data_flag = resp_flag.json()
+    assert data_flag["status"] == "failed"
+    assert data_flag["score"] is None
+    assert data_flag["posture"] == "Score Unavailable"
+
+
+def test_security_score_endpoint_rejects_tampered_or_domain_mismatch_proof(client):
+    """Verifies that tokens issued for another domain or tampered tokens are rejected."""
+    from app.core.security import create_domain_verification_proof
+
+    token_for_other = create_domain_verification_proof("other-site.com", "dns")
+
+    resp = client.get(f"/api/v1/domains/security-score?domain=target-site.com&token={token_for_other}")
+    assert resp.status_code == status.HTTP_200_OK
+    data = resp.json()
+    assert data["status"] == "failed"
+    assert data["score"] is None
+    assert "Domain ownership not verified" in data["error"]
+
+
+def test_security_score_endpoint_completed_with_valid_proof(client):
+    """Tests security score calculation succeeds when valid cryptographic proof is provided."""
+    from app.core.security import create_domain_verification_proof
+
+    proof = create_domain_verification_proof("example.com", "dns")
+    mock_findings = [
+        {"id": "f1", "title": "Missing HSTS Header", "severity": "medium", "cvss_score": 5.3},
+        {"id": "f2", "title": "Missing CSP Header", "severity": "low", "cvss_score": 3.7},
+    ]
+    mock_meta = {"target_url": "https://example.com", "duration_ms": 120}
+
+    with patch("app.services.web_audit_engine.audit_web_target", return_value=(mock_findings, mock_meta)):
+        resp = client.get(f"/api/v1/domains/security-score?domain=example.com&token={proof}")
+        assert resp.status_code == status.HTTP_200_OK
+        data = resp.json()
+        assert data["status"] == "completed"
+        # 100 - (8 for medium + 3 for low) = 89
+        assert data["score"] == 89
+        assert data["posture"] == "Good Posture"
+        assert data["findings_count"] == 2
+        assert data["severity_counts"]["medium"] == 1
+        assert data["severity_counts"]["low"] == 1
+
+
+def test_security_score_endpoint_failure_shows_unavailable(client):
+    """Tests that a scan failure returns status failed and score None (never a fabricated score)."""
+    from app.core.security import create_domain_verification_proof
+    proof = create_domain_verification_proof("unreachable-domain.invalid", "dns")
+
+    with patch("app.services.web_audit_engine.audit_web_target", side_effect=RuntimeError("DNS resolution failed")):
+        resp = client.get(f"/api/v1/domains/security-score?domain=unreachable-domain.invalid&token={proof}")
+        assert resp.status_code == status.HTTP_200_OK
+        data = resp.json()
+        assert data["status"] == "failed"
+        assert data["score"] is None
+        assert data["posture"] == "Score Unavailable"
+        assert "DNS resolution failed" in data["error"]
+
+
+def test_ssrf_protection_on_public_verification(client):
+    """Tests that public verification strictly rejects localhost, private IPs, and cloud metadata."""
+    token = "test_ssrf_token_1234567890abcdef"
+    
+    # 1. Localhost attempt
+    resp_local = client.post(
+        "/api/v1/domains/public-verify",
+        json={"domain": "127.0.0.1", "method": "file", "token": token},
+    )
+    assert resp_local.status_code == status.HTTP_200_OK
+    assert resp_local.json()["verified"] is False
+
+    # 2. Cloud metadata IP attempt
+    resp_meta = client.post(
+        "/api/v1/domains/public-verify",
+        json={"domain": "169.254.169.254", "method": "file", "token": token},
+    )
+    assert resp_meta.status_code == status.HTTP_200_OK
+    assert resp_meta.json()["verified"] is False
+
+
+def test_redirect_ssrf_protection(client):
+    """Tests that redirecting to metadata or internal IP is blocked by safe_http_fetch."""
+    from app.core.security import safe_http_fetch
+
+    # Mock response that redirects to AWS metadata endpoint
+    mock_resp_1 = MagicMock()
+    mock_resp_1.status_code = 302
+    mock_resp_1.headers = {"location": "http://169.254.169.254/latest/meta-data/"}
+    mock_resp_1.iter_bytes.return_value = [b""]
+
+    with patch("httpx.Client.stream") as mock_stream:
+        mock_stream.return_value.__enter__.return_value = mock_resp_1
+        with pytest.raises(ValueError, match="SSRF violation"):
+            safe_http_fetch("https://attacker.com/verify.txt", allow_lab=False)
+
+
+def test_response_size_capping():
+    """Tests that safe_http_fetch caps response size and stops streaming after max_bytes."""
+    from app.core.security import safe_http_fetch
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.headers = {"content-type": "text/plain"}
+    # Yield 10 chunks of 100 bytes = 1000 bytes
+    mock_resp.iter_bytes.return_value = [b"a" * 100] * 10
+
+    with patch("app.core.security.validate_target_url_ssrf", return_value=(True, "")):
+        with patch("socket.getaddrinfo", return_value=[(None, None, None, None, ("93.184.216.34", 443))]):
+            with patch("httpx.Client.stream") as mock_stream:
+                mock_stream.return_value.__enter__.return_value = mock_resp
+                status, headers, text, final_url = safe_http_fetch(
+                    "https://example.com/test",
+                    max_bytes=250,
+                    allow_lab=False,
+                )
+                assert status == 200
+                assert len(text) == 250
+
+
+def test_error_sanitization_removes_internal_paths_and_ips():
+    """Tests that sanitize_assessment_error scrubs sensitive system paths, IPs, and credentials."""
+    from app.core.security import sanitize_assessment_error
+
+    raw_err = "Error at /Users/loki/Projects/LazyNerds/backend/app/main.py: failed to connect to postgresql://admin:secret123@10.0.1.5:5432/db"
+    clean = sanitize_assessment_error(raw_err)
+    assert "/Users/loki" not in clean
+    assert "secret123" not in clean
+    assert "10.0.1.5" not in clean
+    assert "[internal-ip]" in clean or "[internal path]" in clean
+
+
+def test_assessment_concurrency_semaphore_limits_capacity():
+    """Tests that acquire_assessment_slot raises when capacity is saturated."""
+    from app.core.security import acquire_assessment_slot, ASSESSMENT_CONCURRENCY_SEMAPHORE
+
+    # Drain all 3 slots
+    acquired_locks = []
+    for _ in range(3):
+        assert ASSESSMENT_CONCURRENCY_SEMAPHORE.acquire(blocking=False)
+        acquired_locks.append(True)
+
+    try:
+        with pytest.raises(RuntimeError, match="Assessment capacity reached"):
+            with acquire_assessment_slot(timeout=0.05):
+                pass
+    finally:
+        # Release acquired slots
+        for _ in acquired_locks:
+            ASSESSMENT_CONCURRENCY_SEMAPHORE.release()
+
+
+def test_rate_limiter_sliding_window():
+    """Tests SlidingWindowRateLimiter properly rejects requests exceeding maximum."""
+    from app.core.security import SlidingWindowRateLimiter
+
+    limiter = SlidingWindowRateLimiter(max_requests=3, window_seconds=60)
+    ip = "203.0.113.195"
+
+    assert limiter.check_and_record(ip) is True
+    assert limiter.check_and_record(ip) is True
+    assert limiter.check_and_record(ip) is True
+    # 4th request must be rejected
+    assert limiter.check_and_record(ip) is False
+
+
+

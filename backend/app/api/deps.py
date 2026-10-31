@@ -59,6 +59,21 @@ def get_current_user(
     return user
 
 
+def get_current_user_optional(
+    request: Request,
+    auth_header: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    Extracts and returns current authenticated user if credentials are provided,
+    otherwise returns None without raising an HTTPException.
+    """
+    try:
+        return get_current_user(request=request, auth_header=auth_header, db=db)
+    except HTTPException:
+        return None
+
+
 def require_founder(
     current_user: User = Depends(get_current_user),
 ) -> User:

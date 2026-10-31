@@ -57,3 +57,64 @@ export interface DomainListResponse {
   page_size: number;
   total_pages: number;
 }
+
+export interface FileRecordInstructions {
+  file_name: string;
+  relative_path: string;
+  fallback_path: string;
+  expected_content: string;
+}
+
+export interface MetaRecordInstructions {
+  meta_tag: string;
+  snippet: string;
+}
+
+export interface PublicDomainChallengeResponse {
+  domain: string;
+  normalized_domain: string;
+  token: string;
+  dns_instructions: DnsRecordInstructions;
+  file_instructions: FileRecordInstructions;
+  meta_instructions: MetaRecordInstructions;
+}
+
+export interface PublicDomainVerifyRequest {
+  domain: string;
+  method: "dns" | "file" | "meta";
+  token: string;
+}
+
+export interface PublicDomainVerifyResponse {
+  verified: boolean;
+  status: string;
+  message: string;
+  domain: string;
+  method: string;
+  verification_proof?: string | null;
+}
+
+export interface DomainSecurityScoreResponse {
+  status: "completed" | "scanning" | "failed";
+  domain: string;
+  score?: number | null;
+  posture?: string | null;
+  findings_count?: number | null;
+  severity_counts?: {
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+    info: number;
+  } | null;
+  findings?: Array<{
+    id?: string;
+    title: string;
+    severity: string;
+    description?: string;
+    cvss_score?: number | null;
+    remediation?: string;
+  }> | null;
+  metadata?: Record<string, any> | null;
+  error?: string | null;
+}

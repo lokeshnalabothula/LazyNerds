@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urlparse, urljoin
 import httpx
 
-from app.core.security import validate_target_url_ssrf, is_lab_testing_authorized
+from app.core.security import validate_target_url_ssrf, is_lab_testing_authorized, safe_http_fetch
 
 
 def audit_web_target(
@@ -389,50 +389,56 @@ def audit_web_target(
 
     test_origin = "https://fixops-security-audit.example.com"
     try:
-        cors_headers = dict(custom_headers)
-        cors_headers["Origin"] = test_origin
-        with httpx.Client(timeout=6.0, follow_redirects=True, verify=False) as client:
-            cors_resp = client.get(clean_target, headers=cors_headers)
-            cors_acao = cors_resp.headers.get("access-control-allow-origin", "")
-            cors_acac = cors_resp.headers.get("access-control-allow-credentials", "").lower()
+        cors_req_headers = dict(custom_headers)
+        cors_req_headers["Origin"] = test_origin
+        cors_status, cors_resp_headers, cors_body, cors_final = safe_http_fetch(
+            url=clean_target,
+            headers=cors_req_headers,
+            max_bytes=128 * 1024,
+            timeout=5.0,
+            max_redirects=3,
+            allow_lab=allow_lab,
+        )
+        cors_acao = cors_resp_headers.get("access-control-allow-origin", "")
+        cors_acac = cors_resp_headers.get("access-control-allow-credentials", "").lower()
 
-            if cors_acao == test_origin:
-                if cors_acac == "true":
-                    findings.append({
-                        "title": "CORS Misconfiguration - Arbitrary Origin Reflection with Credentials",
-                        "severity": "high",
-                        "cvss_score": 7.5,
-                        "cve_id": None,
-                        "description": "The application reflects arbitrary Origin headers with Access-Control-Allow-Credentials enabled.",
-                        "impact": "Malicious websites can issue authenticated cross-origin XMLHttpRequests/fetch calls to read sensitive user data.",
-                        "evidence": f"Request Origin: {test_origin}\nAccess-Control-Allow-Origin: {cors_acao}\nAccess-Control-Allow-Credentials: {cors_acac}",
-                        "remediation_guidance": "Restrict Access-Control-Allow-Origin to an explicit allowlist of trusted origins, and avoid reflecting arbitrary Origin headers.",
-                        "remediation_notes": "[Source: FixOps Web Security Auditor]",
-                    })
-                else:
-                    findings.append({
-                        "title": "CORS Misconfiguration - Permissive Origin Reflection",
-                        "severity": "medium",
-                        "cvss_score": 5.3,
-                        "cve_id": None,
-                        "description": "The application dynamically reflects arbitrary Origin headers without credentials.",
-                        "impact": "Unrestricted cross-origin access permits arbitrary external websites to read unauthenticated endpoint data.",
-                        "evidence": f"Request Origin: {test_origin}\nAccess-Control-Allow-Origin: {cors_acao}",
-                        "remediation_guidance": "Define explicit allowed origins in CORS configuration rather than echoing incoming Origin values.",
-                        "remediation_notes": "[Source: FixOps Web Security Auditor]",
-                    })
-            elif cors_acao == "*" and cors_acac == "true":
+        if cors_acao == test_origin:
+            if cors_acac == "true":
                 findings.append({
-                    "title": "CORS Misconfiguration - Wildcard Origin with Credentials",
+                    "title": "CORS Misconfiguration - Arbitrary Origin Reflection with Credentials",
                     "severity": "high",
-                    "cvss_score": 7.0,
+                    "cvss_score": 7.5,
                     "cve_id": None,
-                    "description": "The application pairs Access-Control-Allow-Origin: * with Access-Control-Allow-Credentials: true.",
-                    "impact": "Permits arbitrary third-party domains to attempt authenticated requests.",
-                    "evidence": f"Access-Control-Allow-Origin: *\nAccess-Control-Allow-Credentials: true",
-                    "remediation_guidance": "Disable credentials or restrict Access-Control-Allow-Origin to specific trusted origins.",
+                    "description": "The application reflects arbitrary Origin headers with Access-Control-Allow-Credentials enabled.",
+                    "impact": "Malicious websites can issue authenticated cross-origin XMLHttpRequests/fetch calls to read sensitive user data.",
+                    "evidence": f"Request Origin: {test_origin}\nAccess-Control-Allow-Origin: {cors_acao}\nAccess-Control-Allow-Credentials: {cors_acac}",
+                    "remediation_guidance": "Restrict Access-Control-Allow-Origin to an explicit allowlist of trusted origins, and avoid reflecting arbitrary Origin headers.",
                     "remediation_notes": "[Source: FixOps Web Security Auditor]",
                 })
+            else:
+                findings.append({
+                    "title": "CORS Misconfiguration - Permissive Origin Reflection",
+                    "severity": "medium",
+                    "cvss_score": 5.3,
+                    "cve_id": None,
+                    "description": "The application dynamically reflects arbitrary Origin headers without credentials.",
+                    "impact": "Unrestricted cross-origin access permits arbitrary external websites to read unauthenticated endpoint data.",
+                    "evidence": f"Request Origin: {test_origin}\nAccess-Control-Allow-Origin: {cors_acao}",
+                    "remediation_guidance": "Define explicit allowed origins in CORS configuration rather than echoing incoming Origin values.",
+                    "remediation_notes": "[Source: FixOps Web Security Auditor]",
+                })
+        elif cors_acao == "*" and cors_acac == "true":
+            findings.append({
+                "title": "CORS Misconfiguration - Wildcard Origin with Credentials",
+                "severity": "high",
+                "cvss_score": 7.0,
+                "cve_id": None,
+                "description": "The application pairs Access-Control-Allow-Origin: * with Access-Control-Allow-Credentials: true.",
+                "impact": "Permits arbitrary third-party domains to attempt authenticated requests.",
+                "evidence": f"Access-Control-Allow-Origin: *\nAccess-Control-Allow-Credentials: true",
+                "remediation_guidance": "Disable credentials or restrict Access-Control-Allow-Origin to specific trusted origins.",
+                "remediation_notes": "[Source: FixOps Web Security Auditor]",
+            })
     except Exception:
         pass
 

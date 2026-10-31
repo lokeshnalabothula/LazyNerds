@@ -14,8 +14,22 @@ from sqlalchemy.orm import Session
 from app.models.client import Client
 from app.models.domain import Domain
 from app.models.user import User
-from app.schemas.domain import DnsRecordInstructions, DomainOut
+from app.schemas.domain import (
+    DnsRecordInstructions,
+    DomainOut,
+    FileRecordInstructions,
+    MetaRecordInstructions,
+)
 from app.services.audit_service import log_audit
+from app.core.security import (
+    validate_target_url_ssrf,
+    is_lab_testing_authorized,
+    create_domain_verification_proof,
+    verify_domain_verification_proof,
+    safe_http_fetch,
+    sanitize_assessment_error,
+)
+import httpx
 
 RECORD_NAME_PREFIX = "_lazynerds-verification"
 RECORD_VALUE_PREFIX = "lazynerds-verification="
@@ -57,6 +71,24 @@ def build_dns_instructions(domain_name: str, token: Optional[str] = None) -> Dns
         record_value=record_value,
         expected_format=f"{RECORD_VALUE_PREFIX}<generated-token>",
         ttl=300,
+    )
+
+
+def build_file_instructions(domain_name: str, token: str) -> FileRecordInstructions:
+    """Builds HTML file upload instructions for web root verification."""
+    return FileRecordInstructions(
+        file_name="fixops-verification.txt",
+        relative_path="/.well-known/fixops-verification.txt",
+        fallback_path="/fixops-verification.txt",
+        expected_content=f"{RECORD_VALUE_PREFIX}{token}",
+    )
+
+
+def build_meta_instructions(domain_name: str, token: str) -> MetaRecordInstructions:
+    """Builds HTML meta tag instructions for homepage embedding."""
+    return MetaRecordInstructions(
+        meta_tag="fixops-verification",
+        snippet=f'<meta name="fixops-verification" content="{token}" />',
     )
 
 
@@ -490,3 +522,233 @@ def delete_domain(db: Session, domain_id: str, current_user: User) -> None:
         resource_id=domain_id,
         details=f"Deleted domain registration for '{domain_name}'.",
     )
+
+
+def sanitize_domain_input(raw: str) -> str:
+    """Strips scheme, trailing slashes, paths, and ports from user-provided domain or URL input."""
+    cleaned = raw.strip()
+    if "://" in cleaned:
+        from urllib.parse import urlparse
+        parsed = urlparse(cleaned)
+        cleaned = parsed.hostname or cleaned
+    elif "/" in cleaned:
+        cleaned = cleaned.split("/")[0]
+    if ":" in cleaned and not cleaned.startswith("["):
+        cleaned = cleaned.split(":")[0]
+    return cleaned.strip()
+
+
+def verify_public_domain_ownership(
+    domain_str: str,
+    method: str,
+    token: str,
+) -> Tuple[bool, str, str, Optional[str]]:
+    """
+    Verifies domain ownership through public challenge inspection across DNS TXT,
+    HTTP file upload, or HTML meta tag without requiring pre-existing account state.
+    On success, returns a cryptographically signed proof token for server-side verification.
+    """
+    clean_domain = sanitize_domain_input(domain_str)
+    is_valid, normalized, err_msg = validate_and_normalize_domain(clean_domain)
+    if not is_valid:
+        return False, err_msg, clean_domain, None
+
+    clean_method = method.strip().lower()
+    clean_token = token.strip()
+    expected_value = f"{RECORD_VALUE_PREFIX}{clean_token}"
+
+    if clean_method == "dns":
+        record_name = f"{RECORD_NAME_PREFIX}.{normalized}"
+        resolver = dns.resolver.Resolver()
+        resolver.timeout = 4.0
+        resolver.lifetime = 6.0
+        try:
+            answers = resolver.resolve(record_name, "TXT")
+            for rdata in answers:
+                for txt_bytes in rdata.strings:
+                    txt_str = txt_bytes.decode("utf-8", errors="replace").strip()
+                    if hmac.compare_digest(txt_str, expected_value) or hmac.compare_digest(txt_str, clean_token):
+                        proof = create_domain_verification_proof(normalized, "dns")
+                        return True, "Domain ownership cryptographically verified via DNS TXT record.", normalized, proof
+            return False, f"TXT record found at '{record_name}', but token does not match.", normalized, None
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.NoNameservers):
+            return False, f"DNS TXT record '{record_name}' not found. Please allow a few minutes for DNS sync.", normalized, None
+        except Exception as e:
+            return False, f"DNS resolution error: {str(e)}", normalized, None
+
+    elif clean_method == "file":
+        urls_to_try = [
+            f"https://{normalized}/.well-known/fixops-verification.txt",
+            f"https://{normalized}/fixops-verification.txt",
+        ]
+        allow_lab = is_lab_testing_authorized()
+        last_fetch_error = None
+        for target_url in urls_to_try:
+            try:
+                status_code, resp_headers, content, final_url = safe_http_fetch(
+                    url=target_url,
+                    method="GET",
+                    max_bytes=128 * 1024,
+                    timeout=5.0,
+                    max_redirects=3,
+                    allow_lab=allow_lab,
+                )
+                if status_code == 200:
+                    trimmed_content = content.strip()
+                    if expected_value in trimmed_content or clean_token in trimmed_content:
+                        proof = create_domain_verification_proof(normalized, "file")
+                        return True, "Domain ownership verified via HTTP file token at /.well-known/fixops-verification.txt.", normalized, proof
+            except ValueError as val_err:
+                # SSRF or redirect boundary violation
+                last_fetch_error = sanitize_assessment_error(str(val_err))
+                break
+            except Exception as exc:
+                last_fetch_error = sanitize_assessment_error(str(exc))
+                continue
+
+        if last_fetch_error and ("SSRF" in last_fetch_error or "Security policy" in last_fetch_error):
+            return False, f"Target destination rejected by security policy: {last_fetch_error}", normalized, None
+        return False, "Verification file not found at /.well-known/fixops-verification.txt or /fixops-verification.txt, or content does not match token.", normalized, None
+
+    elif clean_method == "meta":
+        target_url = f"https://{normalized}/"
+        allow_lab = is_lab_testing_authorized()
+        try:
+            status_code, resp_headers, html_content, final_url = safe_http_fetch(
+                url=target_url,
+                method="GET",
+                max_bytes=512 * 1024,
+                timeout=5.0,
+                max_redirects=3,
+                allow_lab=allow_lab,
+            )
+            if status_code == 200:
+                pattern = re.compile(
+                    r'<meta[^>]+(?:name=["\']fixops-verification["\'][^>]+content=["\']([^"\']+)["\']|content=["\']([^"\']+)["\'][^>]+name=["\']fixops-verification["\'])',
+                    re.IGNORECASE,
+                )
+                matches = pattern.findall(html_content)
+                for m in matches:
+                    found_token = (m[0] or m[1]).strip()
+                    if hmac.compare_digest(found_token, clean_token) or hmac.compare_digest(found_token, expected_value):
+                        proof = create_domain_verification_proof(normalized, "meta")
+                        return True, "Domain ownership verified via HTML meta tag.", normalized, proof
+            return False, "HTML meta tag with verification token not found in homepage <head>.", normalized, None
+        except ValueError as val_err:
+            safe_err = sanitize_assessment_error(str(val_err))
+            return False, f"Target destination rejected by security policy: {safe_err}", normalized, None
+        except Exception as e:
+            safe_err = sanitize_assessment_error(str(e))
+            return False, f"Could not inspect homepage HTML: {safe_err}", normalized, None
+
+    else:
+        return False, f"Unsupported verification method '{method}'. Supported methods: dns, file, meta.", normalized, None
+
+
+def calculate_domain_security_score(
+    domain_str: str,
+    verification_proof: Optional[str] = None,
+    db: Optional[Session] = None,
+    current_user: Optional[User] = None,
+) -> dict:
+    """
+    Executes actual, non-destructive perimeter security audit and calculates
+    genuine security score based on discovered vulnerabilities.
+    Enforces server-side domain ownership validation: does NOT trust client-supplied
+    flags or arbitrary unverified domains.
+    """
+    from app.services.web_audit_engine import audit_web_target
+
+    clean_domain = sanitize_domain_input(domain_str)
+    is_valid, normalized, err_msg = validate_and_normalize_domain(clean_domain)
+    if not is_valid:
+        return {
+            "status": "failed",
+            "score": None,
+            "posture": "Score Unavailable",
+            "findings_count": 0,
+            "error": err_msg,
+            "domain": clean_domain,
+        }
+
+    # Server-Side Ownership Validation:
+    # 1. Check if valid cryptographic verification proof token is presented
+    is_verified = False
+    if verification_proof:
+        is_valid_proof, proof_err = verify_domain_verification_proof(verification_proof, normalized)
+        if is_valid_proof:
+            is_verified = True
+
+    # 2. Check if user is authenticated and domain is verified in database
+    if not is_verified and current_user and db:
+        query = db.query(Domain).filter(
+            Domain.normalized_domain == normalized,
+            Domain.verification_status == "verified",
+        )
+        if current_user.role == "client":
+            query = query.filter(Domain.client_id == current_user.client_id)
+        if query.first():
+            is_verified = True
+
+    if not is_verified:
+        return {
+            "status": "failed",
+            "score": None,
+            "posture": "Score Unavailable",
+            "findings_count": 0,
+            "error": "Domain ownership not verified. You must complete domain verification before requesting a security assessment.",
+            "domain": normalized,
+        }
+
+    target_url = f"https://{normalized}"
+    try:
+        findings, metadata = audit_web_target(
+            target_url=target_url,
+            allow_lab=is_lab_testing_authorized(),
+        )
+
+        counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        for f in findings:
+            sev = (f.get("severity") or "info").lower()
+            if sev in counts:
+                counts[sev] += 1
+            else:
+                counts["info"] += 1
+
+        deductions = (
+            counts["critical"] * 25
+            + counts["high"] * 15
+            + counts["medium"] * 8
+            + counts["low"] * 3
+            + counts["info"] * 0  # Informational observations do not deduct security score
+        )
+        calculated_score = max(0, min(100, 100 - deductions))
+
+        if calculated_score >= 80:
+            posture = "Good Posture"
+        elif calculated_score >= 60:
+            posture = "Moderate Risk"
+        else:
+            posture = "Critical Risk"
+
+        return {
+            "status": "completed",
+            "score": calculated_score,
+            "posture": posture,
+            "findings_count": len(findings),
+            "severity_counts": counts,
+            "findings": findings[:50],
+            "metadata": metadata,
+            "domain": normalized,
+        }
+    except Exception as e:
+        safe_err = sanitize_assessment_error(str(e))
+        return {
+            "status": "failed",
+            "score": None,
+            "posture": "Score Unavailable",
+            "findings_count": 0,
+            "error": safe_err,
+            "domain": normalized,
+        }
+

@@ -1,8 +1,14 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_user_optional
+from app.core.security import (
+    acquire_assessment_slot,
+    public_challenge_limiter,
+    public_verify_limiter,
+    public_score_limiter,
+)
 from app.db.session import get_db
 from app.models.client import Client
 from app.models.user import User
@@ -13,11 +19,151 @@ from app.schemas.domain import (
     DomainOut,
     DomainRegenerateResponse,
     DomainVerificationResult,
+    DomainSecurityScoreResponse,
+    PublicDomainChallengeRequest,
+    PublicDomainChallengeResponse,
+    PublicDomainVerifyRequest,
+    PublicDomainVerifyResponse,
 )
 from app.services import domain_service
-from app.services.domain_service import build_dns_instructions, domain_to_out
+from app.services.domain_service import (
+    build_dns_instructions,
+    build_file_instructions,
+    build_meta_instructions,
+    calculate_domain_security_score,
+    domain_to_out,
+    generate_verification_token,
+    validate_and_normalize_domain,
+    verify_public_domain_ownership,
+)
 
 router = APIRouter()
+
+
+def get_client_ip(request: Request) -> str:
+    """Extracts client IP address supporting reverse proxy headers."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "127.0.0.1"
+
+
+@router.post("/public-challenge", response_model=PublicDomainChallengeResponse)
+def get_public_domain_challenge(req: PublicDomainChallengeRequest, request: Request):
+    """
+    Generates verification instructions and high-entropy challenge tokens across
+    all three verification methods (DNS TXT, HTML file upload, HTML meta tag)
+    for public perimeter validation.
+    Enforces IP-based rate limiting.
+    """
+    client_ip = get_client_ip(request)
+    if not public_challenge_limiter.check_and_record(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many challenge requests. Please wait a minute before requesting another verification challenge.",
+            headers={"Retry-After": "60"},
+        )
+
+    raw = req.domain.strip()
+    if "://" in raw:
+        from urllib.parse import urlparse
+        parsed = urlparse(raw)
+        raw = parsed.hostname or raw
+    elif "/" in raw:
+        raw = raw.split("/")[0]
+
+    is_valid, normalized, err_msg = validate_and_normalize_domain(raw)
+    if not is_valid:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err_msg)
+
+    token = generate_verification_token()
+    dns_inst = build_dns_instructions(normalized, token)
+    file_inst = build_file_instructions(normalized, token)
+    meta_inst = build_meta_instructions(normalized, token)
+
+    return PublicDomainChallengeResponse(
+        domain=req.domain.strip(),
+        normalized_domain=normalized,
+        token=token,
+        dns_instructions=dns_inst,
+        file_instructions=file_inst,
+        meta_instructions=meta_inst,
+    )
+
+
+@router.post("/public-verify", response_model=PublicDomainVerifyResponse)
+def verify_public_domain(req: PublicDomainVerifyRequest, request: Request):
+    """
+    Verifies domain ownership in real-time across DNS TXT, HTML file upload, or
+    HTML meta tag without requiring pre-registered tenant records.
+    Returns a cryptographically signed verification proof token upon success.
+    Enforces IP-based rate limiting.
+    """
+    client_ip = get_client_ip(request)
+    if not public_verify_limiter.check_and_record(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many verification attempts. Please wait a minute before retrying verification.",
+            headers={"Retry-After": "60"},
+        )
+
+    verified, message, normalized, proof = verify_public_domain_ownership(
+        domain_str=req.domain,
+        method=req.method,
+        token=req.token,
+    )
+    return PublicDomainVerifyResponse(
+        verified=verified,
+        status="verified" if verified else "failed",
+        message=message,
+        domain=normalized,
+        method=req.method,
+        verification_proof=proof,
+    )
+
+
+@router.get("/security-score", response_model=DomainSecurityScoreResponse)
+def get_domain_security_score(
+    request: Request,
+    domain: str = Query(..., min_length=3, max_length=255),
+    token: Optional[str] = Query(None, description="Cryptographic proof token issued upon successful domain verification"),
+    verification_token: Optional[str] = Query(None, description="Alias for verification proof token"),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    """
+    Executes actual, non-destructive perimeter security audit and returns the
+    calculated security score, posture, and findings summary.
+    Enforces server-side domain ownership validation: does NOT trust client-supplied
+    flags or arbitrary unverified domains.
+    Enforces IP-based rate limiting and process concurrency limits.
+    """
+    client_ip = get_client_ip(request)
+    if not public_score_limiter.check_and_record(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many assessment requests. Please wait a minute before requesting another security assessment.",
+            headers={"Retry-After": "60"},
+        )
+
+    proof = token or verification_token
+    try:
+        with acquire_assessment_slot(timeout=1.0):
+            result = calculate_domain_security_score(
+                domain_str=domain,
+                verification_proof=proof,
+                db=db,
+                current_user=current_user,
+            )
+    except RuntimeError as cap_err:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=str(cap_err),
+            headers={"Retry-After": "5"},
+        )
+
+    return DomainSecurityScoreResponse(**result)
+
 
 
 @router.post("", response_model=DomainCreateResponse, status_code=status.HTTP_201_CREATED)

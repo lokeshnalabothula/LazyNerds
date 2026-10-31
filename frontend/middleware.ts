@@ -16,6 +16,8 @@ export const PUBLIC_ROUTES = [
   "/privacy",
   "/terms",
   "/audit",
+  "/domain-verification",
+  "/security-score",
 ];
 
 export function middleware(request: NextRequest) {

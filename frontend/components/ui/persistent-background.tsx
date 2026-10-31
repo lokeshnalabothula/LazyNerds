@@ -16,6 +16,8 @@ const PUBLIC_AUTH_ROUTES = [
   "/reset-password",
   "/privacy",
   "/terms",
+  "/domain-verification",
+  "/security-score",
 ];
 
 /**
@@ -28,6 +30,8 @@ const PUBLIC_SHIELD_ROUTES = [
   "/signup",
   "/forgot-password",
   "/reset-password",
+  "/domain-verification",
+  "/security-score",
 ];
 
 /**

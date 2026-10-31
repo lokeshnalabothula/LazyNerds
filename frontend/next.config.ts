@@ -37,6 +37,11 @@ const nextConfig: NextConfig = {
         destination: "/register",
         permanent: false,
       },
+      {
+        source: "/verify-domain",
+        destination: "/domain-verification",
+        permanent: false,
+      },
     ];
   },
   async headers() {

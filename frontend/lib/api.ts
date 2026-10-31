@@ -68,6 +68,10 @@ import {
   DomainRegenerateResponse,
   DomainVerificationResult,
   DomainListResponse,
+  PublicDomainChallengeResponse,
+  PublicDomainVerifyRequest,
+  PublicDomainVerifyResponse,
+  DomainSecurityScoreResponse,
 } from "@/types/domain";
 
 const API_BASE_URL = typeof window !== "undefined"
@@ -110,7 +114,11 @@ export function setStoredToken(token: string | null) {
   }
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+interface RequestOptions extends RequestInit {
+  timeoutMs?: number;
+}
+
+async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers || {});
   if (!headers.has("Content-Type") && options.body && typeof options.body === "string") {
     headers.set("Content-Type", "application/json");
@@ -122,8 +130,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
+  const timeoutMs = options.timeoutMs || 15000;
   const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 15000) : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
   const signal = options.signal || (controller ? controller.signal : undefined);
 
   let response: Response;
@@ -136,7 +145,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     });
   } catch (err: any) {
     if (err.name === "AbortError") {
-      throw new ApiError(408, "Request timed out after 15 seconds. Please verify backend connectivity.");
+      throw new ApiError(408, `Request timed out after ${Math.round(timeoutMs / 1000)} seconds. Please verify backend connectivity.`);
     }
     throw err;
   } finally {
@@ -787,6 +796,31 @@ export const api = {
     return request<void>(`/domains/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
+  },
+
+  async getPublicDomainChallenge(domain: string): Promise<PublicDomainChallengeResponse> {
+    return request<PublicDomainChallengeResponse>("/domains/public-challenge", {
+      method: "POST",
+      body: JSON.stringify({ domain }),
+    });
+  },
+
+  async verifyPublicDomain(payload: PublicDomainVerifyRequest): Promise<PublicDomainVerifyResponse> {
+    return request<PublicDomainVerifyResponse>("/domains/public-verify", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getDomainSecurityScore(domain: string, token?: string | null): Promise<DomainSecurityScoreResponse> {
+    const params = new URLSearchParams({ domain });
+    if (token) {
+      params.append("token", token);
+    }
+    return request<DomainSecurityScoreResponse>(
+      `/domains/security-score?${params.toString()}`,
+      { method: "GET", timeoutMs: 30000 }
+    );
   },
 
   async getHealth(): Promise<{

@@ -61,3 +61,56 @@ class DomainListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class FileRecordInstructions(BaseModel):
+    file_name: str = Field("fixops-verification.txt", description="File name to place on web server")
+    relative_path: str = Field("/.well-known/fixops-verification.txt", description="Preferred relative URL path")
+    fallback_path: str = Field("/fixops-verification.txt", description="Fallback relative URL path")
+    expected_content: str = Field(..., description="File content to serve")
+
+
+class MetaRecordInstructions(BaseModel):
+    meta_tag: str = Field("fixops-verification", description="Meta tag name attribute")
+    snippet: str = Field(..., description="Complete HTML snippet to embed in <head>")
+
+
+class PublicDomainChallengeRequest(BaseModel):
+    domain: str = Field(..., min_length=3, max_length=255, description="Domain to verify")
+
+
+class PublicDomainChallengeResponse(BaseModel):
+    domain: str
+    normalized_domain: str
+    token: str
+    dns_instructions: DnsRecordInstructions
+    file_instructions: FileRecordInstructions
+    meta_instructions: MetaRecordInstructions
+
+
+class PublicDomainVerifyRequest(BaseModel):
+    domain: str = Field(..., min_length=3, max_length=255)
+    method: str = Field(..., description="Verification method: dns, file, or meta")
+    token: str = Field(..., min_length=16, description="Verification challenge token")
+
+
+class PublicDomainVerifyResponse(BaseModel):
+    verified: bool
+    status: str
+    message: str
+    domain: str
+    method: str
+    verification_proof: Optional[str] = Field(None, description="Cryptographically signed proof of domain ownership")
+
+
+class DomainSecurityScoreResponse(BaseModel):
+    status: str = Field(..., description="Scan status: completed, scanning, or failed")
+    domain: str
+    score: Optional[int] = Field(None, description="Calculated security score 0-100")
+    posture: Optional[str] = Field(None, description="Security posture label: Good Posture, Moderate Risk, Critical Risk, or Score Unavailable")
+    findings_count: Optional[int] = Field(None, description="Total genuine findings discovered")
+    severity_counts: Optional[dict] = Field(None, description="Breakdown by critical, high, medium, low, info")
+    findings: Optional[List[dict]] = Field(None, description="Discovered security findings")
+    metadata: Optional[dict] = Field(None, description="Technical audit metadata")
+    error: Optional[str] = Field(None, description="Error reason if assessment failed or unavailable")
+

@@ -259,8 +259,8 @@ def test_four_step_registration_flow_end_to_end(client, db_session):
 
     # Find matching 6-digit code for testing
     raw_code = None
-    for c in range(100000, 1000000):
-        c_str = str(c)
+    for c in range(0, 1000000):
+        c_str = f"{c:06d}"
         if hash_verification_code(email, c_str) == record.code_hash:
             raw_code = c_str
             break

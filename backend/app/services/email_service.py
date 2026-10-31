@@ -321,8 +321,9 @@ def _send_mock(
     Logs dispatch details safely without failing.
     """
     logger.info(
-        f"[MOCK EMAIL DISPATCH] Recipient='{to_email}' Subject='{subject}' "
-        f"LengthHTML={len(html_content)} LengthText={len(text_content)}"
+        f"[MOCK EMAIL DISPATCH] Recipient='{to_email}' "
+        f"LengthHTML={len(html_content)} LengthText={len(text_content)} "
+        f"(Verification code suppressed for security)"
     )
     return {
         "success": True,

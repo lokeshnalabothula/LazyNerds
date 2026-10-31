@@ -39,7 +39,6 @@ router = APIRouter()
 @router.post("/register/send-otp", response_model=SendRegistrationOtpResponse)
 def send_registration_code(
     data: SendRegistrationOtpRequest,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
@@ -62,20 +61,22 @@ def send_registration_code(
             email=data.email,
             full_name=data.full_name,
         )
-        background_tasks.add_task(
-            email_service.send_verification_code_email,
+        dispatch_result = email_service.send_verification_code_email(
             to_email=data.email,
             code=raw_code,
             expires_in_minutes=15,
         )
-        dev_code = None
-        if settings.ENVIRONMENT != "production" and email_service.get_active_email_provider() == "mock":
-            dev_code = raw_code
+        if not dispatch_result.get("success") and dispatch_result.get("provider") in ("resend", "smtp"):
+            err = dispatch_result.get("error") or "Email service unavailable"
+            logger.error(f"Registration email delivery failed for {data.email}: {err}")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Unable to dispatch verification email: {err}. Please verify email configuration.",
+            )
 
         return SendRegistrationOtpResponse(
             message="A 6-digit verification code has been dispatched to your email address.",
             cooldown_seconds=60,
-            dev_code=dev_code,
         )
     except ValueError as e:
         raise HTTPException(
@@ -200,7 +201,6 @@ def complete_registration(
 @router.post("/register/resend-otp", response_model=SendRegistrationOtpResponse)
 def resend_registration_code(
     data: ResendRegistrationOtpRequest,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
@@ -220,20 +220,22 @@ def resend_registration_code(
             email=data.email,
             full_name=data.full_name,
         )
-        background_tasks.add_task(
-            email_service.send_verification_code_email,
+        dispatch_result = email_service.send_verification_code_email(
             to_email=data.email,
             code=raw_code,
             expires_in_minutes=15,
         )
-        dev_code = None
-        if settings.ENVIRONMENT != "production" and email_service.get_active_email_provider() == "mock":
-            dev_code = raw_code
+        if not dispatch_result.get("success") and dispatch_result.get("provider") in ("resend", "smtp"):
+            err = dispatch_result.get("error") or "Email service unavailable"
+            logger.error(f"Registration OTP resend delivery failed for {data.email}: {err}")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Unable to resend verification email: {err}. Please verify email configuration.",
+            )
 
         return SendRegistrationOtpResponse(
             message="A new 6-digit verification code has been dispatched to your email address.",
             cooldown_seconds=60,
-            dev_code=dev_code,
         )
     except ValueError as e:
         raise HTTPException(
@@ -485,7 +487,6 @@ def reset_password(
 @router.post("/forgot-password/send-otp", response_model=SendForgotPasswordOtpResponse)
 def forgot_password_send_otp(
     data: ForgotPasswordRequest,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
@@ -504,13 +505,19 @@ def forgot_password_send_otp(
     try:
         raw_code, record, user = password_reset_service.request_password_reset_otp(db, email=data.email)
         if user and record:
-            background_tasks.add_task(
-                email_service.send_password_reset_otp_email,
+            dispatch_result = email_service.send_password_reset_otp_email(
                 to_email=user.email,
                 recipient_name=user.full_name,
                 code=raw_code,
                 expires_in_minutes=15,
             )
+            if not dispatch_result.get("success") and dispatch_result.get("provider") in ("resend", "smtp"):
+                err = dispatch_result.get("error") or "Mail delivery failure"
+                logger.error(f"Password reset email delivery failed for {user.email}: {err}")
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"Unable to dispatch password recovery email: {err}. Please verify mail settings.",
+                )
 
         audit_service.log_audit(
             db=db,
@@ -521,14 +528,9 @@ def forgot_password_send_otp(
             details=f"Password recovery OTP requested for {data.email}.",
         )
 
-        dev_code = None
-        if user and record and settings.ENVIRONMENT != "production" and email_service.get_active_email_provider() == "mock":
-            dev_code = raw_code
-
         return SendForgotPasswordOtpResponse(
             message="If an account matches that email address, a 6-digit password recovery code has been dispatched.",
             cooldown_seconds=60,
-            dev_code=dev_code,
         )
     except HTTPException:
         raise

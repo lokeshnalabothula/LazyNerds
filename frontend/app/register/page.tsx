@@ -36,7 +36,6 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const [devOtp, setDevOtp] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState<number>(0);
 
   // If already authenticated, redirect to Overview
@@ -111,7 +110,6 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       const res = await api.sendRegistrationOtp(cleanEmail, cleanName);
-      if (res.dev_code) setDevOtp(res.dev_code);
       setInfoMessage(res.message || "A 6-digit verification code has been dispatched to your email address.");
       setCooldown(res.cooldown_seconds || 60);
       setStep("otp");
@@ -135,7 +133,6 @@ export default function RegisterPage() {
 
     try {
       const res = await api.resendRegistrationOtp(email.trim().toLowerCase(), fullName.trim());
-      if (res.dev_code) setDevOtp(res.dev_code);
       setInfoMessage(res.message || "A new 6-digit verification code has been dispatched.");
       setCooldown(res.cooldown_seconds || 60);
       setCode("");
@@ -388,27 +385,6 @@ export default function RegisterPage() {
                   {infoMessage && (
                     <div className="mb-4 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 text-[13px] leading-snug">
                       {infoMessage}
-                    </div>
-                  )}
-
-                  {devOtp && (
-                    <div className="mb-4 p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200 text-[13px] leading-snug flex items-center justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold text-[10px] tracking-wide uppercase border border-amber-500/30">
-                            Dev Mock Mode
-                          </span>
-                          <span className="text-[12px] text-amber-300/80">Local development OTP:</span>
-                        </div>
-                        <div className="font-mono text-base font-bold text-white tracking-widest">{devOtp}</div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setCode(devOtp)}
-                        className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-xs font-medium border border-amber-500/40 transition active:scale-95 cursor-pointer"
-                      >
-                        Auto-fill
-                      </button>
                     </div>
                   )}
 

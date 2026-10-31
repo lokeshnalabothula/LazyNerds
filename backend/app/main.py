@@ -23,37 +23,58 @@ logger = logging.getLogger("fixops")
 
 
 def init_db_and_seed_admin():
-    """Initializes tables and seeds initial authorized founder if absent in development."""
-    # In production, skip automatic table creation and demo admin seeding.
-    # Production schema is managed deterministically via Alembic migrations ('alembic upgrade head').
-    if settings.ENVIRONMENT == "production":
-        logger.info("Production mode: automatic table creation (create_all) and demo admin seeding are disabled. Schema must be managed via Alembic migrations.")
-        return
+    """Initializes tables, applies schema migrations, and seeds initial authorized founder if absent."""
+    active_engine = getattr(db_session, "engine", engine)
 
+    # 1. Apply Alembic migrations across all environments
     try:
-        active_engine = getattr(db_session, "engine", engine)
-        Base.metadata.create_all(bind=active_engine)
-        # Ensure new schema columns exist in SQLite development databases
-        try:
-            with active_engine.connect() as conn:
-                from sqlalchemy import text
-                res = conn.execute(text("PRAGMA table_info(email_verification_codes)")).fetchall()
-                if res:
-                    existing_cols = {row[1] for row in res}
-                    if "full_name" not in existing_cols:
-                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN full_name VARCHAR(255)"))
-                    if "registration_token_hash" not in existing_cols:
-                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN registration_token_hash VARCHAR(255)"))
-                    if "registration_token_expires_at" not in existing_cols:
-                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN registration_token_expires_at DATETIME"))
-                    if "registration_token_used_at" not in existing_cols:
-                        conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN registration_token_used_at DATETIME"))
-                    conn.commit()
-        except Exception:
-            pass
-        logger.info("Database tables initialized successfully.")
+        from alembic import command
+        from alembic.config import Config
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Alembic schema migrations applied successfully.")
     except Exception as e:
-        logger.warning(f"Database table creation check: {e}")
+        logger.warning(f"Alembic auto-upgrade notice: {e}")
+
+    # 2. Schema safety net: Ensure all tables and required columns exist on SQLite and PostgreSQL
+    try:
+        from sqlalchemy import inspect, text
+        Base.metadata.create_all(bind=active_engine)
+        inspector = inspect(active_engine)
+        existing_tables = set(inspector.get_table_names())
+
+        is_pg = "postgres" in str(active_engine.url).lower()
+        col_type = "TIMESTAMP" if is_pg else "DATETIME"
+
+        with active_engine.connect() as conn:
+            # Synchronize email_verification_codes table columns
+            if "email_verification_codes" in existing_tables:
+                evc_cols = {col["name"] for col in inspector.get_columns("email_verification_codes")}
+                if "full_name" not in evc_cols:
+                    conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN full_name VARCHAR(255)"))
+                if "registration_token_hash" not in evc_cols:
+                    conn.execute(text("ALTER TABLE email_verification_codes ADD COLUMN registration_token_hash VARCHAR(255)"))
+                if "registration_token_expires_at" not in evc_cols:
+                    conn.execute(text(f"ALTER TABLE email_verification_codes ADD COLUMN registration_token_expires_at {col_type}"))
+                if "registration_token_used_at" not in evc_cols:
+                    conn.execute(text(f"ALTER TABLE email_verification_codes ADD COLUMN registration_token_used_at {col_type}"))
+
+            # Synchronize password_reset_codes table columns
+            if "password_reset_codes" in existing_tables:
+                prc_cols = {col["name"] for col in inspector.get_columns("password_reset_codes")}
+                if "reset_token_hash" not in prc_cols:
+                    conn.execute(text("ALTER TABLE password_reset_codes ADD COLUMN reset_token_hash VARCHAR(255)"))
+                if "reset_token_expires_at" not in prc_cols:
+                    conn.execute(text(f"ALTER TABLE password_reset_codes ADD COLUMN reset_token_expires_at {col_type}"))
+
+            conn.commit()
+        logger.info("Database schema synchronized successfully.")
+    except Exception as e:
+        logger.error(f"Database schema synchronization check failed: {e}", exc_info=True)
+
+    # 3. Seed initial admin only in non-production environments when DB is empty
+    if settings.ENVIRONMENT == "production":
+        return
 
     # Seed initial founder if not present (development and test environments only)
     try:

@@ -44,6 +44,13 @@ from app.services.auth_service import create_user
 settings.DATABASE_URL = TEST_DB_URL
 settings.WORKER_DISPATCH_MODE = "distributed"
 
+
+@pytest.fixture(autouse=True)
+def mock_email_dispatch_in_tests(monkeypatch):
+    """Ensures automated unit/integration tests do not hit live Resend/SMTP endpoints."""
+    from app.services import email_service
+    monkeypatch.setattr(email_service, "get_active_email_provider", lambda: "mock")
+
 test_engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 

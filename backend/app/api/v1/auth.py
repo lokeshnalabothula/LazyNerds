@@ -1,4 +1,5 @@
 from typing import List, Optional, Union
+import logging
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -31,6 +32,8 @@ from app.schemas.auth import (
 )
 from app.services import auth_service, audit_service, password_reset_service, email_service, email_verification_service
 from app.services.auth_service import authenticate_user
+
+logger = logging.getLogger("fixops.auth")
 
 router = APIRouter()
 

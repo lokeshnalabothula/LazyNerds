@@ -1,4 +1,7 @@
 import logging
+import os
+from pathlib import Path
+import re
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -22,21 +25,37 @@ logging.basicConfig(
 logger = logging.getLogger("fixops")
 
 
+def _sanitize_db_error(error_msg: str) -> str:
+    """Removes sensitive credentials (e.g. user:password) from database connection errors."""
+    return re.sub(r"://([^:]+):([^@]+)@", r"://\1:***@", str(error_msg))
+
+
 def init_db_and_seed_admin():
     """Initializes tables, applies schema migrations, and seeds initial authorized founder if absent."""
     active_engine = getattr(db_session, "engine", engine)
 
-    # 1. Apply Alembic migrations across all environments
+    # 1. Apply Alembic migrations
     try:
         from alembic import command
         from alembic.config import Config
-        alembic_cfg = Config("alembic.ini")
+
+        base_dir = Path(__file__).resolve().parent.parent
+        alembic_ini_path = base_dir / "alembic.ini"
+        alembic_cfg = Config(str(alembic_ini_path) if alembic_ini_path.exists() else "alembic.ini")
         command.upgrade(alembic_cfg, "head")
         logger.info("Alembic schema migrations applied successfully.")
     except Exception as e:
-        logger.warning(f"Alembic auto-upgrade notice: {e}")
+        safe_msg = _sanitize_db_error(str(e))
+        if settings.ENVIRONMENT == "production":
+            logger.critical(f"Production database schema migration failed: {safe_msg}")
+            raise RuntimeError(f"Database migration failed in production: {safe_msg}") from e
+        logger.warning(f"Alembic auto-upgrade notice in {settings.ENVIRONMENT}: {safe_msg}")
 
-    # 2. Schema safety net: Ensure all tables and required columns exist on SQLite and PostgreSQL
+    # 2. In production, Alembic is strictly authoritative. Exit early to prevent unversioned DDL drift.
+    if settings.ENVIRONMENT == "production":
+        return
+
+    # 3. Schema safety net for non-production environments (SQLite local dev / testing)
     try:
         from sqlalchemy import inspect, text
         Base.metadata.create_all(bind=active_engine)
@@ -68,15 +87,11 @@ def init_db_and_seed_admin():
                     conn.execute(text(f"ALTER TABLE password_reset_codes ADD COLUMN reset_token_expires_at {col_type}"))
 
             conn.commit()
-        logger.info("Database schema synchronized successfully.")
+        logger.info("Database schema synchronized successfully for non-production environment.")
     except Exception as e:
-        logger.error(f"Database schema synchronization check failed: {e}", exc_info=True)
+        logger.error(f"Non-production schema synchronization check failed: {e}", exc_info=True)
 
-    # 3. Seed initial admin only in non-production environments when DB is empty
-    if settings.ENVIRONMENT == "production":
-        return
-
-    # Seed initial founder if not present (development and test environments only)
+    # 4. Seed initial founder if not present (development and test environments only)
     try:
         active_sessionmaker = getattr(db_session, "SessionLocal", SessionLocal)
         db = active_sessionmaker()

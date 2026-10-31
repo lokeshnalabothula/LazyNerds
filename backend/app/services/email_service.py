@@ -1,5 +1,6 @@
 import email.mime.multipart
 import email.mime.text
+import email.utils
 import logging
 import smtplib
 import ssl
@@ -276,13 +277,15 @@ def _send_via_smtp(
     msg.attach(part1)
     msg.attach(part2)
 
+    envelope_from = email.utils.parseaddr(settings.EMAIL_FROM)[1] or settings.EMAIL_FROM
+
     try:
         if settings.SMTP_SSL:
             context = ssl.create_default_context()
             with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, context=context, timeout=10.0) as server:
                 if settings.SMTP_USER and settings.SMTP_PASSWORD:
                     server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.sendmail(settings.EMAIL_FROM, [to_email], msg.as_string())
+                server.sendmail(envelope_from, [to_email], msg.as_string())
         else:
             with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10.0) as server:
                 if settings.SMTP_TLS:
@@ -290,7 +293,7 @@ def _send_via_smtp(
                     server.starttls(context=context)
                 if settings.SMTP_USER and settings.SMTP_PASSWORD:
                     server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.sendmail(settings.EMAIL_FROM, [to_email], msg.as_string())
+                server.sendmail(envelope_from, [to_email], msg.as_string())
 
         logger.info(f"Email successfully dispatched via SMTP to {to_email}")
         return {

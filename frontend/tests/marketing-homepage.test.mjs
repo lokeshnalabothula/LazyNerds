@@ -122,8 +122,9 @@ describe("Stitch Cybersecurity Audit Landing Page Parity", () => {
       "Must render curved earth horizon backdrop and surface lights"
     );
     assert.ok(
-      homepageCode.includes("animate-falling-arrow"),
-      "Must render synchronized scroll exploration arrow"
+      !homepageCode.includes("animate-falling-arrow") &&
+        !homepageCode.includes("Scroll to explore"),
+      "Must not render scroll exploration button or animated falling arrow"
     );
   });
 

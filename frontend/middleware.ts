@@ -15,7 +15,6 @@ export const PUBLIC_ROUTES = [
   "/reset-password",
   "/privacy",
   "/terms",
-  "/audit",
   "/domain-verification",
   "/security-score",
 ];

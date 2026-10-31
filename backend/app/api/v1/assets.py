@@ -31,7 +31,7 @@ def list_assets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role == "client":
+    if current_user.is_client:
         if not current_user.client_id:
             return {
                 "items": [],
@@ -40,12 +40,13 @@ def list_assets(
                 "page_size": page_size,
                 "total_pages": 1,
             }
-        # Client accounts are strictly scoped to their assigned organization;
-        # any client-supplied client_id query param is safely overridden.
         client_id = current_user.client_id
 
         if engagement_id:
-            eng = db.query(Engagement).filter(Engagement.id == engagement_id).first()
+            eng = db.query(Engagement).filter(
+                Engagement.id == engagement_id,
+                Engagement.organization_id == current_user.organization_id,
+            ).first()
             if not eng or eng.client_id != current_user.client_id:
                 return {
                     "items": [],
@@ -57,6 +58,7 @@ def list_assets(
 
     items, total = asset_service.get_assets(
         db=db,
+        organization_id=current_user.organization_id,
         client_id=client_id,
         engagement_id=engagement_id,
         asset_type=asset_type,
@@ -82,15 +84,23 @@ def create_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role == "client":
+    if current_user.is_client:
         if not current_user.client_id or asset_in.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not authorized to create assets for another organization.",
             )
-    elif current_user.role == "employee":
-        client = db.query(Client).filter(Client.id == asset_in.client_id).first()
-        if client and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+    elif current_user.is_worker:
+        client = db.query(Client).filter(
+            Client.id == asset_in.client_id,
+            Client.organization_id == current_user.organization_id,
+        ).first()
+        if not client:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Referenced client organization does not exist.",
+            )
+        if client.assigned_employee_id and client.assigned_employee_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not assigned to this client record.",
@@ -107,17 +117,25 @@ def get_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    asset = asset_service.get_asset_by_id(db, asset_id)
+    asset = asset_service.get_asset_by_id(
+        db, asset_id, organization_id=current_user.organization_id
+    )
     if not asset:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Asset with ID '{asset_id}' not found.",
         )
-    if current_user.role == "client":
+    if current_user.is_client:
         if not current_user.client_id or asset.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not authorized to view another organization's assets.",
+            )
+    elif current_user.is_worker and asset.client:
+        if asset.client.assigned_employee_id and asset.client.assigned_employee_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You are not assigned to this client record.",
             )
     return asset
 
@@ -129,19 +147,21 @@ def update_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    asset = asset_service.get_asset_by_id(db, asset_id)
+    asset = asset_service.get_asset_by_id(
+        db, asset_id, organization_id=current_user.organization_id
+    )
     if not asset:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Asset with ID '{asset_id}' not found.",
         )
-    if current_user.role == "client":
+    if current_user.is_client:
         if not current_user.client_id or asset.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not authorized to modify another organization's assets.",
             )
-    elif current_user.role == "employee" and asset.client:
+    elif current_user.is_worker and asset.client:
         if asset.client.assigned_employee_id and asset.client.assigned_employee_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -159,19 +179,21 @@ def delete_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    asset = asset_service.get_asset_by_id(db, asset_id)
+    asset = asset_service.get_asset_by_id(
+        db, asset_id, organization_id=current_user.organization_id
+    )
     if not asset:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Asset with ID '{asset_id}' not found.",
         )
-    if current_user.role == "client":
+    if current_user.is_client:
         if not current_user.client_id or asset.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied: You are not authorized to delete another organization's assets.",
             )
-    elif current_user.role == "employee" and asset.client:
+    elif current_user.is_worker and asset.client:
         if asset.client.assigned_employee_id and asset.client.assigned_employee_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

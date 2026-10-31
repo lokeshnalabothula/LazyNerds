@@ -12,8 +12,11 @@ from app.services.automation_engine import dispatch_event
 
 
 def create_finding(db: Session, finding_in: FindingCreate, current_user: User) -> Finding:
-    # 1. Validate engagement exists
-    engagement = db.query(Engagement).filter(Engagement.id == finding_in.engagement_id).first()
+    # 1. Validate engagement exists in the user's organization
+    eng_q = db.query(Engagement).filter(Engagement.id == finding_in.engagement_id)
+    if current_user.organization_id:
+        eng_q = eng_q.filter(Engagement.organization_id == current_user.organization_id)
+    engagement = eng_q.first()
     if not engagement:
         raise ValueError("Referenced engagement does not exist.")
     if engagement.status in ("completed", "cancelled"):
@@ -21,7 +24,10 @@ def create_finding(db: Session, finding_in: FindingCreate, current_user: User) -
 
     # 2. Validate asset if provided
     if finding_in.asset_id:
-        asset = db.query(Asset).filter(Asset.id == finding_in.asset_id).first()
+        asset_q = db.query(Asset).filter(Asset.id == finding_in.asset_id)
+        if current_user.organization_id:
+            asset_q = asset_q.filter(Asset.organization_id == current_user.organization_id)
+        asset = asset_q.first()
         if not asset:
             raise ValueError("Referenced asset does not exist.")
         if asset.client_id != engagement.client_id:
@@ -57,6 +63,7 @@ def create_finding(db: Session, finding_in: FindingCreate, current_user: User) -
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="CREATE_FINDING",
         resource_type="finding",
@@ -82,12 +89,20 @@ def create_finding(db: Session, finding_in: FindingCreate, current_user: User) -
     return finding
 
 
-def get_finding_by_id(db: Session, finding_id: str) -> Optional[Finding]:
-    return db.query(Finding).filter(Finding.id == finding_id).first()
+def get_finding_by_id(
+    db: Session, finding_id: str, organization_id: Optional[str] = None
+) -> Optional[Finding]:
+    query = db.query(Finding).filter(Finding.id == finding_id)
+    if organization_id:
+        query = query.join(Engagement, Finding.engagement_id == Engagement.id).filter(
+            Engagement.organization_id == organization_id
+        )
+    return query.first()
 
 
 def get_findings(
     db: Session,
+    organization_id: Optional[str] = None,
     engagement_id: Optional[str] = None,
     asset_id: Optional[str] = None,
     assessment_id: Optional[str] = None,
@@ -99,8 +114,12 @@ def get_findings(
     page_size: int = 50,
 ) -> tuple[List[Finding], int]:
     query = db.query(Finding)
-    if client_id:
-        query = query.join(Engagement).filter(Engagement.client_id == client_id)
+    if organization_id or client_id:
+        query = query.join(Engagement, Finding.engagement_id == Engagement.id)
+        if organization_id:
+            query = query.filter(Engagement.organization_id == organization_id)
+        if client_id:
+            query = query.filter(Engagement.client_id == client_id)
     if engagement_id:
         query = query.filter(Finding.engagement_id == engagement_id)
     if asset_id:
@@ -132,7 +151,9 @@ def get_findings(
 def update_finding(
     db: Session, finding_id: str, finding_in: FindingUpdate, current_user: User
 ) -> Finding:
-    finding = get_finding_by_id(db, finding_id)
+    finding = get_finding_by_id(
+        db, finding_id, organization_id=current_user.organization_id
+    )
     if not finding:
         raise ValueError("Finding not found.")
 
@@ -157,7 +178,10 @@ def update_finding(
 
     # Validate asset_id if updating target asset association
     if "asset_id" in update_data and update_data["asset_id"]:
-        new_asset = db.query(Asset).filter(Asset.id == update_data["asset_id"]).first()
+        new_asset_q = db.query(Asset).filter(Asset.id == update_data["asset_id"])
+        if current_user.organization_id:
+            new_asset_q = new_asset_q.filter(Asset.organization_id == current_user.organization_id)
+        new_asset = new_asset_q.first()
         if not new_asset:
             raise ValueError("Referenced asset does not exist.")
         if finding.engagement and new_asset.client_id != finding.engagement.client_id:
@@ -171,6 +195,7 @@ def update_finding(
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="UPDATE_FINDING",
         resource_type="finding",
@@ -183,7 +208,9 @@ def update_finding(
 def add_verification(
     db: Session, finding_id: str, verif_in: VerificationCreate, current_user: User
 ) -> Verification:
-    finding = get_finding_by_id(db, finding_id)
+    finding = get_finding_by_id(
+        db, finding_id, organization_id=current_user.organization_id
+    )
     if not finding:
         raise ValueError("Finding not found.")
 
@@ -210,6 +237,7 @@ def add_verification(
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="RECORD_VERIFICATION",
         resource_type="verification",

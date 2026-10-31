@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
 from app.core.security import hash_password
+from app.models.organization import Organization
 from app.models.client import Client
 from app.models.user import User
 from app.models.registration import ClientRegistration
@@ -46,7 +47,11 @@ def register_client(db: Session, reg_in: ClientRegisterInput) -> ClientRegistrat
     # Hash credentials securely
     hashed_pwd = hash_password(reg_in.password)
 
+    primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+    org_id = primary_org.id if primary_org else None
+
     registration = ClientRegistration(
+        organization_id=org_id,
         full_name=reg_in.full_name.strip(),
         email=normalized_email,
         hashed_password=hashed_pwd,
@@ -94,9 +99,14 @@ def register_client(db: Session, reg_in: ClientRegisterInput) -> ClientRegistrat
     return registration
 
 
-def get_registration_by_id(db: Session, reg_id: str) -> Optional[ClientRegistration]:
+def get_registration_by_id(
+    db: Session, reg_id: str, organization_id: Optional[str] = None
+) -> Optional[ClientRegistration]:
     """Retrieves a client registration by UUID. Founder access only."""
-    return db.query(ClientRegistration).filter(ClientRegistration.id == reg_id).first()
+    query = db.query(ClientRegistration).filter(ClientRegistration.id == reg_id)
+    if organization_id:
+        query = query.filter(ClientRegistration.organization_id == organization_id)
+    return query.first()
 
 
 def get_registration_status_by_email(db: Session, email: str) -> Optional[ClientRegistration]:
@@ -115,16 +125,22 @@ def get_registration_status_by_email(db: Session, email: str) -> Optional[Client
 def list_registrations(
     db: Session,
     status: Optional[str] = None,
+    organization_id: Optional[str] = None,
 ) -> Tuple[List[ClientRegistration], int, int]:
     """Lists client registrations. Founder access only."""
     query = db.query(ClientRegistration)
+    if organization_id:
+        query = query.filter(ClientRegistration.organization_id == organization_id)
     if status and status.lower() != "all":
         query = query.filter(ClientRegistration.status == status.lower())
     
     query = query.order_by(desc(ClientRegistration.created_at))
     items = query.all()
     total = len(items)
-    pending_count = db.query(ClientRegistration).filter(ClientRegistration.status == "pending").count()
+    pending_q = db.query(ClientRegistration).filter(ClientRegistration.status == "pending")
+    if organization_id:
+        pending_q = pending_q.filter(ClientRegistration.organization_id == organization_id)
+    pending_count = pending_q.count()
     return items, total, pending_count
 
 
@@ -142,7 +158,7 @@ def review_registration(
     - reject: records rejection reason.
     - request_info: records required information details.
     """
-    reg = get_registration_by_id(db, reg_id)
+    reg = get_registration_by_id(db, reg_id, organization_id=founder.organization_id)
     if not reg:
         raise ValueError("Client registration record not found.")
 
@@ -152,11 +168,15 @@ def review_registration(
         # 1. Establish or reuse Client record
         client = (
             db.query(Client)
-            .filter(Client.company_name.ilike(reg.company_name.strip()))
+            .filter(
+                Client.company_name.ilike(reg.company_name.strip()),
+                Client.organization_id == founder.organization_id,
+            )
             .first()
         )
         if not client:
             client = Client(
+                organization_id=founder.organization_id,
                 company_name=reg.company_name.strip(),
                 primary_contact_name=reg.full_name,
                 primary_contact_email=reg.email,
@@ -172,6 +192,8 @@ def review_registration(
             db.add(client)
             db.flush()
         else:
+            if not client.organization_id:
+                client.organization_id = founder.organization_id
             if assign_employee_id and not client.assigned_employee_id:
                 client.assigned_employee_id = assign_employee_id
 
@@ -191,6 +213,7 @@ def review_registration(
                 email=reg.email,
                 full_name=reg.full_name,
                 role="client",
+                organization_id=founder.organization_id,
                 client_id=client.id,
                 hashed_password=reg.hashed_password,
                 is_active=True,
@@ -201,6 +224,7 @@ def review_registration(
             db.flush()
         else:
             user.role = "client"
+            user.organization_id = founder.organization_id
             user.client_id = client.id
             user.is_active = True
             user.updated_at = now_utc

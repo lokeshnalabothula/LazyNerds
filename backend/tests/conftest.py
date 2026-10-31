@@ -7,15 +7,18 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Setup an isolated temporary directory and SQLite database file per test run.
-# Store the path in os.environ so any secondary imports (e.g. 'tests.conftest' vs 'conftest')
-# resolve to the exact same isolated temporary database instance within this process.
-_test_db_url = os.environ.get("TEST_DB_URL")
+# Setup an isolated temporary directory and SQLite database file per test run (isolated per xdist worker).
+worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")
+_test_db_key = f"TEST_DB_URL_{worker_id}"
+_test_dir_key = f"TEST_TEMP_DIR_{worker_id}"
+
+_test_db_url = os.environ.get(_test_db_key)
 if not _test_db_url:
-    _test_dir = tempfile.mkdtemp(prefix="fixops_test_db_")
+    _test_dir = tempfile.mkdtemp(prefix=f"fixops_test_db_{worker_id}_")
     _test_db_path = os.path.join(_test_dir, "isolated_fixops.db")
     _test_db_url = f"sqlite:///{_test_db_path}"
-    os.environ["TEST_DB_URL"] = _test_db_url
+    os.environ[_test_db_key] = _test_db_url
+    os.environ[_test_dir_key] = _test_dir
     os.environ["TEST_TEMP_DIR"] = _test_dir
 
 TEST_DB_URL = _test_db_url
@@ -26,6 +29,13 @@ os.environ["ALLOW_LAB_TESTING"] = "true"
 os.environ["WORKER_DISPATCH_MODE"] = "distributed"
 os.environ["DATABASE_URL"] = TEST_DB_URL
 os.environ["SECRET_KEY"] = "test-secret-key-lazy-nerds-fixops-super-secure-2026"
+
+import bcrypt
+_orig_gensalt = bcrypt.gensalt
+bcrypt.gensalt = lambda rounds=4, prefix=b"2b": _orig_gensalt(4, prefix)
+
+from app.core import security
+security.bcrypt.gensalt = lambda rounds=4, prefix=b"2b": _orig_gensalt(4, prefix)
 
 from app.core.config import settings
 from app.core.security import create_access_token
@@ -51,7 +61,16 @@ def mock_email_dispatch_in_tests(monkeypatch):
     from app.services import email_service
     monkeypatch.setattr(email_service, "get_active_email_provider", lambda: "mock")
 
+from sqlalchemy import event
+
 test_engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
+
+@event.listens_for(test_engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA synchronous = OFF")
+    cursor.execute("PRAGMA journal_mode = MEMORY")
+    cursor.close()
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 # Patch session and main module singletons so lifespan, dependencies, and background tasks
@@ -105,6 +124,15 @@ def setup_test_database():
     """Create test tables at beginning of test run and clean up at end."""
     Base.metadata.drop_all(bind=test_engine)
     Base.metadata.create_all(bind=test_engine)
+    with TestingSessionLocal() as init_s:
+        from app.models.organization import Organization, PRIMARY_ORGANIZATION_ID
+        if not init_s.query(Organization).filter(Organization.id == PRIMARY_ORGANIZATION_ID).first():
+            init_s.merge(Organization(
+                id=PRIMARY_ORGANIZATION_ID,
+                name="Lazy Nerds",
+                slug="lazy-nerds",
+            ))
+            init_s.commit()
     yield
     Base.metadata.drop_all(bind=test_engine)
     test_engine.dispose()
@@ -123,6 +151,16 @@ def db_session():
     connection = test_engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
+
+    # Guarantee primary organization exists for test isolation
+    from app.models.organization import Organization, PRIMARY_ORGANIZATION_ID
+    if not session.query(Organization).filter(Organization.id == PRIMARY_ORGANIZATION_ID).first():
+        session.merge(Organization(
+            id=PRIMARY_ORGANIZATION_ID,
+            name="Lazy Nerds",
+            slug="lazy-nerds",
+        ))
+        session.flush()
 
     yield session
 

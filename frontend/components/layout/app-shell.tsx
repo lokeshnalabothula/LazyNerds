@@ -18,7 +18,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      const target = `/login?redirect=${encodeURIComponent(pathname)}`;
+      if (typeof window !== "undefined") {
+        window.location.replace(target);
+      } else {
+        router.replace(target);
+      }
     }
   }, [user, loading, router, pathname]);
 

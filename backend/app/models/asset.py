@@ -12,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.db.session import Base
+from app.models.organization import PRIMARY_ORGANIZATION_ID
 
 
 def utc_now() -> datetime:
@@ -22,6 +23,13 @@ class Asset(Base):
     __tablename__ = "assets"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = Column(
+        String(36),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=True,
+        default=PRIMARY_ORGANIZATION_ID,
+        index=True,
+    )
     client_id = Column(
         String(36),
         ForeignKey("clients.id", ondelete="RESTRICT"),
@@ -46,6 +54,7 @@ class Asset(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     # Relationships
+    organization = relationship("Organization", foreign_keys=[organization_id], back_populates="assets")
     client = relationship("Client", back_populates="assets")
     engagement = relationship("Engagement", back_populates="assets")
     findings = relationship("Finding", back_populates="asset", cascade="all, delete-orphan")
@@ -68,6 +77,7 @@ class Asset(Base):
             name="check_asset_authorization_status",
         ),
         Index("idx_assets_client_scope", "client_id", "in_scope"),
+        Index("idx_assets_org_scope", "organization_id", "in_scope"),
         Index("idx_assets_engagement", "engagement_id"),
         Index("idx_assets_criticality", "criticality"),
     )
@@ -81,4 +91,4 @@ class Asset(Base):
         return self.engagement.name if self.engagement else None
 
     def __repr__(self) -> str:
-        return f"<Asset(id='{self.id}', name='{self.name}', type='{self.asset_type}', in_scope={self.in_scope})>"
+        return f"<Asset(id='{self.id}', name='{self.name}', type='{self.asset_type}', in_scope={self.in_scope}, org='{self.organization_id}')>"

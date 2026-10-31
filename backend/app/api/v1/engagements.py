@@ -88,6 +88,7 @@ def read_engagements(
         authorization_status=authorization_status,
         sort_by=sort_by,
         sort_order=sort_order,
+        organization_id=current_user.organization_id,
     )
 
     return EngagementListResponse(
@@ -106,19 +107,38 @@ def create_new_engagement(
     current_user: User = Depends(require_employee_or_founder),
 ):
     """
-    Creates a new engagement linked to a valid client.
+    Creates a new engagement linked to a valid client within the caller's organization.
     Transactionally committed in PostgreSQL. Restricted to employees and founders.
     """
-    if current_user.role == "employee":
-        client = db.query(Client).filter(Client.id == engagement_in.client_id).first()
-        if client and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+    client = db.query(Client).filter(
+        Client.id == engagement_in.client_id,
+        Client.organization_id == current_user.organization_id,
+    ).first()
+    if not client:
+        # If client exists in another organization, return 404 (IDOR prevention)
+        cross_client = db.query(Client).filter(Client.id == engagement_in.client_id).first()
+        if cross_client:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied: You are not assigned to this client record.",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Referenced client organization does not exist.",
             )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Client with id '{engagement_in.client_id}' does not exist.",
+        )
+
+    if current_user.is_worker and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not assigned to this client record.",
+        )
 
     try:
-        new_engagement = create_engagement(db, engagement_in=engagement_in)
+        new_engagement = create_engagement(
+            db,
+            engagement_in=engagement_in,
+            organization_id=current_user.organization_id,
+        )
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -135,9 +155,14 @@ def read_engagement_by_id(
 ):
     """
     Fetches a specific engagement by UUID.
-    Enforces tenant scoping for client accounts.
+    Enforces multi-tenant isolation and tenant scoping for client accounts.
+    Cross-tenant IDs return 404 (IDOR prevention).
     """
-    engagement = get_engagement_by_id(db, engagement_id=engagement_id)
+    engagement = get_engagement_by_id(
+        db,
+        engagement_id=engagement_id,
+        organization_id=current_user.organization_id,
+    )
     if not engagement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -147,7 +172,7 @@ def read_engagement_by_id(
     if current_user.role == "client" and engagement.client_id != current_user.client_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied: You are not authorized to view another organization's engagement.",
+            detail="Access denied: You can only view engagements for your assigned client account.",
         )
 
     return EngagementOut.model_validate(engagement)
@@ -161,13 +186,16 @@ def update_existing_engagement(
     current_user: User = Depends(require_employee_or_founder),
 ):
     """
-    Performs a partial update of an engagement record.
-    Restricted to internal staff (employees and founders).
+    Performs a partial update of an engagement record within the organization.
+    Restricted to internal staff (workers and owners).
     """
     if engagement_in.status is not None:
         try:
             bind = db.get_bind()
-            eng_lock = db.query(Engagement.id).filter(Engagement.id == engagement_id)
+            eng_lock = db.query(Engagement.id).filter(
+                Engagement.id == engagement_id,
+                Engagement.organization_id == current_user.organization_id,
+            )
             if bind and bind.dialect.name == "postgresql":
                 eng_lock = eng_lock.with_for_update()
             else:
@@ -176,14 +204,18 @@ def update_existing_engagement(
         except Exception:
             pass
 
-    engagement = get_engagement_by_id(db, engagement_id=engagement_id)
+    engagement = get_engagement_by_id(
+        db,
+        engagement_id=engagement_id,
+        organization_id=current_user.organization_id,
+    )
     if not engagement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This engagement could not be found.",
         )
 
-    if current_user.role == "employee" and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
+    if current_user.is_worker and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: You are not assigned to this client record.",
@@ -210,7 +242,10 @@ def archive_existing_engagement(
     """
     try:
         bind = db.get_bind()
-        eng_lock = db.query(Engagement.id).filter(Engagement.id == engagement_id)
+        eng_lock = db.query(Engagement.id).filter(
+            Engagement.id == engagement_id,
+            Engagement.organization_id == current_user.organization_id,
+        )
         if bind and bind.dialect.name == "postgresql":
             eng_lock = eng_lock.with_for_update()
         else:
@@ -219,14 +254,18 @@ def archive_existing_engagement(
     except Exception:
         pass
 
-    engagement = get_engagement_by_id(db, engagement_id=engagement_id)
+    engagement = get_engagement_by_id(
+        db,
+        engagement_id=engagement_id,
+        organization_id=current_user.organization_id,
+    )
     if not engagement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This engagement could not be found.",
         )
 
-    if current_user.role == "employee" and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
+    if current_user.is_worker and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: You are not assigned to this client record.",
@@ -251,14 +290,18 @@ def restore_existing_engagement(
     """
     Reopens a cancelled engagement back to draft status for replanning.
     """
-    engagement = get_engagement_by_id(db, engagement_id=engagement_id)
+    engagement = get_engagement_by_id(
+        db,
+        engagement_id=engagement_id,
+        organization_id=current_user.organization_id,
+    )
     if not engagement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This engagement could not be found.",
         )
 
-    if current_user.role == "employee" and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
+    if current_user.is_worker and engagement.client and engagement.client.assigned_employee_id and engagement.client.assigned_employee_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: You are not assigned to this client record.",
@@ -292,7 +335,10 @@ def submit_website_audit(
         )
 
     # 2. Client existence, status, & multi-tenant/employee authorization check
-    client = db.query(Client).filter(Client.id == req.client_id).first()
+    client = db.query(Client).filter(
+        Client.id == req.client_id,
+        Client.organization_id == current_user.organization_id,
+    ).first()
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -305,7 +351,7 @@ def submit_website_audit(
         )
 
     # Role permission check: client users can only audit for their own organization
-    if current_user.role == "client" and current_user.client_id != req.client_id:
+    if current_user.is_client and current_user.client_id != req.client_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: Cannot submit audits for other client organizations.",
@@ -313,7 +359,7 @@ def submit_website_audit(
 
     # Employee assignment check: employees cannot audit clients assigned to another employee
     if (
-        current_user.role == "employee"
+        current_user.is_worker
         and client.assigned_employee_id
         and client.assigned_employee_id != current_user.id
     ):
@@ -324,7 +370,10 @@ def submit_website_audit(
 
     # 3. Engagement scope check (if referencing existing engagement)
     if req.engagement_id:
-        eng = db.query(Engagement).filter(Engagement.id == req.engagement_id).first()
+        eng = db.query(Engagement).filter(
+            Engagement.id == req.engagement_id,
+            Engagement.organization_id == current_user.organization_id,
+        ).first()
         if not eng:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -372,6 +421,7 @@ def submit_website_audit(
         now_dt = datetime.now(timezone.utc)
         eng = Engagement(
             id=str(uuid.uuid4()),
+            organization_id=current_user.organization_id,
             client_id=req.client_id,
             name=f"Website Audit: {hostname}",
             assessment_type=AssessmentType.WEB_APP.value,
@@ -392,13 +442,18 @@ def submit_website_audit(
     clean_target = req.url.strip()
     asset = (
         db.query(Asset)
-        .filter(Asset.client_id == req.client_id, Asset.target == clean_target)
+        .filter(
+            Asset.organization_id == current_user.organization_id,
+            Asset.client_id == req.client_id,
+            Asset.target == clean_target,
+        )
         .first()
     )
     if not asset:
         now_dt = datetime.now(timezone.utc)
         asset = Asset(
             id=str(uuid.uuid4()),
+            organization_id=current_user.organization_id,
             client_id=req.client_id,
             engagement_id=eng.id,
             name=f"Web: {hostname}",

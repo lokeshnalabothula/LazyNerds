@@ -830,6 +830,8 @@ def launch_scan(
     eng = db.query(Engagement).filter(Engagement.id == engagement_id).first()
     if not eng:
         raise ValueError("Referenced engagement does not exist.")
+    if current_user and getattr(current_user, "organization_id", None) and eng.organization_id and eng.organization_id != current_user.organization_id:
+        raise ValueError("Referenced engagement does not exist.")
     if eng.status not in ("in_progress", "planned"):
         raise ValueError(
             f"Engagement '{eng.name}' is currently '{eng.status}'. "
@@ -925,6 +927,7 @@ def launch_scan(
 
     log_audit(
         db=db,
+        organization_id=eng.organization_id,
         user_email=user_email,
         action="LAUNCH_SCAN",
         resource_type="assessment",

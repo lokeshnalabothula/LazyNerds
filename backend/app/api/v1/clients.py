@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, require_founder, require_employee_or_founder
+from app.api.deps import get_current_user, require_founder, require_employee_or_founder, require_permission
 from app.db.session import get_db
 from app.models.client import Client
 from app.models.user import User
@@ -50,10 +50,11 @@ def read_clients(
 ):
     """
     Returns a paginated list of client records.
-    Enforces role-based isolation:
-    - Clients can only see their own organization.
-    - Employees see assigned clients (or all approved clients if unassigned).
-    - Founders see all company clients.
+    Enforces multi-tenant data isolation and role-based scoping:
+    - Scoped strictly to the authenticated user's organization.
+    - Clients can only see their own assigned client record.
+    - Workers see assigned clients (or authorized organization clients).
+    - Owners see all organization clients.
     """
     if sort_by not in SORT_FIELDS_ALLOWLIST:
         raise HTTPException(
@@ -94,17 +95,23 @@ def create_new_client(
     current_user: User = Depends(require_employee_or_founder),
 ):
     """
-    Creates a new client record.
-    Transactionally committed in PostgreSQL. Requires internal team membership.
+    Creates a new client record within the caller's organization.
+    Transactionally committed in PostgreSQL. Restricted to organization staff (Workers and Owners).
     """
-    new_client = create_client(db, client_in=client_in)
+    if not current_user.has_permission("clients:write"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Missing required permission 'clients:write'.",
+        )
+
+    new_client = create_client(db, client_in=client_in, organization_id=current_user.organization_id)
     log_audit(
         db=db,
         user_email=current_user.email,
         action="CREATE_CLIENT",
         resource_type="client",
         resource_id=new_client.id,
-        details=f"Client '{new_client.company_name}' onboarded by {current_user.email}",
+        details=f"Client '{new_client.company_name}' onboarded by {current_user.email} in organization {current_user.organization_id}",
     )
     return ClientOut.model_validate(new_client)
 
@@ -116,12 +123,31 @@ def bulk_archive(
     current_user: User = Depends(require_employee_or_founder),
 ):
     """
-    Bulk archives multiple selected clients transactionally.
+    Bulk archives multiple selected clients transactionally within the caller's organization.
     Preserves all historical engagements, assets, and reports.
     """
-    if current_user.role == "employee":
+    if not current_user.has_permission("clients:write") and not current_user.is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Missing required permission 'clients:write'.",
+        )
+
+    # Validate that all requested client_ids belong to the caller's organization
+    org_clients = db.query(Client.id).filter(
+        Client.id.in_(data.client_ids),
+        Client.organization_id == current_user.organization_id,
+    ).all()
+    found_ids = {c[0] for c in org_clients}
+    if len(found_ids) != len(set(data.client_ids)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="One or more specified clients could not be found in your organization.",
+        )
+
+    if current_user.is_worker:
         disallowed = db.query(Client).filter(
             Client.id.in_(data.client_ids),
+            Client.organization_id == current_user.organization_id,
             Client.assigned_employee_id.isnot(None),
             Client.assigned_employee_id != current_user.id,
         ).first()
@@ -131,7 +157,7 @@ def bulk_archive(
                 detail="Access denied: You are not assigned to one or more selected client records.",
             )
 
-    archived = bulk_archive_clients(db, client_ids=data.client_ids)
+    archived = bulk_archive_clients(db, client_ids=data.client_ids, organization_id=current_user.organization_id)
     for c in archived:
         log_audit(
             db=db,
@@ -155,11 +181,30 @@ def bulk_restore(
     current_user: User = Depends(require_employee_or_founder),
 ):
     """
-    Bulk restores multiple archived clients to active status.
+    Bulk restores multiple archived clients to active status within caller's organization.
     """
-    if current_user.role == "employee":
+    if not current_user.has_permission("clients:write") and not current_user.is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Missing required permission 'clients:write'.",
+        )
+
+    # Validate that all requested client_ids belong to the caller's organization
+    org_clients = db.query(Client.id).filter(
+        Client.id.in_(data.client_ids),
+        Client.organization_id == current_user.organization_id,
+    ).all()
+    found_ids = {c[0] for c in org_clients}
+    if len(found_ids) != len(set(data.client_ids)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="One or more specified clients could not be found in your organization.",
+        )
+
+    if current_user.is_worker:
         disallowed = db.query(Client).filter(
             Client.id.in_(data.client_ids),
+            Client.organization_id == current_user.organization_id,
             Client.assigned_employee_id.isnot(None),
             Client.assigned_employee_id != current_user.id,
         ).first()
@@ -169,7 +214,7 @@ def bulk_restore(
                 detail="Access denied: You are not assigned to one or more selected client records.",
             )
 
-    restored = bulk_restore_clients(db, client_ids=data.client_ids)
+    restored = bulk_restore_clients(db, client_ids=data.client_ids, organization_id=current_user.organization_id)
     for c in restored:
         log_audit(
             db=db,
@@ -194,22 +239,24 @@ def read_client_by_id(
 ):
     """
     Fetches a specific client profile by UUID.
-    Enforces authorization check to prevent cross-client reads.
+    Enforces tenant isolation and client-scoping:
+    - Cross-tenant requests return HTTP 404 (IDOR prevention).
+    - Client accounts attempting to read another client return HTTP 404.
     """
-    if current_user.role == "client" and current_user.client_id != client_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied: You are not authorized to view another organization's records.",
-        )
-
-    client = get_client_by_id(db, client_id=client_id)
+    client = get_client_by_id(db, client_id=client_id, organization_id=current_user.organization_id)
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This client could not be found.",
         )
 
-    if current_user.role == "employee" and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+    if current_user.is_client and current_user.client_id != client_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This client could not be found.",
+        )
+
+    if current_user.is_worker and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: You are not assigned to this client record.",
@@ -228,15 +275,22 @@ def update_existing_client(
     """
     Performs a partial update of a client record.
     Preserves unchanged fields and updates timestamps.
+    Scoped strictly to caller's organization.
     """
-    client = get_client_by_id(db, client_id=client_id)
+    if not current_user.has_permission("clients:write") and not current_user.is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Missing required permission 'clients:write'.",
+        )
+
+    client = get_client_by_id(db, client_id=client_id, organization_id=current_user.organization_id)
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This client could not be found.",
         )
 
-    if current_user.role == "employee" and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+    if current_user.is_worker and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: You are not assigned to this client record.",
@@ -262,10 +316,10 @@ def assign_client_employee(
     current_user: User = Depends(require_founder),
 ):
     """
-    Assigns an approved client to a specific internal employee.
-    Founder-only administrative operation.
+    Assigns an approved client to a specific internal worker/employee.
+    Owner-only administrative operation.
     """
-    client = get_client_by_id(db, client_id=client_id)
+    client = get_client_by_id(db, client_id=client_id, organization_id=current_user.organization_id)
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -273,11 +327,19 @@ def assign_client_employee(
         )
 
     if data.employee_id:
-        emp = db.query(User).filter(User.id == data.employee_id, User.role.in_(["employee", "founder", "admin"])).first()
+        emp = (
+            db.query(User)
+            .filter(
+                User.id == data.employee_id,
+                User.organization_id == current_user.organization_id,
+                User.role.in_(["worker", "employee", "founder", "owner", "admin"]),
+            )
+            .first()
+        )
         if not emp:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Specified employee user does not exist or lacks internal employee role.",
+                detail="Specified employee user does not exist or lacks internal worker role in your organization.",
             )
 
     client.assigned_employee_id = data.employee_id
@@ -302,15 +364,22 @@ def archive_existing_client(
 ):
     """
     Archives a client record, preserving all identifiers and history.
+    Scoped strictly to caller's organization.
     """
-    client = get_client_by_id(db, client_id=client_id)
+    if not current_user.has_permission("clients:write") and not current_user.is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Missing required permission 'clients:write'.",
+        )
+
+    client = get_client_by_id(db, client_id=client_id, organization_id=current_user.organization_id)
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This client could not be found.",
         )
 
-    if current_user.role == "employee" and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+    if current_user.is_worker and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: You are not assigned to this client record.",
@@ -335,16 +404,22 @@ def restore_existing_client(
     current_user: User = Depends(require_employee_or_founder),
 ):
     """
-    Restores an archived client to active status.
+    Restores an archived client to active status within caller's organization.
     """
-    client = get_client_by_id(db, client_id=client_id)
+    if not current_user.has_permission("clients:write") and not current_user.is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Missing required permission 'clients:write'.",
+        )
+
+    client = get_client_by_id(db, client_id=client_id, organization_id=current_user.organization_id)
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This client could not be found.",
         )
 
-    if current_user.role == "employee" and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
+    if current_user.is_worker and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: You are not assigned to this client record.",
@@ -360,4 +435,3 @@ def restore_existing_client(
         details=f"Client '{restored.company_name}' restored to active status by {current_user.email}",
     )
     return ClientOut.model_validate(restored)
-

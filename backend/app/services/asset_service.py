@@ -11,20 +11,27 @@ from app.services.automation_engine import dispatch_event
 
 
 def create_asset(db: Session, asset_in: AssetCreate, current_user: User) -> Asset:
-    # 1. Validate parent client exists
-    client = db.query(Client).filter(Client.id == asset_in.client_id).first()
+    # 1. Validate parent client exists in the user's organization
+    client_q = db.query(Client).filter(Client.id == asset_in.client_id)
+    if current_user.organization_id:
+        client_q = client_q.filter(Client.organization_id == current_user.organization_id)
+    client = client_q.first()
     if not client:
         raise ValueError("Referenced client does not exist.")
 
     # 2. Validate engagement if provided
     if asset_in.engagement_id:
-        engagement = db.query(Engagement).filter(Engagement.id == asset_in.engagement_id).first()
+        eng_q = db.query(Engagement).filter(Engagement.id == asset_in.engagement_id)
+        if current_user.organization_id:
+            eng_q = eng_q.filter(Engagement.organization_id == current_user.organization_id)
+        engagement = eng_q.first()
         if not engagement:
             raise ValueError("Referenced engagement does not exist.")
         if engagement.client_id != asset_in.client_id:
             raise ValueError("Referenced engagement does not belong to the selected client.")
 
     asset = Asset(
+        organization_id=current_user.organization_id,
         client_id=asset_in.client_id,
         engagement_id=asset_in.engagement_id,
         name=asset_in.name,
@@ -42,6 +49,7 @@ def create_asset(db: Session, asset_in: AssetCreate, current_user: User) -> Asse
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="CREATE_ASSET",
         resource_type="asset",
@@ -68,12 +76,18 @@ def create_asset(db: Session, asset_in: AssetCreate, current_user: User) -> Asse
     return asset
 
 
-def get_asset_by_id(db: Session, asset_id: str) -> Optional[Asset]:
-    return db.query(Asset).filter(Asset.id == asset_id).first()
+def get_asset_by_id(
+    db: Session, asset_id: str, organization_id: Optional[str] = None
+) -> Optional[Asset]:
+    query = db.query(Asset).filter(Asset.id == asset_id)
+    if organization_id:
+        query = query.filter(Asset.organization_id == organization_id)
+    return query.first()
 
 
 def get_assets(
     db: Session,
+    organization_id: Optional[str] = None,
     client_id: Optional[str] = None,
     engagement_id: Optional[str] = None,
     asset_type: Optional[str] = None,
@@ -84,6 +98,8 @@ def get_assets(
     page_size: int = 50,
 ) -> tuple[List[Asset], int]:
     query = db.query(Asset)
+    if organization_id:
+        query = query.filter(Asset.organization_id == organization_id)
     if client_id:
         query = query.filter(Asset.client_id == client_id)
     if engagement_id:
@@ -113,13 +129,16 @@ def get_assets(
 def update_asset(
     db: Session, asset_id: str, asset_in: AssetUpdate, current_user: User
 ) -> Asset:
-    asset = get_asset_by_id(db, asset_id)
+    asset = get_asset_by_id(db, asset_id, organization_id=current_user.organization_id)
     if not asset:
         raise ValueError("Asset not found.")
 
     update_data = asset_in.model_dump(exclude_unset=True)
     if "engagement_id" in update_data and update_data["engagement_id"]:
-        eng = db.query(Engagement).filter(Engagement.id == update_data["engagement_id"]).first()
+        eng_q = db.query(Engagement).filter(Engagement.id == update_data["engagement_id"])
+        if current_user.organization_id:
+            eng_q = eng_q.filter(Engagement.organization_id == current_user.organization_id)
+        eng = eng_q.first()
         if not eng:
             raise ValueError("Referenced engagement does not exist.")
         if eng.client_id != asset.client_id:
@@ -133,6 +152,7 @@ def update_asset(
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="UPDATE_ASSET",
         resource_type="asset",
@@ -143,7 +163,7 @@ def update_asset(
 
 
 def delete_asset(db: Session, asset_id: str, current_user: User) -> None:
-    asset = get_asset_by_id(db, asset_id)
+    asset = get_asset_by_id(db, asset_id, organization_id=current_user.organization_id)
     if not asset:
         raise ValueError("Asset not found.")
 
@@ -153,6 +173,7 @@ def delete_asset(db: Session, asset_id: str, current_user: User) -> None:
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="DELETE_ASSET",
         resource_type="asset",

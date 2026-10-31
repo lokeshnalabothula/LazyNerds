@@ -232,13 +232,18 @@ def resolve_dns_txt(normalized_domain: str, timeout: float = 5.0) -> Tuple[List[
 
 def enforce_tenant_domain_access(domain: Domain, current_user: User, db: Session) -> None:
     """Enforces strict tenant isolation for domain operations."""
-    if current_user.role == "client":
+    if current_user.organization_id and domain.organization_id and domain.organization_id != current_user.organization_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Domain record not found.",
+        )
+    if current_user.is_client:
         if not current_user.client_id or domain.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Domain record not found.",
             )
-    elif current_user.role == "employee":
+    elif current_user.is_worker:
         client = db.query(Client).filter(Client.id == domain.client_id).first()
         if client and client.assigned_employee_id and client.assigned_employee_id != current_user.id:
             raise HTTPException(
@@ -257,8 +262,11 @@ def register_domain(
     Registers a new domain for verification under an authorized client/tenant.
     Generates a cryptographically secure token and stores only its SHA-256 hash.
     """
-    # 1. Validate parent client exists
-    client = db.query(Client).filter(Client.id == client_id).first()
+    # 1. Validate parent client exists in the caller's organization
+    client_q = db.query(Client).filter(Client.id == client_id)
+    if current_user.organization_id:
+        client_q = client_q.filter(Client.organization_id == current_user.organization_id)
+    client = client_q.first()
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -271,11 +279,12 @@ def register_domain(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err_msg)
 
     # 3. Tenant-scoped duplicate check
-    existing = (
-        db.query(Domain)
-        .filter(Domain.client_id == client_id, Domain.normalized_domain == normalized)
-        .first()
+    existing_q = db.query(Domain).filter(
+        Domain.client_id == client_id, Domain.normalized_domain == normalized
     )
+    if current_user.organization_id:
+        existing_q = existing_q.filter(Domain.organization_id == current_user.organization_id)
+    existing = existing_q.first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -289,6 +298,7 @@ def register_domain(
     expires_at = now + timedelta(hours=TOKEN_EXPIRATION_HOURS)
 
     domain = Domain(
+        organization_id=current_user.organization_id,
         client_id=client_id,
         domain=domain_str.strip(),
         normalized_domain=normalized,
@@ -304,6 +314,7 @@ def register_domain(
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="REGISTER_DOMAIN",
         resource_type="domain",
@@ -325,9 +336,11 @@ def get_domains(
 ) -> Tuple[List[Domain], int]:
     """Retrieves paginated domains scoped strictly to the authorized tenant."""
     query = db.query(Domain)
+    if current_user.organization_id:
+        query = query.filter(Domain.organization_id == current_user.organization_id)
 
     # Enforce tenant scoping
-    if current_user.role == "client":
+    if current_user.is_client:
         if not current_user.client_id:
             return [], 0
         query = query.filter(Domain.client_id == current_user.client_id)
@@ -496,6 +509,7 @@ def regenerate_domain_challenge(
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="REGENERATE_DOMAIN_CHALLENGE",
         resource_type="domain",
@@ -516,6 +530,7 @@ def delete_domain(db: Session, domain_id: str, current_user: User) -> None:
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="DELETE_DOMAIN",
         resource_type="domain",

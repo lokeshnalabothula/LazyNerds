@@ -233,6 +233,8 @@ export default function HomePage() {
             <div className="hero-stagger-4 w-full max-w-[min(680px,calc(100vw-2.5rem))] px-0.5 sm:px-2 mb-2.5 sm:mb-4 mx-auto" data-purpose="scan-form-container" suppressHydrationWarning>
               <form
                 id="auditForm"
+                action="/domain-verification"
+                method="GET"
                 onSubmit={handleSubmit}
                 suppressHydrationWarning
                 className={`capsule-pill rounded-full p-1 sm:p-2 pl-3 sm:pl-6 pr-1 sm:pr-2 flex items-center transition-all duration-300 min-h-[44px] sm:min-h-[52px] lg:min-h-[58px] ${
@@ -262,7 +264,7 @@ export default function HomePage() {
                 <div className="relative w-full flex items-center overflow-hidden">
                   <input
                     id="domainInput"
-                    name="target_domain"
+                    name="domain"
                     type="text"
                     value={inputValue}
                     onChange={handleInputChange}
@@ -287,7 +289,7 @@ export default function HomePage() {
                   {isScanning ? (
                     <svg
                       id="spinnerIcon"
-                      className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 text-slate-900 animate-spin"
+                      className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 text-slate-900 animate-spin pointer-events-none"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
@@ -308,7 +310,7 @@ export default function HomePage() {
                   ) : (
                     <svg
                       id="arrowIcon"
-                      className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-0.5 transition-transform stroke-[2.2]"
+                      className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transform group-hover:translate-x-0.5 transition-transform stroke-[2.2] pointer-events-none"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -346,52 +348,6 @@ export default function HomePage() {
             </div>
           </div>
       </main>
-
-      {/* ------------------------------------------------------------------- */}
-      {/* INTERACTIVE SCROLL PROMPT                                           */}
-      {/* ------------------------------------------------------------------- */}
-      <div
-        className="relative z-20 flex flex-col items-center pb-6 group cursor-pointer"
-        data-purpose="scroll-prompt"
-        onClick={() => {
-          if (typeof window !== "undefined" && typeof window.scrollTo === "function") {
-            try {
-              window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
-            } catch {
-              window.scrollTo(0, window.innerHeight);
-            }
-          }
-        }}
-      >
-        <div className="flex flex-col items-center justify-center overflow-visible">
-          <div className="h-5 flex items-center justify-center overflow-visible">
-            <svg
-              className="w-5 h-5 text-white/80 animate-falling-arrow overflow-visible filter drop-shadow-[0_0_8px_rgba(125,208,255,0.6)]"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <defs>
-                <linearGradient id="scrollChevronGrad" x1="0%" x2="100%" y1="0%" y2="100%">
-                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-                  <stop offset="50%" stopColor="#cbd5e1" stopOpacity="0.75" />
-                  <stop offset="100%" stopColor="#7bd0ff" stopOpacity="0.95" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M7 9.5L12 14.5L17 9.5"
-                stroke="url(#scrollChevronGrad)"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.4"
-              />
-              <circle cx="12" cy="14.5" fill="#ffffff" opacity="0.85" r="0.6" />
-            </svg>
-          </div>
-          <span className="inline-flex items-center text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.24em] text-white/80 px-3 py-1 mt-1 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-md shadow-[0_0_12px_rgba(255,255,255,0.04)] select-none transition-all duration-300 group-hover:text-white group-hover:border-white/40 group-hover:bg-white/[0.08]">
-            Scroll to explore
-          </span>
-        </div>
-      </div>
 
       {/* ------------------------------------------------------------------- */}
       {/* SITE FOOTER                                                         */}

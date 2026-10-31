@@ -35,9 +35,11 @@ def list_engagements(
     authorization_status: Optional[str] = None,
     sort_by: str = "created_at",
     sort_order: str = "desc",
+    organization_id: Optional[str] = None,
 ) -> Tuple[List[Engagement], int, int]:
     """
-    Retrieves a paginated list of engagements with search, filters, and allowlisted sorting.
+    Retrieves a paginated list of engagements with search, filters, allowlisted sorting,
+    and multi-tenant organization scoping.
     Returns (items, total_count, total_pages).
     """
     if page < 1:
@@ -50,6 +52,10 @@ def list_engagements(
         .join(Client, Engagement.client_id == Client.id)
         .options(joinedload(Engagement.client))
     )
+
+    # Scoped to organization
+    if organization_id:
+        query = query.filter(Engagement.organization_id == organization_id)
 
     # Filter by specific client ID
     if client_id:
@@ -97,23 +103,30 @@ def list_engagements(
     return items, total_count, total_pages
 
 
-def get_engagement_by_id(db: Session, engagement_id: str) -> Optional[Engagement]:
-    """Fetches an engagement record by ID with associated client data."""
-    return (
+def get_engagement_by_id(db: Session, engagement_id: str, organization_id: Optional[str] = None) -> Optional[Engagement]:
+    """Fetches an engagement record by ID with associated client data and optional organization scoping."""
+    query = (
         db.query(Engagement)
         .options(joinedload(Engagement.client))
         .filter(Engagement.id == engagement_id)
-        .first()
     )
+    if organization_id:
+        query = query.filter(Engagement.organization_id == organization_id)
+    return query.first()
 
 
-def create_engagement(db: Session, engagement_in: EngagementCreate) -> Engagement:
-    """Creates a new engagement transactionally linked to an active, existing client."""
-    client = db.query(Client).filter(Client.id == engagement_in.client_id).first()
+def create_engagement(db: Session, engagement_in: EngagementCreate, organization_id: Optional[str] = None) -> Engagement:
+    """Creates a new engagement transactionally linked to an active, existing client within the organization."""
+    client_q = db.query(Client).filter(Client.id == engagement_in.client_id)
+    if organization_id:
+        client_q = client_q.filter(Client.organization_id == organization_id)
+    client = client_q.first()
     if not client:
         raise ValueError(f"Client with id '{engagement_in.client_id}' does not exist.")
     if client.status == "archived":
         raise ValueError("Cannot create an engagement for an archived client. Please restore the client first.")
+
+    org_id = organization_id or client.organization_id
 
     now_utc = datetime.now(timezone.utc)
     if engagement_in.created_at is not None:
@@ -140,6 +153,7 @@ def create_engagement(db: Session, engagement_in: EngagementCreate) -> Engagemen
     )
 
     engagement = Engagement(
+        organization_id=org_id,
         client_id=client.id,
         name=engagement_in.name,
         assessment_type=assessment_type_val,
@@ -164,12 +178,13 @@ def update_engagement(
     engagement: Engagement,
     engagement_in: EngagementUpdate,
 ) -> Engagement:
-    """Applies a partial update to an engagement. created_at, id, and client_id are strictly immutable."""
+    """Applies a partial update to an engagement. created_at, id, organization_id, and client_id are strictly immutable."""
     update_data = engagement_in.model_dump(exclude_unset=True)
     # Immutable keys
     update_data.pop("created_at", None)
     update_data.pop("id", None)
     update_data.pop("client_id", None)
+    update_data.pop("organization_id", None)
 
     # Validate lifecycle status transition and lock row for update
     if "status" in update_data and update_data["status"] is not None:

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import hash_password, validate_password_strength
+from app.models.organization import Organization
 from app.models.client import Client
 from app.models.user import User
 from app.models.registration import ClientRegistration
@@ -237,6 +238,15 @@ def verify_registration_code_and_activate(
             # Activate previously inactive user
             existing_user.is_active = True
             existing_user.updated_at = now
+            if not existing_user.organization_id:
+                primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+                if not primary_org:
+                    primary_org = Organization(name="Lazy Nerds", slug="lazy-nerds", created_at=now, updated_at=now)
+                    db.add(primary_org)
+                    db.flush()
+                existing_user.organization_id = primary_org.id
+            if existing_user.role not in ("owner", "founder"):
+                existing_user.role = "client"
             if password:
                 existing_user.hashed_password = hash_password(password)
             db.commit()
@@ -271,7 +281,14 @@ def verify_registration_code_and_activate(
     domain_part = normalized_email.split("@")[1]
     org_name = f"{domain_part.split('.')[0].title()} Organization" if domain_part not in ("gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "proton.me", "protonmail.com") else f"{clean_name}'s Workspace"
     
+    primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+    if not primary_org:
+        primary_org = Organization(name="Lazy Nerds", slug="lazy-nerds", created_at=now, updated_at=now)
+        db.add(primary_org)
+        db.flush()
+
     client_record = Client(
+        organization_id=primary_org.id,
         company_name=org_name,
         primary_contact_name=clean_name,
         primary_contact_email=normalized_email,
@@ -286,6 +303,7 @@ def verify_registration_code_and_activate(
         email=normalized_email,
         full_name=clean_name,
         role="client",
+        organization_id=primary_org.id,
         is_active=True,
         client_id=client_record.id,
         hashed_password=hashed_pwd,
@@ -480,9 +498,18 @@ def complete_registration_with_token(
     hashed_pwd = hash_password(password.strip())
 
     if existing_user:
+        primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+        if not primary_org:
+            primary_org = Organization(name="Lazy Nerds", slug="lazy-nerds", created_at=now, updated_at=now)
+            db.add(primary_org)
+            db.flush()
         existing_user.is_active = True
         existing_user.full_name = clean_name
         existing_user.hashed_password = hashed_pwd
+        if not existing_user.organization_id:
+            existing_user.organization_id = primary_org.id
+        if existing_user.role not in ("owner", "founder"):
+            existing_user.role = "client"
         existing_user.updated_at = now
         db.commit()
         db.refresh(existing_user)
@@ -504,7 +531,14 @@ def complete_registration_with_token(
         else f"{clean_name}'s Workspace"
     )
 
+    primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+    if not primary_org:
+        primary_org = Organization(name="Lazy Nerds", slug="lazy-nerds", created_at=now, updated_at=now)
+        db.add(primary_org)
+        db.flush()
+
     client_record = Client(
+        organization_id=primary_org.id,
         company_name=org_name,
         primary_contact_name=clean_name,
         primary_contact_email=normalized_email,
@@ -519,6 +553,7 @@ def complete_registration_with_token(
         email=normalized_email,
         full_name=clean_name,
         role="client",
+        organization_id=primary_org.id,
         is_active=True,
         client_id=client_record.id,
         hashed_password=hashed_pwd,

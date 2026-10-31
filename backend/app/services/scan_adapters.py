@@ -502,6 +502,7 @@ def run_or_import_scan(
     if current_user_email:
         log_audit(
             db=db,
+            organization_id=eng.organization_id,
             user_email=current_user_email,
             action="RUN_SCAN_ADAPTER",
             resource_type="assessment",

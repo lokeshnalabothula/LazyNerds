@@ -12,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.db.session import Base
+from app.models.organization import PRIMARY_ORGANIZATION_ID
 
 
 def utc_now() -> datetime:
@@ -22,6 +23,13 @@ class Engagement(Base):
     __tablename__ = "engagements"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = Column(
+        String(36),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=True,
+        default=PRIMARY_ORGANIZATION_ID,
+        index=True,
+    )
     client_id = Column(
         String(36),
         ForeignKey("clients.id", ondelete="RESTRICT"),
@@ -41,6 +49,7 @@ class Engagement(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     # Relationships
+    organization = relationship("Organization", foreign_keys=[organization_id], back_populates="engagements")
     client = relationship("Client", back_populates="engagements")
     assets = relationship("Asset", back_populates="engagement")
     assessments = relationship("Assessment", back_populates="engagement", cascade="all, delete-orphan")
@@ -57,6 +66,7 @@ class Engagement(Base):
             name="check_engagement_auth_status",
         ),
         Index("idx_engagements_client_status", "client_id", "status"),
+        Index("idx_engagements_org_status", "organization_id", "status"),
         Index("idx_engagements_created_at", "created_at"),
         Index("idx_engagements_assessment_type", "assessment_type"),
     )
@@ -70,4 +80,4 @@ class Engagement(Base):
         return self.client.status if self.client else None
 
     def __repr__(self) -> str:
-        return f"<Engagement(id='{self.id}', name='{self.name}', status='{self.status}', client_id='{self.client_id}')>"
+        return f"<Engagement(id='{self.id}', name='{self.name}', status='{self.status}', client_id='{self.client_id}', org='{self.organization_id}')>"

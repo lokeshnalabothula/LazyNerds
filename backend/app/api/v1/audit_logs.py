@@ -22,6 +22,7 @@ def list_audit_logs(
 ):
     items, total = audit_service.get_audit_logs(
         db=db,
+        organization_id=current_user.organization_id,
         resource_type=resource_type,
         user_email=user_email,
         page=page,

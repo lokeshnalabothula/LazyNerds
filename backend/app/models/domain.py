@@ -12,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.db.session import Base
+from app.models.organization import PRIMARY_ORGANIZATION_ID
 
 
 def utc_now() -> datetime:
@@ -26,6 +27,13 @@ class Domain(Base):
     __tablename__ = "domains"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = Column(
+        String(36),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=True,
+        default=PRIMARY_ORGANIZATION_ID,
+        index=True,
+    )
     client_id = Column(
         String(36),
         ForeignKey("clients.id", ondelete="CASCADE"),
@@ -51,6 +59,7 @@ class Domain(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     # Relationships
+    organization = relationship("Organization", foreign_keys=[organization_id], back_populates="domains")
     client = relationship("Client", back_populates="domains")
 
     __table_args__ = (
@@ -60,8 +69,9 @@ class Domain(Base):
             name="check_domain_verification_status",
         ),
         Index("idx_domains_client_status", "client_id", "verification_status"),
+        Index("idx_domains_org_status", "organization_id", "verification_status"),
         Index("idx_domains_normalized_domain", "normalized_domain"),
     )
 
     def __repr__(self) -> str:
-        return f"<Domain(id='{self.id}', domain='{self.normalized_domain}', status='{self.verification_status}')>"
+        return f"<Domain(id='{self.id}', domain='{self.normalized_domain}', status='{self.verification_status}', org='{self.organization_id}')>"

@@ -86,27 +86,30 @@ def init_db_and_seed_admin():
                 if "reset_token_expires_at" not in prc_cols:
                     conn.execute(text(f"ALTER TABLE password_reset_codes ADD COLUMN reset_token_expires_at {col_type}"))
 
+            # Synchronize organization_id and permissions for multi-tenant isolation
+            tables_with_org_id = ["users", "clients", "engagements", "assets", "domains", "audit_logs", "client_registrations"]
+            for tbl in tables_with_org_id:
+                if tbl in existing_tables:
+                    cols = {col["name"] for col in inspector.get_columns(tbl)}
+                    if "organization_id" not in cols:
+                        conn.execute(text(f"ALTER TABLE {tbl} ADD COLUMN organization_id VARCHAR(36)"))
+            if "users" in existing_tables:
+                user_cols = {col["name"] for col in inspector.get_columns("users")}
+                if "permissions" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN permissions TEXT"))
+
             conn.commit()
         logger.info("Database schema synchronized successfully for non-production environment.")
     except Exception as e:
         logger.error(f"Non-production schema synchronization check failed: {e}", exc_info=True)
 
-    # 4. Seed initial founder if not present (development and test environments only)
+    # 4. Seed initial founder and primary organization if not present (development and test environments only)
     try:
         active_sessionmaker = getattr(db_session, "SessionLocal", SessionLocal)
         db = active_sessionmaker()
-        admin = get_user_by_email(db, settings.INITIAL_ADMIN_EMAIL)
-        if not admin:
-            create_user(
-                db,
-                UserCreate(
-                    email=settings.INITIAL_ADMIN_EMAIL,
-                    password=settings.INITIAL_ADMIN_PASSWORD,
-                    full_name=settings.INITIAL_ADMIN_NAME,
-                    role="founder",
-                ),
-            )
-            logger.info(f"Initialized authorized account: {settings.INITIAL_ADMIN_EMAIL}")
+        from app.services.auth_service import bootstrap_founder_account
+        bootstrap_founder_account(db)
+        logger.info(f"Initialized authorized founder and primary organization for {settings.INITIAL_ADMIN_EMAIL}")
         db.close()
     except Exception as e:
         logger.warning(f"Admin seeding check skipped or deferred: {e}")
@@ -136,7 +139,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

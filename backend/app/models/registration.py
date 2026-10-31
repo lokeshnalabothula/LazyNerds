@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Index, CheckConstraint
 from sqlalchemy.orm import relationship
 from app.db.session import Base
+from app.models.organization import PRIMARY_ORGANIZATION_ID
 
 
 def utc_now() -> datetime:
@@ -13,6 +14,7 @@ class ClientRegistration(Base):
     __tablename__ = "client_registrations"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = Column(String(36), ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True, default=PRIMARY_ORGANIZATION_ID, index=True)
     full_name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
@@ -40,6 +42,7 @@ class ClientRegistration(Base):
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
+    organization = relationship("Organization", foreign_keys=[organization_id])
     client = relationship("Client", foreign_keys=[client_id])
     user = relationship("User", foreign_keys=[user_id])
 
@@ -50,7 +53,8 @@ class ClientRegistration(Base):
         ),
         Index("idx_client_reg_status_created", "status", "created_at"),
         Index("idx_client_reg_email_status", "email", "status"),
+        Index("idx_client_reg_org_status", "organization_id", "status"),
     )
 
     def __repr__(self) -> str:
-        return f"<ClientRegistration(id='{self.id}', email='{self.email}', company='{self.company_name}', status='{self.status}')>"
+        return f"<ClientRegistration(id='{self.id}', email='{self.email}', company='{self.company_name}', org='{self.organization_id}', status='{self.status}')>"

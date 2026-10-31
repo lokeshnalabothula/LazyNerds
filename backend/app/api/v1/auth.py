@@ -334,8 +334,11 @@ def list_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_founder),
 ):
-    """Lists system personnel, filtered by role (founder-only)."""
-    query = db.query(User).filter(User.is_active == True)
+    """Lists system personnel within the founder's organization, filtered by role."""
+    query = db.query(User).filter(
+        User.is_active == True,
+        User.organization_id == current_user.organization_id,
+    )
     if role:
         query = query.filter(User.role == role)
     return [UserOut.model_validate(u) for u in query.order_by(User.full_name.asc()).all()]

@@ -14,7 +14,7 @@ function DomainVerificationContent() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
 
-  const domainQuery = searchParams.get("domain") || "acroba-cloud.com";
+  const domainQuery = searchParams.get("domain") || searchParams.get("target_domain") || "acroba-cloud.com";
   const [targetDomain, setTargetDomain] = useState(domainQuery);
   const [activeMethod, setActiveMethod] = useState<VerificationMethod>("dns");
 

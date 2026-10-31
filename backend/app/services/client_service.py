@@ -26,10 +26,11 @@ def list_clients(
 ) -> Tuple[List[Client], int, int]:
     """
     Retrieves a paginated list of clients with search, filtering, and strict sorting.
-    Enforces role-based data isolation:
-    - Clients can only view their own organization.
-    - Employees view assigned clients (or all approved clients if unassigned).
-    - Founders view all company clients.
+    Enforces multi-tenant organization isolation and role-based scoping:
+    - Enforces tenant isolation: records are strictly scoped to the user's organization.
+    - Clients can only view their own organization's assigned client record.
+    - Workers view assigned clients (or all authorized organization clients).
+    - Owners view all clients within their organization.
     """
     if page < 1:
         page = 1
@@ -38,26 +39,34 @@ def list_clients(
 
     query = db.query(Client)
 
-    # Role-based scoping
-    if user and getattr(user, "role", None) == "client":
+    # 1. Multi-tenant organization scoping
+    if user and getattr(user, "organization_id", None):
+        query = query.filter(Client.organization_id == user.organization_id)
+
+    # 2. Role-based scoping within organization
+    user_role = getattr(user, "role", None) if user else None
+    if user_role == "client":
         client_id = getattr(user, "client_id", None)
         if client_id:
             query = query.filter(Client.id == client_id)
         else:
             query = query.filter(Client.id == "none")
-    elif user and getattr(user, "role", None) == "employee":
+    elif user_role in ("worker", "employee"):
         user_id = getattr(user, "id", None)
-        assigned_count = db.query(Client).filter(Client.assigned_employee_id == user_id).count()
-        if assigned_count > 0:
+        org_id = getattr(user, "organization_id", None)
+        assigned_q = db.query(Client).filter(Client.assigned_employee_id == user_id)
+        if org_id:
+            assigned_q = assigned_q.filter(Client.organization_id == org_id)
+        if assigned_q.count() > 0:
             query = query.filter(Client.assigned_employee_id == user_id)
 
-    # Status filtering
+    # 3. Status filtering
     if status and status.lower() != "all":
         valid_status = status.lower()
         if valid_status in ["active", "archived"]:
             query = query.filter(Client.status == valid_status)
 
-    # Search filtering (company name, contact name, contact email)
+    # 4. Search filtering
     if search:
         search_term = f"%{search.strip()}%"
         query = query.filter(
@@ -71,27 +80,30 @@ def list_clients(
     total_count = query.count()
     total_pages = math.ceil(total_count / page_size) if total_count > 0 else 1
 
-    # Sorting with strict allowlist
+    # 5. Sorting with strict allowlist
     sort_column = SORT_FIELDS_ALLOWLIST.get(sort_by, Client.created_at)
     if sort_order.lower() == "asc":
         query = query.order_by(asc(sort_column))
     else:
         query = query.order_by(desc(sort_column))
 
-    # Pagination
+    # 6. Pagination
     offset = (page - 1) * page_size
     items = query.offset(offset).limit(page_size).all()
 
     return items, total_count, total_pages
 
 
-def get_client_by_id(db: Session, client_id: str) -> Optional[Client]:
-    """Fetches a client record by ID."""
-    return db.query(Client).filter(Client.id == client_id).first()
+def get_client_by_id(db: Session, client_id: str, organization_id: Optional[str] = None) -> Optional[Client]:
+    """Fetches a client record by ID, optionally scoped to an organization."""
+    query = db.query(Client).filter(Client.id == client_id)
+    if organization_id:
+        query = query.filter(Client.organization_id == organization_id)
+    return query.first()
 
 
-def create_client(db: Session, client_in: ClientCreate) -> Client:
-    """Creates a new client transactionally, respecting timezone-aware client onboarding timestamps."""
+def create_client(db: Session, client_in: ClientCreate, organization_id: Optional[str] = None) -> Client:
+    """Creates a new client transactionally with tenant organization scoping."""
     now_utc = datetime.now(timezone.utc)
     if client_in.created_at is not None:
         if client_in.created_at.tzinfo is None:
@@ -101,6 +113,7 @@ def create_client(db: Session, client_in: ClientCreate) -> Client:
         created_ts = now_utc
 
     client = Client(
+        organization_id=organization_id,
         company_name=client_in.company_name,
         primary_contact_name=client_in.primary_contact_name,
         primary_contact_email=client_in.primary_contact_email,
@@ -121,9 +134,9 @@ def create_client(db: Session, client_in: ClientCreate) -> Client:
 def update_client(db: Session, client: Client, client_in: ClientUpdate) -> Client:
     """Applies a partial update to an existing client record. created_at is strictly immutable."""
     update_data = client_in.model_dump(exclude_unset=True)
-    # created_at and id are strictly immutable
     update_data.pop("created_at", None)
     update_data.pop("id", None)
+    update_data.pop("organization_id", None)
 
     has_changes = False
     for field, value in update_data.items():
@@ -133,7 +146,6 @@ def update_client(db: Session, client: Client, client_in: ClientUpdate) -> Clien
                 setattr(client, field, value)
                 has_changes = True
 
-    # updated_at is refreshed only after a successful modification
     if has_changes:
         client.updated_at = datetime.now(timezone.utc)
         db.commit()
@@ -161,10 +173,13 @@ def restore_client(db: Session, client: Client) -> Client:
     return client
 
 
-def bulk_archive_clients(db: Session, client_ids: List[str]) -> List[Client]:
-    """Archives multiple clients transactionally by UUID without deleting data."""
+def bulk_archive_clients(db: Session, client_ids: List[str], organization_id: Optional[str] = None) -> List[Client]:
+    """Archives multiple clients transactionally by UUID within the organization."""
     now_utc = datetime.now(timezone.utc)
-    clients = db.query(Client).filter(Client.id.in_(client_ids)).all()
+    query = db.query(Client).filter(Client.id.in_(client_ids))
+    if organization_id:
+        query = query.filter(Client.organization_id == organization_id)
+    clients = query.all()
     archived = []
     for client in clients:
         if client.status != ClientStatus.ARCHIVED.value:
@@ -178,10 +193,13 @@ def bulk_archive_clients(db: Session, client_ids: List[str]) -> List[Client]:
     return clients
 
 
-def bulk_restore_clients(db: Session, client_ids: List[str]) -> List[Client]:
-    """Restores multiple archived clients to active status transactionally."""
+def bulk_restore_clients(db: Session, client_ids: List[str], organization_id: Optional[str] = None) -> List[Client]:
+    """Restores multiple archived clients to active status transactionally within the organization."""
     now_utc = datetime.now(timezone.utc)
-    clients = db.query(Client).filter(Client.id.in_(client_ids)).all()
+    query = db.query(Client).filter(Client.id.in_(client_ids))
+    if organization_id:
+        query = query.filter(Client.organization_id == organization_id)
+    clients = query.all()
     restored = []
     for client in clients:
         if client.status != ClientStatus.ACTIVE.value:
@@ -193,4 +211,3 @@ def bulk_restore_clients(db: Session, client_ids: List[str]) -> List[Client]:
         for client in restored:
             db.refresh(client)
     return clients
-

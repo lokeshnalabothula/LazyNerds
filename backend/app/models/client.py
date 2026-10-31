@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, String, Text, DateTime, Index, CheckConstraint, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.session import Base
+from app.models.organization import PRIMARY_ORGANIZATION_ID
 
 
 def utc_now() -> datetime:
@@ -13,6 +14,7 @@ class Client(Base):
     __tablename__ = "clients"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organization_id = Column(String(36), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, default=PRIMARY_ORGANIZATION_ID, index=True)
     company_name = Column(String(255), nullable=False, index=True)
     primary_contact_name = Column(String(255), nullable=False)
     primary_contact_email = Column(String(255), nullable=False, index=True)
@@ -26,6 +28,7 @@ class Client(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     # Relationships
+    organization = relationship("Organization", foreign_keys=[organization_id], back_populates="clients")
     engagements = relationship("Engagement", back_populates="client")
     assets = relationship("Asset", back_populates="client")
     domains = relationship("Domain", back_populates="client", cascade="all, delete-orphan")
@@ -36,7 +39,8 @@ class Client(Base):
         CheckConstraint("status IN ('active', 'archived')", name="check_client_status"),
         Index("idx_clients_status_created", "status", "created_at"),
         Index("idx_clients_company_status", "company_name", "status"),
+        Index("idx_clients_org_status", "organization_id", "status"),
     )
 
     def __repr__(self) -> str:
-        return f"<Client(id='{self.id}', company='{self.company_name}', status='{self.status}')>"
+        return f"<Client(id='{self.id}', company='{self.company_name}', org='{self.organization_id}', status='{self.status}')>"

@@ -86,7 +86,9 @@ def list_pending_registrations(
     Founder-only endpoint to list client registration submissions.
     Employees do not have access to this route or pending client data.
     """
-    items, total, pending_count = registration_service.list_registrations(db, status=status_filter)
+    items, total, pending_count = registration_service.list_registrations(
+        db, status=status_filter, organization_id=current_user.organization_id
+    )
     return RegistrationListResponse(
         items=[RegistrationOut.model_validate(r) for r in items],
         total=total,
@@ -103,7 +105,9 @@ def get_registration_details(
     """
     Founder-only endpoint to inspect full onboarding submission details.
     """
-    reg = registration_service.get_registration_by_id(db, reg_id=reg_id)
+    reg = registration_service.get_registration_by_id(
+        db, reg_id=reg_id, organization_id=current_user.organization_id
+    )
     if not reg:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

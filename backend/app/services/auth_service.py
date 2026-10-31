@@ -1,8 +1,10 @@
+import json
 from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.core.security import hash_password, verify_password
+from app.models.organization import Organization
 from app.models.user import User
 from app.schemas.auth import UserCreate
 
@@ -34,14 +36,33 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     return user
 
 
-
 def create_user(db: Session, user_in: UserCreate) -> User:
-    """Creates a new authorized user with a bcrypt hashed password."""
+    """Creates a new authorized user with a bcrypt hashed password and assigns an organization."""
+    org_id = user_in.organization_id
+    if not org_id:
+        primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+        if primary_org:
+            org_id = primary_org.id
+        else:
+            primary_org = Organization(
+                name="Lazy Nerds",
+                slug="lazy-nerds",
+            )
+            db.add(primary_org)
+            db.flush()
+            org_id = primary_org.id
+
+    perms_json = None
+    if user_in.permissions:
+        perms_json = json.dumps(user_in.permissions)
+
     db_user = User(
         email=user_in.email.strip().lower(),
         hashed_password=hash_password(user_in.password),
         full_name=user_in.full_name.strip(),
-        role=user_in.role,
+        role=user_in.role or "client",
+        organization_id=org_id,
+        permissions=perms_json,
         client_id=user_in.client_id,
         is_active=True,
         created_at=datetime.now(timezone.utc),
@@ -66,3 +87,61 @@ def change_user_password(db: Session, user: User, current_password: str, new_pas
     db.commit()
     db.refresh(user)
     return user
+
+
+def bootstrap_founder_account(db: Session) -> User:
+    """
+    Explicit administrative bootstrap mechanism for the founder and primary organization.
+    Ensures:
+    1. Primary organization 'Lazy Nerds' exists.
+    2. Founder account matching INITIAL_ADMIN_EMAIL exists with role='owner'.
+    3. Founder is designated as the organization owner.
+    4. Founder possesses all permissions ('*').
+    Never assumes arbitrary public registrants are owners.
+    """
+    from app.core.config import settings
+
+    now = datetime.now(timezone.utc)
+    founder_email = settings.INITIAL_ADMIN_EMAIL.strip().lower()
+
+    # 1. Ensure primary organization exists
+    primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+    if not primary_org:
+        primary_org = Organization(
+            name="Lazy Nerds",
+            slug="lazy-nerds",
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(primary_org)
+        db.flush()
+
+    # 2. Look for existing founder account
+    founder = db.query(User).filter(func.lower(func.trim(User.email)) == founder_email).first()
+    if founder:
+        founder.role = "owner"
+        founder.organization_id = primary_org.id
+        founder.is_active = True
+        founder.permissions = json.dumps(["*"])
+        founder.updated_at = now
+        primary_org.owner_id = founder.id
+    else:
+        # Create founder user if absent
+        founder = User(
+            email=founder_email,
+            hashed_password=hash_password(settings.INITIAL_ADMIN_PASSWORD),
+            full_name=settings.INITIAL_ADMIN_NAME,
+            role="owner",
+            organization_id=primary_org.id,
+            permissions=json.dumps(["*"]),
+            is_active=True,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(founder)
+        db.flush()
+        primary_org.owner_id = founder.id
+
+    db.commit()
+    db.refresh(founder)
+    return founder

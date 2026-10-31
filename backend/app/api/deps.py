@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Callable, Optional
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_access_token
 from app.db.session import get_db
+from app.models.organization import Organization
 from app.models.user import User
 from app.services.auth_service import get_user_by_id
 
@@ -18,7 +19,8 @@ def get_current_user(
 ) -> User:
     """
     Extracts JWT from Bearer Authorization header or HttpOnly cookie.
-    Validates token and returns current active authorized User.
+    Validates token and returns current active authorized User from fresh database state.
+    Ensures user belongs to a valid organization.
     """
     token = None
     if auth_header and auth_header.credentials:
@@ -53,8 +55,16 @@ def get_current_user(
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account is inactive. Contact the system administrator.",
+            detail="Account is inactive. Contact the organization owner.",
         )
+
+    # Ensure organization assignment
+    if not user.organization_id:
+        primary_org = db.query(Organization).filter(Organization.slug == "lazy-nerds").first()
+        if primary_org:
+            user.organization_id = primary_org.id
+            db.commit()
+            db.refresh(user)
 
     return user
 
@@ -74,23 +84,28 @@ def get_current_user_optional(
         return None
 
 
-def require_founder(
+def require_owner(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    """Enforces Founder role privileges for executive administration, registration reviews, and company settings."""
-    if current_user.role not in ("founder", "admin"):
+    """Enforces Organization Owner (Founder) privileges for administrative and role management operations."""
+    if not current_user.is_owner:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied: Founder privileges required for this operation.",
+            detail="Access denied: Organization Owner / Founder privileges required for this operation.",
         )
     return current_user
 
 
-def require_employee_or_founder(
+# Aliases for backward compatibility
+require_founder = require_owner
+require_admin = require_owner
+
+
+def require_worker_or_owner(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    """Enforces internal team membership (Employee or Founder) for accessing internal workspace tools."""
-    if current_user.role not in ("founder", "admin", "employee"):
+    """Enforces internal team membership (Worker or Owner) for operational cybersecurity tools."""
+    if not (current_user.is_worker or current_user.is_owner):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: Internal FixOps operations privileges required.",
@@ -98,11 +113,15 @@ def require_employee_or_founder(
     return current_user
 
 
+# Alias for backward compatibility
+require_employee_or_founder = require_worker_or_owner
+
+
 def require_client(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """Enforces client account role for customer portal access."""
-    if current_user.role != "client":
+    if not current_user.is_client:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: Client portal privileges required.",
@@ -110,6 +129,13 @@ def require_client(
     return current_user
 
 
-# Alias for backwards compatibility
-require_admin = require_founder
-
+def require_permission(perm: str) -> Callable[[User], User]:
+    """Factory creating a dependency that checks whether the current user has a specific granular permission."""
+    def _perm_checker(current_user: User = Depends(get_current_user)) -> User:
+        if not current_user.has_permission(perm):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied: Missing required permission '{perm}'.",
+            )
+        return current_user
+    return _perm_checker

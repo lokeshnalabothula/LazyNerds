@@ -13,11 +13,13 @@ from app.api.v1.health import router as health_router
 from app.api.v1.registrations import router as registrations_router
 from app.api.v1.workers import router as workers_router
 from app.api.v1.domains import router as domains_router
+from app.api.v1.organization import router as organization_router
 
 api_router = APIRouter()
 api_router.include_router(health_router, tags=["Health"])
 api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(registrations_router, prefix="/registrations", tags=["Registrations"])
+api_router.include_router(organization_router, prefix="/organization", tags=["Organization"])
 api_router.include_router(clients_router, prefix="/clients", tags=["Clients"])
 api_router.include_router(engagements_router, prefix="/engagements", tags=["Engagements"])
 api_router.include_router(assets_router, prefix="/assets", tags=["Assets"])

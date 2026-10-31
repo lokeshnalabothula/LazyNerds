@@ -1,18 +1,20 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_serializer, model_validator
 from app.schemas.common import serialize_utc_datetime
 
 
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
-    role: str = "founder"
+    role: str = "client"
+    organization_id: Optional[str] = None
     client_id: Optional[str] = None
 
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, description="User password (min 8 characters)")
+    permissions: Optional[list[str]] = None
 
 
 class UserOut(UserBase):
@@ -20,7 +22,25 @@ class UserOut(UserBase):
 
     id: str
     is_active: bool
+    permissions: list[str] = Field(default_factory=list)
     created_at: datetime
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_permissions(cls, data):
+        if hasattr(data, "get_permissions_list"):
+            return {
+                "id": data.id,
+                "email": data.email,
+                "full_name": data.full_name,
+                "role": data.role,
+                "organization_id": data.organization_id,
+                "client_id": data.client_id,
+                "is_active": data.is_active,
+                "created_at": data.created_at,
+                "permissions": data.get_permissions_list(),
+            }
+        return data
 
     @field_serializer("created_at", when_used="json")
     def serialize_dt(self, dt: datetime) -> str:

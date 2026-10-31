@@ -178,7 +178,7 @@ def create_domain(
     """
     target_client_id: Optional[str] = None
 
-    if current_user.role == "client":
+    if current_user.is_client:
         if not current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -190,13 +190,16 @@ def create_domain(
                 detail="Access denied: Cannot register domain for another organization.",
             )
         target_client_id = current_user.client_id
-    elif current_user.role == "employee":
+    elif current_user.is_worker:
         if not domain_in.client_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="client_id is required to register a domain.",
             )
-        client = db.query(Client).filter(Client.id == domain_in.client_id).first()
+        client = db.query(Client).filter(
+            Client.id == domain_in.client_id,
+            Client.organization_id == current_user.organization_id,
+        ).first()
         if not client:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -209,13 +212,16 @@ def create_domain(
             )
         target_client_id = domain_in.client_id
     else:
-        # Founder or Admin
+        # Founder / Owner or Admin
         if domain_in.client_id:
             target_client_id = domain_in.client_id
         elif current_user.client_id:
             target_client_id = current_user.client_id
         else:
-            first_client = db.query(Client).filter(Client.status == "active").first()
+            first_client = db.query(Client).filter(
+                Client.organization_id == current_user.organization_id,
+                Client.status == "active",
+            ).first()
             if not first_client:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

@@ -14,7 +14,10 @@ from app.services.audit_service import log_audit
 
 
 def generate_report(db: Session, report_in: ReportCreate, current_user: User) -> Report:
-    engagement = db.query(Engagement).filter(Engagement.id == report_in.engagement_id).first()
+    eng_q = db.query(Engagement).filter(Engagement.id == report_in.engagement_id)
+    if current_user.organization_id:
+        eng_q = eng_q.filter(Engagement.organization_id == current_user.organization_id)
+    engagement = eng_q.first()
     if not engagement:
         raise ValueError("Referenced engagement does not exist.")
 
@@ -118,6 +121,7 @@ The assessment scope was strictly limited to approved digital assets:
 
     log_audit(
         db=db,
+        organization_id=current_user.organization_id,
         user_email=current_user.email,
         action="GENERATE_REPORT",
         resource_type="report",
@@ -127,12 +131,20 @@ The assessment scope was strictly limited to approved digital assets:
     return report
 
 
-def get_report_by_id(db: Session, report_id: str) -> Optional[Report]:
-    return db.query(Report).filter(Report.id == report_id).first()
+def get_report_by_id(
+    db: Session, report_id: str, organization_id: Optional[str] = None
+) -> Optional[Report]:
+    query = db.query(Report).filter(Report.id == report_id)
+    if organization_id:
+        query = query.join(Engagement, Report.engagement_id == Engagement.id).filter(
+            Engagement.organization_id == organization_id
+        )
+    return query.first()
 
 
 def get_reports(
     db: Session,
+    organization_id: Optional[str] = None,
     engagement_id: Optional[str] = None,
     report_type: Optional[str] = None,
     client_id: Optional[str] = None,
@@ -140,8 +152,12 @@ def get_reports(
     page_size: int = 50,
 ) -> tuple[List[Report], int]:
     query = db.query(Report)
-    if client_id:
-        query = query.join(Engagement).filter(Engagement.client_id == client_id)
+    if organization_id or client_id:
+        query = query.join(Engagement, Report.engagement_id == Engagement.id)
+        if organization_id:
+            query = query.filter(Engagement.organization_id == organization_id)
+        if client_id:
+            query = query.filter(Engagement.client_id == client_id)
     if engagement_id:
         query = query.filter(Report.engagement_id == engagement_id)
     if report_type:

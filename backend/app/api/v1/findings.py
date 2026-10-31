@@ -7,6 +7,7 @@ from app.api.deps import get_current_user, require_employee_or_founder
 from app.db.session import get_db
 from app.models.user import User
 from app.models.engagement import Engagement
+from app.models.asset import Asset
 from app.models.finding import Assessment
 from app.schemas.finding import (
     FindingCreate,
@@ -38,8 +39,8 @@ def list_findings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    client_id_filter = current_user.client_id if current_user.role == "client" else None
-    if current_user.role == "client" and not current_user.client_id:
+    client_id_filter = current_user.client_id if current_user.is_client else None
+    if current_user.is_client and not current_user.client_id:
         return {
             "items": [],
             "total": 0,
@@ -50,6 +51,7 @@ def list_findings(
 
     items, total = finding_service.get_findings(
         db=db,
+        organization_id=current_user.organization_id,
         engagement_id=engagement_id,
         asset_id=asset_id,
         assessment_id=assessment_id,
@@ -90,8 +92,11 @@ def list_assessments(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    query = db.query(Assessment)
-    if current_user.role == "client":
+    query = db.query(Assessment).join(Engagement, Assessment.engagement_id == Engagement.id)
+    if current_user.organization_id:
+        query = query.filter(Engagement.organization_id == current_user.organization_id)
+
+    if current_user.is_client:
         if not current_user.client_id:
             return {
                 "items": [],
@@ -100,12 +105,10 @@ def list_assessments(
                 "page_size": page_size,
                 "total_pages": 1,
             }
-        query = query.join(Engagement).filter(Engagement.client_id == current_user.client_id)
-        if engagement_id:
-            query = query.filter(Assessment.engagement_id == engagement_id)
-    else:
-        if engagement_id:
-            query = query.filter(Assessment.engagement_id == engagement_id)
+        query = query.filter(Engagement.client_id == current_user.client_id)
+
+    if engagement_id:
+        query = query.filter(Assessment.engagement_id == engagement_id)
 
     total = query.count()
     items = (
@@ -129,14 +132,17 @@ def get_assessment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+    query = db.query(Assessment).join(Engagement, Assessment.engagement_id == Engagement.id)
+    if current_user.organization_id:
+        query = query.filter(Engagement.organization_id == current_user.organization_id)
+    assessment = query.filter(Assessment.id == assessment_id).first()
     if not assessment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
-    if current_user.role == "client":
+    if current_user.is_client:
         if not assessment.engagement or assessment.engagement.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied: You are not authorized to view another organization's assessment.",
+                detail="Not authorized to view another organization's assessment.",
             )
     return assessment
 
@@ -147,6 +153,26 @@ def import_scan(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_employee_or_founder),
 ):
+    eng = db.query(Engagement).filter(
+        Engagement.id == req.engagement_id,
+        Engagement.organization_id == current_user.organization_id,
+    ).first()
+    if not eng:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Engagement not found.",
+        )
+    if req.target_asset_id:
+        asset = db.query(Asset).filter(
+            Asset.id == req.target_asset_id,
+            Asset.organization_id == current_user.organization_id,
+        ).first()
+        if not asset:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Asset not found.",
+            )
+
     try:
         return scan_adapters.run_or_import_scan(
             db=db,
@@ -167,6 +193,26 @@ def launch_scan(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_employee_or_founder),
 ):
+    eng = db.query(Engagement).filter(
+        Engagement.id == req.engagement_id,
+        Engagement.organization_id == current_user.organization_id,
+    ).first()
+    if not eng:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Engagement not found.",
+        )
+    if req.target_asset_id:
+        asset = db.query(Asset).filter(
+            Asset.id == req.target_asset_id,
+            Asset.organization_id == current_user.organization_id,
+        ).first()
+        if not asset:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Asset not found.",
+            )
+
     try:
         return scanner_service.launch_scan(
             db=db,
@@ -187,6 +233,13 @@ def cancel_scan(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_employee_or_founder),
 ):
+    assessment = db.query(Assessment).join(Engagement, Assessment.engagement_id == Engagement.id).filter(
+        Assessment.id == assessment_id,
+        Engagement.organization_id == current_user.organization_id,
+    ).first()
+    if not assessment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
+
     try:
         return scanner_service.cancel_scan(
             db=db,
@@ -203,17 +256,19 @@ def get_finding(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    finding = finding_service.get_finding_by_id(db, finding_id)
+    finding = finding_service.get_finding_by_id(
+        db, finding_id, organization_id=current_user.organization_id
+    )
     if not finding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Finding with ID '{finding_id}' not found.",
         )
-    if current_user.role == "client":
+    if current_user.is_client:
         if not finding.engagement or finding.engagement.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied: You are not authorized to view another organization's findings.",
+                detail="Not authorized to view findings for another organization.",
             )
     return finding
 
@@ -225,18 +280,20 @@ def update_finding(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role == "client":
+    if current_user.is_client:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: Client accounts may not directly alter vulnerability finding records.",
         )
-    finding = finding_service.get_finding_by_id(db, finding_id)
+    finding = finding_service.get_finding_by_id(
+        db, finding_id, organization_id=current_user.organization_id
+    )
     if not finding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Finding with ID '{finding_id}' not found.",
         )
-    if current_user.role == "employee" and finding.engagement and finding.engagement.client:
+    if current_user.is_worker and finding.engagement and finding.engagement.client:
         client = finding.engagement.client
         if client.assigned_employee_id and client.assigned_employee_id != current_user.id:
             raise HTTPException(
@@ -256,13 +313,15 @@ def add_verification(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_employee_or_founder),
 ):
-    finding = finding_service.get_finding_by_id(db, finding_id)
+    finding = finding_service.get_finding_by_id(
+        db, finding_id, organization_id=current_user.organization_id
+    )
     if not finding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Finding with ID '{finding_id}' not found.",
         )
-    if current_user.role == "employee" and finding.engagement and finding.engagement.client:
+    if current_user.is_worker and finding.engagement and finding.engagement.client:
         client = finding.engagement.client
         if client.assigned_employee_id and client.assigned_employee_id != current_user.id:
             raise HTTPException(

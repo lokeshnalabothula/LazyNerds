@@ -26,8 +26,8 @@ def list_reports(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    client_id_filter = current_user.client_id if current_user.role == "client" else None
-    if current_user.role == "client" and not current_user.client_id:
+    client_id_filter = current_user.client_id if current_user.is_client else None
+    if current_user.is_client and not current_user.client_id:
         return {
             "items": [],
             "total": 0,
@@ -38,6 +38,7 @@ def list_reports(
 
     items, total = report_service.get_reports(
         db=db,
+        organization_id=current_user.organization_id,
         engagement_id=engagement_id,
         report_type=report_type,
         client_id=client_id_filter,
@@ -60,7 +61,7 @@ def create_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role == "client":
+    if current_user.is_client:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: Client users may not generate assessment reports.",
@@ -77,15 +78,17 @@ def get_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    report = report_service.get_report_by_id(db, report_id)
+    report = report_service.get_report_by_id(
+        db, report_id, organization_id=current_user.organization_id
+    )
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
 
-    if current_user.role == "client":
+    if current_user.is_client:
         if not report.engagement or report.engagement.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied: You are not authorized to view another organization's report.",
+                detail="Not authorized to view or access reports for another organization.",
             )
     return report
 
@@ -97,15 +100,17 @@ def download_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    report = report_service.get_report_by_id(db, report_id)
+    report = report_service.get_report_by_id(
+        db, report_id, organization_id=current_user.organization_id
+    )
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
 
-    if current_user.role == "client":
+    if current_user.is_client:
         if not report.engagement or report.engagement.client_id != current_user.client_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied: You are not authorized to download another organization's report.",
+                detail="Not authorized to view or access reports for another organization.",
             )
 
     if format == "markdown":

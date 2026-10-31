@@ -50,6 +50,7 @@ class ForgotPasswordRequest(BaseModel):
 class SendForgotPasswordOtpResponse(BaseModel):
     message: str
     cooldown_seconds: int = 60
+    dev_code: Optional[str] = None
 
 
 class VerifyForgotPasswordOtpRequest(BaseModel):
@@ -91,6 +92,7 @@ class SendRegistrationOtpRequest(BaseModel):
 class SendRegistrationOtpResponse(BaseModel):
     message: str
     cooldown_seconds: int = 60
+    dev_code: Optional[str] = None
 
 
 class VerifyRegistrationOtpRequest(BaseModel):

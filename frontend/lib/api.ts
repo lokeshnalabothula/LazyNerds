@@ -209,8 +209,8 @@ export const api = {
     });
   },
 
-  async sendForgotPasswordOtp(email: string): Promise<{ message: string; cooldown_seconds: number }> {
-    return request<{ message: string; cooldown_seconds: number }>("/auth/forgot-password/send-otp", {
+  async sendForgotPasswordOtp(email: string): Promise<{ message: string; cooldown_seconds: number; dev_code?: string }> {
+    return request<{ message: string; cooldown_seconds: number; dev_code?: string }>("/auth/forgot-password/send-otp", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
@@ -248,8 +248,8 @@ export const api = {
     });
   },
 
-  async sendRegistrationOtp(email: string, full_name?: string): Promise<{ message: string; cooldown_seconds: number }> {
-    return request<{ message: string; cooldown_seconds: number }>("/auth/register/send-otp", {
+  async sendRegistrationOtp(email: string, full_name?: string): Promise<{ message: string; cooldown_seconds: number; dev_code?: string }> {
+    return request<{ message: string; cooldown_seconds: number; dev_code?: string }>("/auth/register/send-otp", {
       method: "POST",
       body: JSON.stringify({ email, full_name }),
     });
@@ -302,8 +302,8 @@ export const api = {
     return data;
   },
 
-  async resendRegistrationOtp(email: string, full_name?: string): Promise<{ message: string; cooldown_seconds: number }> {
-    return request<{ message: string; cooldown_seconds: number }>("/auth/register/resend-otp", {
+  async resendRegistrationOtp(email: string, full_name?: string): Promise<{ message: string; cooldown_seconds: number; dev_code?: string }> {
+    return request<{ message: string; cooldown_seconds: number; dev_code?: string }>("/auth/register/resend-otp", {
       method: "POST",
       body: JSON.stringify({ email, full_name }),
     });

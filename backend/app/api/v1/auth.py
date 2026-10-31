@@ -68,9 +68,14 @@ def send_registration_code(
             code=raw_code,
             expires_in_minutes=15,
         )
+        dev_code = None
+        if settings.ENVIRONMENT != "production" and email_service.get_active_email_provider() == "mock":
+            dev_code = raw_code
+
         return SendRegistrationOtpResponse(
             message="A 6-digit verification code has been dispatched to your email address.",
             cooldown_seconds=60,
+            dev_code=dev_code,
         )
     except ValueError as e:
         raise HTTPException(
@@ -221,9 +226,14 @@ def resend_registration_code(
             code=raw_code,
             expires_in_minutes=15,
         )
+        dev_code = None
+        if settings.ENVIRONMENT != "production" and email_service.get_active_email_provider() == "mock":
+            dev_code = raw_code
+
         return SendRegistrationOtpResponse(
             message="A new 6-digit verification code has been dispatched to your email address.",
             cooldown_seconds=60,
+            dev_code=dev_code,
         )
     except ValueError as e:
         raise HTTPException(
@@ -511,9 +521,14 @@ def forgot_password_send_otp(
             details=f"Password recovery OTP requested for {data.email}.",
         )
 
+        dev_code = None
+        if user and record and settings.ENVIRONMENT != "production" and email_service.get_active_email_provider() == "mock":
+            dev_code = raw_code
+
         return SendForgotPasswordOtpResponse(
             message="If an account matches that email address, a 6-digit password recovery code has been dispatched.",
             cooldown_seconds=60,
+            dev_code=dev_code,
         )
     except HTTPException:
         raise
